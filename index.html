@@ -5,54 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ProveCalc - Engineering Calculations You Can Trust</title>
     <meta name="description" content="Professional engineering calculation software with full audit trails. Show your work, prove your results. $200 lifetime license.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'prove': {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            500: '#0ea5e9',
-                            600: '#0284c7',
-                            700: '#0369a1',
-                            800: '#075985',
-                            900: '#0c4a6e',
+                        copper: {
+                            DEFAULT: '#b87333',
+                            light: '#d4956a',
+                            dark: '#a06429',
                         }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
                     }
                 }
             }
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
         body { font-family: 'Inter', sans-serif; }
-        .mono { font-family: 'JetBrains Mono', monospace; }
+        .font-display { font-family: 'Space Grotesk', sans-serif; }
+        
         .gradient-text {
-            background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+            background: linear-gradient(135deg, #b87333 0%, #d4956a 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
+        
         .glass-card {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        ::selection {
+            background-color: #b87333;
+            color: white;
+        }
+        
+        html { scroll-behavior: smooth; }
+        
+        *:focus-visible {
+            outline: 2px solid #b87333;
+            outline-offset: 2px;
+        }
+
+        /* Subtle gear animation for logo on hover */
+        .logo-icon {
+            transition: all 0.3s ease;
+        }
+        .logo-icon:hover {
+            filter: drop-shadow(0 0 6px rgba(184, 115, 51, 0.5));
         }
     </style>
 </head>
-<body class="bg-slate-950 text-white antialiased">
+<body class="bg-stone-950 text-white antialiased">
     <!-- Nav -->
-    <nav class="fixed top-0 w-full z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800">
+    <nav class="fixed top-0 w-full z-50 bg-stone-950/80 backdrop-blur-md border-b border-stone-800">
         <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <svg class="w-8 h-8 text-prove-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="flex items-center gap-2 group">
+                <svg class="w-8 h-8 text-copper logo-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                <span class="text-xl font-semibold">ProveCalc</span>
+                <span class="text-xl font-display font-semibold">ProveCalc</span>
             </div>
-            <a href="#waitlist" class="bg-prove-600 hover:bg-prove-500 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            <a href="#waitlist" class="bg-copper hover:bg-copper-dark px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                 Join Waitlist
             </a>
         </div>
@@ -62,32 +86,31 @@
     <section class="min-h-screen flex items-center pt-20">
         <div class="max-w-6xl mx-auto px-6 py-20">
             <div class="max-w-3xl">
-                <div class="inline-flex items-center gap-2 bg-slate-800/50 rounded-full px-4 py-1.5 text-sm text-slate-300 mb-6">
-                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                <div class="inline-flex items-center gap-2 bg-stone-800/50 rounded-full px-4 py-1.5 text-sm text-stone-300 mb-6">
+                    <span class="w-2 h-2 bg-copper rounded-full animate-pulse"></span>
                     Coming Q2 2026
                 </div>
-                <h1 class="text-5xl md:text-6xl font-bold leading-tight mb-6">
+                <h1 class="font-display text-5xl md:text-6xl font-bold leading-tight mb-6">
                     Engineering calculations<br>
                     <span class="gradient-text">you can prove.</span>
                 </h1>
-                <p class="text-xl text-slate-400 mb-8 leading-relaxed">
+                <p class="text-xl text-stone-400 mb-8 leading-relaxed">
                     Professional calculation software with full audit trails. Every formula verified. 
                     Every unit checked. Every step traceable. No cloud dependency. No subscription trap.
                 </p>
                 <div class="flex flex-wrap gap-4 mb-12">
-                    <a href="#waitlist" class="bg-prove-600 hover:bg-prove-500 px-6 py-3 rounded-lg font-medium transition-colors">
+                    <a href="#waitlist" class="bg-copper hover:bg-copper-dark px-6 py-3 rounded-lg font-medium transition-colors">
                         Join the Waitlist
                     </a>
-                    <a href="#features" class="bg-slate-800 hover:bg-slate-700 px-6 py-3 rounded-lg font-medium transition-colors">
+                    <a href="#features" class="bg-stone-800 hover:bg-stone-700 px-6 py-3 rounded-lg font-medium transition-colors">
                         See Features
                     </a>
                 </div>
-                <!-- Social proof placeholder -->
-                <div class="flex items-center gap-6 text-sm text-slate-500">
+                <div class="flex items-center gap-6 text-sm text-stone-500">
                     <div class="flex -space-x-2">
-                        <div class="w-8 h-8 rounded-full bg-slate-700 border-2 border-slate-950"></div>
-                        <div class="w-8 h-8 rounded-full bg-slate-600 border-2 border-slate-950"></div>
-                        <div class="w-8 h-8 rounded-full bg-slate-500 border-2 border-slate-950"></div>
+                        <div class="w-8 h-8 rounded-full bg-stone-700 border-2 border-stone-950"></div>
+                        <div class="w-8 h-8 rounded-full bg-stone-600 border-2 border-stone-950"></div>
+                        <div class="w-8 h-8 rounded-full bg-stone-500 border-2 border-stone-950"></div>
                     </div>
                     <span>Join engineers waiting for launch</span>
                 </div>
@@ -96,11 +119,11 @@
     </section>
 
     <!-- Problem Statement -->
-    <section class="py-20 border-t border-slate-800">
+    <section class="py-20 border-t border-stone-800">
         <div class="max-w-6xl mx-auto px-6">
             <div class="max-w-3xl mx-auto text-center mb-16">
-                <h2 class="text-3xl font-bold mb-4">The engineering calculation crisis</h2>
-                <p class="text-slate-400 text-lg">
+                <h2 class="font-display text-3xl font-bold mb-4">The engineering calculation crisis</h2>
+                <p class="text-stone-400 text-lg">
                     Mathcad costs $2,700/year. Excel hides your formulas. Spreadsheets break silently. 
                     You deserve better.
                 </p>
@@ -113,7 +136,7 @@
                         </svg>
                     </div>
                     <h3 class="text-xl font-semibold mb-2">Subscription Trap</h3>
-                    <p class="text-slate-400">Enterprise tools charge $2,700+/year forever. Stop renting your critical tools.</p>
+                    <p class="text-stone-400">Enterprise tools charge $2,700+/year forever. Stop renting your critical tools.</p>
                 </div>
                 <div class="glass-card rounded-xl p-6">
                     <div class="text-red-400 mb-4">
@@ -122,7 +145,7 @@
                         </svg>
                     </div>
                     <h3 class="text-xl font-semibold mb-2">Black Box Math</h3>
-                    <p class="text-slate-400">Spreadsheets hide formulas in cells. When auditors ask "show your work" — you can't.</p>
+                    <p class="text-stone-400">Spreadsheets hide formulas in cells. When auditors ask "show your work" — you can't.</p>
                 </div>
                 <div class="glass-card rounded-xl p-6">
                     <div class="text-red-400 mb-4">
@@ -131,107 +154,107 @@
                         </svg>
                     </div>
                     <h3 class="text-xl font-semibold mb-2">Cloud Dependency</h3>
-                    <p class="text-slate-400">Your calculations shouldn't require an internet connection or live on someone else's server.</p>
+                    <p class="text-stone-400">Your calculations shouldn't require an internet connection or live on someone else's server.</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Features -->
-    <section id="features" class="py-20 border-t border-slate-800">
+    <section id="features" class="py-20 border-t border-stone-800">
         <div class="max-w-6xl mx-auto px-6">
             <div class="max-w-3xl mx-auto text-center mb-16">
-                <h2 class="text-3xl font-bold mb-4">Glass box engineering</h2>
-                <p class="text-slate-400 text-lg">
+                <h2 class="font-display text-3xl font-bold mb-4">Glass box engineering</h2>
+                <p class="text-stone-400 text-lg">
                     Every calculation visible. Every step verifiable. Every result provable.
                 </p>
             </div>
             <div class="grid md:grid-cols-2 gap-8">
                 <div class="glass-card rounded-xl p-8">
-                    <div class="text-prove-500 mb-4">
+                    <div class="text-copper mb-4">
                         <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                         </svg>
                     </div>
                     <h3 class="text-xl font-semibold mb-3">Full Audit Trail</h3>
-                    <p class="text-slate-400">Every formula, every variable, every intermediate result captured and traceable. Built for regulatory compliance and peer review.</p>
+                    <p class="text-stone-400">Every formula, every variable, every intermediate result captured and traceable. Built for regulatory compliance and peer review.</p>
                 </div>
                 <div class="glass-card rounded-xl p-8">
-                    <div class="text-prove-500 mb-4">
+                    <div class="text-copper mb-4">
                         <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                         </svg>
                     </div>
                     <h3 class="text-xl font-semibold mb-3">Unit Intelligence</h3>
-                    <p class="text-slate-400">Automatic unit conversion and dimensional analysis. Catch errors before they become disasters. ft·lbf, N·m, kPa — all handled.</p>
+                    <p class="text-stone-400">Automatic unit conversion and dimensional analysis. Catch errors before they become disasters. ft·lbf, N·m, kPa — all handled.</p>
                 </div>
                 <div class="glass-card rounded-xl p-8">
-                    <div class="text-prove-500 mb-4">
+                    <div class="text-copper mb-4">
                         <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/>
                         </svg>
                     </div>
                     <h3 class="text-xl font-semibold mb-3">Local-First</h3>
-                    <p class="text-slate-400">Your calculations run on your machine. No cloud required. No data leaves your network. Sovereign compute for sovereign engineers.</p>
+                    <p class="text-stone-400">Your calculations run on your machine. No cloud required. No data leaves your network. Sovereign compute for sovereign engineers.</p>
                 </div>
                 <div class="glass-card rounded-xl p-8">
-                    <div class="text-prove-500 mb-4">
+                    <div class="text-copper mb-4">
                         <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                         </svg>
                     </div>
                     <h3 class="text-xl font-semibold mb-3">Blazing Fast</h3>
-                    <p class="text-slate-400">Built with Rust and React. Sub-millisecond recalculation. No lag, no waiting, no spinning wheels. Just results.</p>
+                    <p class="text-stone-400">Built with Rust and React. Sub-millisecond recalculation. No lag, no waiting, no spinning wheels. Just results.</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Pricing Comparison -->
-    <section class="py-20 border-t border-slate-800">
+    <section class="py-20 border-t border-stone-800">
         <div class="max-w-6xl mx-auto px-6">
             <div class="max-w-3xl mx-auto text-center mb-16">
-                <h2 class="text-3xl font-bold mb-4">Stop paying rent</h2>
-                <p class="text-slate-400 text-lg">
+                <h2 class="font-display text-3xl font-bold mb-4">Stop paying rent</h2>
+                <p class="text-stone-400 text-lg">
                     5-year total cost of ownership. The math speaks for itself.
                 </p>
             </div>
             <div class="grid md:grid-cols-4 gap-6">
                 <div class="glass-card rounded-xl p-6 text-center">
-                    <h3 class="text-slate-500 text-sm uppercase tracking-wide mb-2">Mathcad Prime</h3>
+                    <h3 class="text-stone-500 text-sm uppercase tracking-wide mb-2">Mathcad Prime</h3>
                     <div class="text-3xl font-bold text-red-400 mb-2">$13,500</div>
-                    <p class="text-slate-500 text-sm">$2,700/yr × 5 years</p>
+                    <p class="text-stone-500 text-sm">$2,700/yr × 5 years</p>
                 </div>
                 <div class="glass-card rounded-xl p-6 text-center">
-                    <h3 class="text-slate-500 text-sm uppercase tracking-wide mb-2">Maple Flow</h3>
+                    <h3 class="text-stone-500 text-sm uppercase tracking-wide mb-2">Maple Flow</h3>
                     <div class="text-3xl font-bold text-red-400 mb-2">$12,475</div>
-                    <p class="text-slate-500 text-sm">$2,495/yr × 5 years</p>
+                    <p class="text-stone-500 text-sm">$2,495/yr × 5 years</p>
                 </div>
                 <div class="glass-card rounded-xl p-6 text-center">
-                    <h3 class="text-slate-500 text-sm uppercase tracking-wide mb-2">Blockpad</h3>
+                    <h3 class="text-stone-500 text-sm uppercase tracking-wide mb-2">Blockpad</h3>
                     <div class="text-3xl font-bold text-orange-400 mb-2">$2,400</div>
-                    <p class="text-slate-500 text-sm">$480/yr × 5 years</p>
+                    <p class="text-stone-500 text-sm">$480/yr × 5 years</p>
                 </div>
-                <div class="bg-gradient-to-br from-prove-600/20 to-purple-600/20 border border-prove-500/30 rounded-xl p-6 text-center relative">
-                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-prove-500 text-xs font-bold px-3 py-1 rounded-full">
+                <div class="bg-gradient-to-br from-copper/20 to-copper-light/10 border border-copper/30 rounded-xl p-6 text-center relative">
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-copper text-xs font-bold px-3 py-1 rounded-full">
                         LIFETIME
                     </div>
-                    <h3 class="text-prove-400 text-sm uppercase tracking-wide mb-2">ProveCalc</h3>
-                    <div class="text-3xl font-bold text-prove-400 mb-2">$200</div>
-                    <p class="text-slate-400 text-sm">One-time payment. Forever.</p>
+                    <h3 class="text-copper-light text-sm uppercase tracking-wide mb-2">ProveCalc</h3>
+                    <div class="text-3xl font-bold text-copper-light mb-2">$200</div>
+                    <p class="text-stone-400 text-sm">One-time payment. Forever.</p>
                 </div>
             </div>
-            <p class="text-center text-slate-500 mt-8 text-sm">
+            <p class="text-center text-stone-500 mt-8 text-sm">
                 That's 67× less than Mathcad over 5 years. Put the savings toward actual engineering.
             </p>
         </div>
     </section>
 
     <!-- Waitlist -->
-    <section id="waitlist" class="py-20 border-t border-slate-800">
+    <section id="waitlist" class="py-20 border-t border-stone-800">
         <div class="max-w-2xl mx-auto px-6 text-center">
-            <h2 class="text-3xl font-bold mb-4">Get early access</h2>
-            <p class="text-slate-400 text-lg mb-8">
+            <h2 class="font-display text-3xl font-bold mb-4">Get early access</h2>
+            <p class="text-stone-400 text-lg mb-8">
                 Join the waitlist for launch updates and early-bird pricing.
             </p>
             <form class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
@@ -240,35 +263,35 @@
                     name="email"
                     placeholder="engineer@company.com" 
                     required
-                    class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-prove-500 transition-colors"
+                    class="flex-1 bg-stone-800 border border-stone-700 rounded-lg px-4 py-3 text-white placeholder-stone-500 focus:outline-none focus:border-copper transition-colors"
                 >
                 <button 
                     type="submit"
-                    class="bg-prove-600 hover:bg-prove-500 px-6 py-3 rounded-lg font-medium transition-colors whitespace-nowrap"
+                    class="bg-copper hover:bg-copper-dark px-6 py-3 rounded-lg font-medium transition-colors whitespace-nowrap"
                 >
                     Join Waitlist
                 </button>
             </form>
-            <p class="text-slate-600 text-sm mt-4">No spam. Unsubscribe anytime.</p>
+            <p class="text-stone-600 text-sm mt-4">No spam. Unsubscribe anytime.</p>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="py-12 border-t border-slate-800">
+    <footer class="py-12 border-t border-stone-800">
         <div class="max-w-6xl mx-auto px-6">
             <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                 <div class="flex items-center gap-2">
-                    <svg class="w-6 h-6 text-prove-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-6 h-6 text-copper" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    <span class="font-semibold">ProveCalc</span>
+                    <span class="font-display font-semibold">ProveCalc</span>
                 </div>
-                <p class="text-slate-500 text-sm">
+                <p class="text-stone-500 text-sm">
                     © 2026 ProveCalc. Built in Arizona.
                 </p>
-                <div class="flex gap-6 text-slate-500 text-sm">
-                    <a href="mailto:hello@provecalc.com" class="hover:text-white transition-colors">Contact</a>
-                    <a href="#" class="hover:text-white transition-colors">Privacy</a>
+                <div class="flex gap-6 text-stone-500 text-sm">
+                    <a href="mailto:hello@provecalc.com" class="hover:text-copper transition-colors">Contact</a>
+                    <a href="#" class="hover:text-copper transition-colors">Privacy</a>
                 </div>
             </div>
         </div>
