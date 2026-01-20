@@ -1,0 +1,17 @@
+{
+  "name": "provecalc-website",
+  "version": "1.0.0",
+  "description": "Marketing website for ProveCalc - engineering calculation software with full audit trails.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "png-to-ico": "^3.0.1",
+    "sharp": "^0.34.5"
+  }
+}

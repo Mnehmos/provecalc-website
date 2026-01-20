@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ProveCalc - Engineering Calculations You Can Trust</title>
     <meta name="description" content="Professional engineering calculation software with full audit trails. Show your work, prove your results. $200 lifetime license.">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -71,8 +75,16 @@
     <nav class="fixed top-0 w-full z-50 bg-stone-950/80 backdrop-blur-md border-b border-stone-800">
         <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
             <div class="flex items-center gap-2 group">
-                <svg class="w-8 h-8 text-copper logo-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                <svg class="w-8 h-8 logo-icon" viewBox="0 0 512 512" fill="none">
+                    <circle cx="256" cy="256" r="240" fill="url(#navGradient)"/>
+                    <circle cx="256" cy="256" r="200" fill="#1c1917"/>
+                    <path d="M180 260 L230 310 L340 200" stroke="url(#navGradient)" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
+                    <defs>
+                        <linearGradient id="navGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#d4956a"/>
+                            <stop offset="100%" style="stop-color:#b87333"/>
+                        </linearGradient>
+                    </defs>
                 </svg>
                 <span class="text-xl font-display font-semibold">ProveCalc</span>
             </div>
@@ -305,8 +317,16 @@
         <div class="max-w-6xl mx-auto px-6">
             <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                 <div class="flex items-center gap-2">
-                    <svg class="w-6 h-6 text-copper" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    <svg class="w-6 h-6" viewBox="0 0 512 512" fill="none">
+                        <circle cx="256" cy="256" r="240" fill="url(#footerGradient)"/>
+                        <circle cx="256" cy="256" r="200" fill="#1c1917"/>
+                        <path d="M180 260 L230 310 L340 200" stroke="url(#footerGradient)" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
+                        <defs>
+                            <linearGradient id="footerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#d4956a"/>
+                                <stop offset="100%" style="stop-color:#b87333"/>
+                            </linearGradient>
+                        </defs>
                     </svg>
                     <span class="font-display font-semibold">ProveCalc</span>
                 </div>
