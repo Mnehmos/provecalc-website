@@ -327,15 +327,12 @@ async function callOpenRouter(
     messages.push({ role: 'user', content: message });
   }
 
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+  // Proxy through our API route to avoid browser CORS/auth issues
+  const response = await fetch('/api/chat', {
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://provecalc.com',
-      'X-Title': 'ProveCalc',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+      apiKey,
       model,
       messages,
       max_tokens: 4096,
