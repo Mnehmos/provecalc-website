@@ -26,6 +26,16 @@ export async function POST(req: NextRequest) {
   try {
     const body: WorksheetExportData = await req.json();
 
+    // Verify env vars are set
+    const baseUrl = process.env.FOXIT_BASE_URL;
+    const clientId = process.env.FOXIT_CLIENT_ID;
+    if (!baseUrl || !clientId) {
+      return NextResponse.json(
+        { error: "Foxit API credentials not configured", hasBaseUrl: !!baseUrl, hasClientId: !!clientId, hasSecret: !!process.env.FOXIT_CLIENT_SECRET },
+        { status: 500 }
+      );
+    }
+
     // --- Step 1: Document Generation API ---
     // Build DOCX template with {{ tokens }}
     const templateBase64 = await buildTemplateDocx();
@@ -33,8 +43,12 @@ export async function POST(req: NextRequest) {
     // Flatten worksheet data to token values
     const tokenValues = flattenWorksheetData(body);
 
+    console.log("Foxit Doc Gen: sending request to", baseUrl);
+    console.log("Foxit Doc Gen: token keys:", Object.keys(tokenValues));
+
     // Call Foxit Doc Gen API: template + data → PDF
     const docGenResult = await generateDocument(templateBase64, tokenValues, "pdf");
+    console.log("Foxit Doc Gen: result keys:", Object.keys(docGenResult));
 
     if (!docGenResult.base64FileString) {
       // If Doc Gen fails (e.g., free plan limits), fall back to returning
@@ -83,10 +97,13 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("Foxit generate error:", error);
+    const msg = error instanceof Error ? error.message : String(error);
+    const stack = error instanceof Error ? error.stack?.split("\n").slice(0, 5).join("\n") : undefined;
     return NextResponse.json(
       {
         error: "Failed to generate report",
-        details: error instanceof Error ? error.message : String(error),
+        details: msg,
+        stack,
       },
       { status: 500 }
     );

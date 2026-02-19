@@ -109,7 +109,9 @@ export function WebToolbar({
       const result = await res.json();
 
       if (!res.ok || !result.success) {
-        alert(`Foxit PDF generation failed: ${result.error || result.details || "Unknown error"}`);
+        const detail = result.details || result.error || "Unknown error";
+        alert(`Foxit PDF: ${detail}`);
+        console.error("Foxit PDF error:", result);
         return;
       }
 
