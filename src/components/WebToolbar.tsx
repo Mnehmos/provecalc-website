@@ -3,6 +3,7 @@
 import { useMemo, useEffect, useState, useCallback } from "react";
 import { useDocumentStore, getNextNodePosition } from "../stores/documentStore";
 import type { WorksheetExportData } from "../services/foxitTemplateBuilder";
+import type { GivenNode, EquationNode, SolveGoalNode, ResultNode } from "../types/document";
 
 interface WebToolbarProps {
   onToggleDependencyGraph?: () => void;
@@ -57,13 +58,33 @@ export function WebToolbar({
     setFoxitExporting(true);
 
     try {
-      const givenNodes = document.nodes.filter((n) => n.type === "given");
-      const equationNodes = document.nodes.filter((n) => n.type === "equation");
-      const solveNodes = document.nodes.filter((n) => n.type === "solve_goal");
-      const resultNodes = document.nodes.filter((n) => n.type === "result");
+      // Helper: get node label by ID for dependency display
+      const getNodeLabel = (id: string): string => {
+        const node = document.nodes.find((n) => n.id === id);
+        if (!node) return id;
+        if (node.type === "given") return node.symbol;
+        if (node.type === "equation") return `${node.lhs} = ${node.rhs}`;
+        if (node.type === "solve_goal") return `Solve: ${node.target_symbol}`;
+        if (node.type === "result") return node.symbol;
+        if (node.type === "text") return node.content.substring(0, 20);
+        return node.type;
+      };
+
+      const givenNodes = document.nodes.filter((n): n is GivenNode => n.type === "given");
+      const equationNodes = document.nodes.filter((n): n is EquationNode => n.type === "equation");
+      const solveNodes = document.nodes.filter((n): n is SolveGoalNode => n.type === "solve_goal");
+      const resultNodes = document.nodes.filter((n): n is ResultNode => n.type === "result");
       const verifiedNodes = document.nodes.filter(
         (n) => n.verification?.status === "verified"
       );
+
+      // Format number for display (avoid 0.00166666666666666)
+      const fmtNum = (v: number): string => {
+        if (v === 0) return "0";
+        const abs = Math.abs(v);
+        if (abs >= 0.01 && abs < 1e6) return Number(v.toPrecision(6)).toString();
+        return v.toExponential(4);
+      };
 
       const exportData: WorksheetExportData = {
         title: document.name || "Untitled Worksheet",
@@ -85,18 +106,35 @@ export function WebToolbar({
             : "N/A",
         assumptions: (document.assumptions || []).map((a) => a.statement),
         variables: givenNodes.map((n) => ({
-          symbol: (n as { symbol?: string }).symbol || "?",
-          value: String((n as { value?: { value?: number } }).value?.value ?? "?"),
-          unit: (n as { value?: { unit?: { expression?: string } } }).value?.unit?.expression || "",
+          symbol: n.symbol,
+          value: fmtNum(n.value.value),
+          unit: n.value.unit?.expression || "",
+          verified: n.verification?.status === "verified",
         })),
-        equations: equationNodes.map((n) => {
-          const eq = n as { raw_expression?: string; equation?: string };
-          return eq.raw_expression || eq.equation || "?";
-        }),
+        equations: equationNodes.map((n) => ({
+          expression: n.sympy || `${n.lhs} = ${n.rhs}`,
+          lhs: n.lhs,
+          rhs: n.rhs,
+          verified: n.verification?.status === "verified",
+        })),
+        solveGoals: solveNodes.map((n) => ({
+          target: n.target_symbol,
+          verified: n.verification?.status === "verified",
+        })),
         results: resultNodes.map((n) => ({
-          symbol: (n as { symbol?: string }).symbol || "?",
-          value: String((n as { value?: { value?: number } }).value?.value ?? "?"),
-          unit: (n as { value?: { unit?: { expression?: string } } }).value?.unit?.expression || "",
+          symbol: n.symbol,
+          value: fmtNum(n.value.value),
+          unit: n.value.unit?.expression || "",
+          verified: n.verification?.status === "verified",
+          symbolicForm: n.symbolic_form,
+        })),
+        dependencyGraph: document.nodes.map((n) => ({
+          id: n.id,
+          type: n.type,
+          label: getNodeLabel(n.id),
+          status: (n.verification?.status || "unverified") as "verified" | "failed" | "unverified" | "pending",
+          dependsOn: (n.dependencies || []).map(getNodeLabel),
+          dependedBy: (n.dependents || []).map(getNodeLabel),
         })),
       };
 

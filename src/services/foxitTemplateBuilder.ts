@@ -19,6 +19,15 @@ import {
   HeadingLevel,
 } from "docx";
 
+export interface NodeVerificationInfo {
+  id: string;
+  type: string;
+  label: string;
+  status: "verified" | "failed" | "unverified" | "pending";
+  dependsOn: string[];   // symbols/labels of upstream nodes
+  dependedBy: string[];  // symbols/labels of downstream nodes
+}
+
 export interface WorksheetExportData {
   title: string;
   author: string;
@@ -31,9 +40,11 @@ export interface WorksheetExportData {
   totalNodes: number;
   verificationScore: string;
   assumptions: string[];
-  variables: Array<{ symbol: string; value: string; unit: string }>;
-  equations: string[];
-  results: Array<{ symbol: string; value: string; unit: string }>;
+  variables: Array<{ symbol: string; value: string; unit: string; verified: boolean }>;
+  equations: Array<{ expression: string; lhs: string; rhs: string; verified: boolean }>;
+  solveGoals: Array<{ target: string; verified: boolean }>;
+  results: Array<{ symbol: string; value: string; unit: string; verified: boolean; symbolicForm?: string }>;
+  dependencyGraph: NodeVerificationInfo[];
 }
 
 /**
@@ -278,7 +289,7 @@ export function flattenWorksheetData(data: WorksheetExportData): Record<string, 
       ? data.variables.map((v) => `${v.symbol} = ${v.value} ${v.unit}`).join("\n")
       : "No variables defined",
     equationsSummary: data.equations.length > 0
-      ? data.equations.join("\n")
+      ? data.equations.map((e) => `${e.lhs} = ${e.rhs}`).join("\n")
       : "No equations defined",
     resultsSummary: data.results.length > 0
       ? data.results.map((r) => `${r.symbol} = ${r.value} ${r.unit}`).join("\n")
