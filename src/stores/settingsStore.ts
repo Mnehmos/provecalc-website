@@ -91,12 +91,18 @@ export const useSettingsStore = create<SettingsState>()(
 
         set({ isLoading: true, error: null });
         try {
-          const response = await fetch('https://openrouter.ai/api/v1/models', {
+          // Use /auth/key to actually validate the key (models endpoint is public)
+          const response = await fetch('https://openrouter.ai/api/v1/auth/key', {
             headers: { 'Authorization': `Bearer ${state.openRouterApiKey}` },
           });
-          const ok = response.ok;
-          set({ isLoading: false, error: ok ? null : 'Invalid API key' });
-          return ok;
+          if (!response.ok) {
+            set({ isLoading: false, error: 'Invalid API key' });
+            return false;
+          }
+          const data = await response.json();
+          const label = data?.data?.label || 'API key';
+          set({ isLoading: false, error: null });
+          return true;
         } catch (e) {
           set({ error: String(e), isLoading: false });
           return false;
