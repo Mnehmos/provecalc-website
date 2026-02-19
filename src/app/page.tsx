@@ -1,3 +1,5 @@
+"use client";
+
 import { SignUpButton, SignedIn, SignedOut } from "@clerk/nextjs";
 
 export default function LandingPage() {
