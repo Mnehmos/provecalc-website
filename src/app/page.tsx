@@ -95,7 +95,7 @@ export default function LandingPage() {
               preload="metadata"
               className="w-full aspect-video bg-[var(--stone-900)]"
             >
-              <source src="/demo.mp4" type="video/mp4" />
+              <source src="/demo2.mp4" type="video/mp4" />
             </video>
           </div>
         </div>

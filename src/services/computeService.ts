@@ -447,9 +447,12 @@ export function inferResultUnit(
 ): string | undefined {
   let unitExpression = expression;
   for (const [symbol, variable] of Object.entries(symbolTable)) {
+    const regex = new RegExp(`\\b${symbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g');
     if (variable.unit) {
-      const regex = new RegExp(`\\b${symbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g');
       unitExpression = unitExpression.replace(regex, `(${variable.unit})`);
+    } else {
+      // Dimensionless variable — replace with 1 so it drops out of unit expression
+      unitExpression = unitExpression.replace(regex, '1');
     }
   }
   unitExpression = simplifyUnitExpression(unitExpression);

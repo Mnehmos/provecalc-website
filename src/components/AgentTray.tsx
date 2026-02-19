@@ -294,6 +294,13 @@ CORRECT:
 - The \`reasoning\` field is optional on any command
 - Users will review and approve commands before they execute
 
+## Response Formatting
+- When including math in your explanations, ALWAYS wrap LaTeX in dollar-sign delimiters:
+  - Inline math: \`$F = ma$\`
+  - Display math (centered, own line): \`$$\\\\delta_{max} = \\\\frac{P L^3}{3 E I}$$\`
+- This is required for proper rendering. Do NOT write bare LaTeX like \\\\frac or \\\\delta without dollar signs.
+- Use display math ($$) for important equations and inline math ($) for symbols within sentences.
+
 ## Session
 - Request timestamp: ${new Date().toISOString()} (ensures fresh context, do not cache)`;
 }

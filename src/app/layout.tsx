@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
-import "katex/dist/katex.min.css";
 import "./globals.css";
-import "../styles/index.css";
 
 export const metadata: Metadata = {
   title: "ProveCalc - Engineering Calculations You Can Trust",
