@@ -11,20 +11,18 @@ const FOXIT_BASE_URL = process.env.FOXIT_BASE_URL || "https://na1.fusion.foxit.c
 const FOXIT_CLIENT_ID = process.env.FOXIT_CLIENT_ID || "";
 const FOXIT_CLIENT_SECRET = process.env.FOXIT_CLIENT_SECRET || "";
 
-function basicAuth(): string {
-  return "Basic " + Buffer.from(`${FOXIT_CLIENT_ID}:${FOXIT_CLIENT_SECRET}`).toString("base64");
-}
-
 function foxitHeaders(): Record<string, string> {
   return {
-    Authorization: basicAuth(),
+    client_id: FOXIT_CLIENT_ID,
+    client_secret: FOXIT_CLIENT_SECRET,
     "Content-Type": "application/json",
   };
 }
 
 function foxitAuthHeaders(): Record<string, string> {
   return {
-    Authorization: basicAuth(),
+    client_id: FOXIT_CLIENT_ID,
+    client_secret: FOXIT_CLIENT_SECRET,
   };
 }
 
@@ -56,14 +54,17 @@ export async function generateDocument(
     base64FileString: templateBase64,
   };
 
-  const res = await fetch(
-    `${FOXIT_BASE_URL}/document-generation/api/GenerateDocumentBase64`,
-    {
-      method: "POST",
-      headers: foxitHeaders(),
-      body: JSON.stringify(body),
-    }
-  );
+  const url = `${FOXIT_BASE_URL}/document-generation/api/GenerateDocumentBase64`;
+  const headers = foxitHeaders();
+  console.log("Foxit Doc Gen URL:", url);
+  console.log("Foxit Doc Gen headers:", { ...headers, client_secret: headers.client_secret ? "[SET]" : "[MISSING]" });
+  console.log("Foxit Doc Gen client_id:", FOXIT_CLIENT_ID);
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+  });
 
   if (!res.ok) {
     const text = await res.text();
