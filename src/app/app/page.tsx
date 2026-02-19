@@ -11,6 +11,7 @@ import { AssumptionLedger } from "../../components/AssumptionLedger";
 import { DependencyGraph } from "../../components/DependencyGraph";
 import { LibraryPanel } from "../../components/LibraryPanel";
 import { TemplateGallery } from "../../components/TemplateGallery";
+import { AgentTray } from "../../components/AgentTray";
 
 export default function AppPage() {
   const { isLoaded } = useUser();
@@ -19,6 +20,7 @@ export default function AppPage() {
   const didInitRef = useRef(false);
   const [showDependencyGraph, setShowDependencyGraph] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [showAgent, setShowAgent] = useState(false);
 
   // Load document on mount (once)
   useEffect(() => {
@@ -43,6 +45,8 @@ export default function AppPage() {
         onToggleLibrary={toggleLibrary}
         showLibrary={showLibrary}
         onShowTemplates={() => setShowTemplates(true)}
+        onToggleAgent={() => setShowAgent((v) => !v)}
+        showAgent={showAgent}
       />
       <div className="main-content">
         <aside className="sidebar left">
@@ -53,6 +57,7 @@ export default function AppPage() {
         </main>
         <aside className="sidebar right">
           <AssumptionLedger />
+          {showAgent && <AgentTray />}
         </aside>
       </div>
 

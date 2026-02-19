@@ -9,6 +9,8 @@ interface WebToolbarProps {
   onToggleLibrary?: () => void;
   showLibrary?: boolean;
   onShowTemplates?: () => void;
+  onToggleAgent?: () => void;
+  showAgent?: boolean;
 }
 
 export function WebToolbar({
@@ -17,6 +19,8 @@ export function WebToolbar({
   onToggleLibrary,
   showLibrary,
   onShowTemplates,
+  onToggleAgent,
+  showAgent,
 }: WebToolbarProps) {
   const {
     createDocument,
@@ -225,6 +229,13 @@ export function WebToolbar({
           title="Toggle Library"
         >
           Library
+        </button>
+        <button
+          className={`toolbar-button ${showAgent ? "active" : ""}`}
+          onClick={onToggleAgent}
+          title="Toggle AI Assistant"
+        >
+          AI
         </button>
       </div>
 
