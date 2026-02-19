@@ -67,7 +67,7 @@ function createDefaultDocument(): WorksheetDocument {
     history: [],
     current_history_id: '',
     audit_trail: [],
-    metadata: { fromTemplate: template.id },
+    metadata: { description: `From template: ${template.id}` },
   };
 }
 
