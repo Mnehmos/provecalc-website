@@ -13,7 +13,7 @@ export const AVAILABLE_MODELS = [
   { id: 'anthropic/claude-sonnet-4.6', name: 'Claude Sonnet 4.6', description: 'Anthropic fast + capable', supportsVision: true },
   { id: 'anthropic/claude-opus-4.6', name: 'Claude Opus 4.6', description: 'Anthropic flagship, strongest reasoning', supportsVision: true },
   { id: 'openai/gpt-5.2-chat', name: 'GPT 5.2 Chat', description: 'OpenAI flagship model', supportsVision: true },
-  { id: 'openai/gpt-oss-120b', name: 'GPT OSS 120B', description: 'OpenAI open-source 120B', supportsVision: false },
+  { id: 'openai/gpt-oss-20b', name: 'GPT OSS 20B', description: 'OpenAI open-source 20B', supportsVision: false },
   { id: 'anthropic/claude-haiku-4.5', name: 'Claude Haiku 4.5', description: 'Anthropic fast + affordable', supportsVision: true },
 ] as const;
 
