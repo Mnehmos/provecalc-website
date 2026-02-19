@@ -1,12 +1,6 @@
 import type { Metadata } from "next";
-import {
-  ClerkProvider,
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from "@clerk/nextjs";
+import { ClerkProvider } from "@clerk/nextjs";
+import NavAuth from "../components/NavAuth";
 import "./globals.css";
 import "../styles/index.css";
 
@@ -50,27 +44,7 @@ export default function RootLayout({
                 </span>
               </a>
               <div className="flex items-center gap-4">
-                <SignedOut>
-                  <SignInButton mode="modal">
-                    <button className="text-sm text-[var(--stone-400)] hover:text-white transition-colors">
-                      Sign In
-                    </button>
-                  </SignInButton>
-                  <SignUpButton mode="modal">
-                    <button className="bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                      Try Free
-                    </button>
-                  </SignUpButton>
-                </SignedOut>
-                <SignedIn>
-                  <a
-                    href="/app"
-                    className="bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                  >
-                    Open App
-                  </a>
-                  <UserButton afterSignOutUrl="/" />
-                </SignedIn>
+                <NavAuth />
               </div>
             </div>
           </nav>
