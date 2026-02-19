@@ -11,11 +11,20 @@ const FOXIT_BASE_URL = process.env.FOXIT_BASE_URL || "https://na1.fusion.foxit.c
 const FOXIT_CLIENT_ID = process.env.FOXIT_CLIENT_ID || "";
 const FOXIT_CLIENT_SECRET = process.env.FOXIT_CLIENT_SECRET || "";
 
+function basicAuth(): string {
+  return "Basic " + Buffer.from(`${FOXIT_CLIENT_ID}:${FOXIT_CLIENT_SECRET}`).toString("base64");
+}
+
 function foxitHeaders(): Record<string, string> {
   return {
-    client_id: FOXIT_CLIENT_ID,
-    client_secret: FOXIT_CLIENT_SECRET,
+    Authorization: basicAuth(),
     "Content-Type": "application/json",
+  };
+}
+
+function foxitAuthHeaders(): Record<string, string> {
+  return {
+    Authorization: basicAuth(),
   };
 }
 
@@ -92,10 +101,7 @@ export async function uploadDocument(
     `${FOXIT_BASE_URL}/pdf-services/api/documents/upload`,
     {
       method: "POST",
-      headers: {
-        client_id: FOXIT_CLIENT_ID,
-        client_secret: FOXIT_CLIENT_SECRET,
-      },
+      headers: foxitAuthHeaders(),
       body: formData,
     }
   );
@@ -153,10 +159,7 @@ export async function pollTask(
     const res = await fetch(
       `${FOXIT_BASE_URL}/pdf-services/api/tasks/${taskId}`,
       {
-        headers: {
-          client_id: FOXIT_CLIENT_ID,
-          client_secret: FOXIT_CLIENT_SECRET,
-        },
+        headers: foxitAuthHeaders(),
       }
     );
 
@@ -186,10 +189,7 @@ export async function downloadDocument(documentId: string): Promise<Buffer> {
   const res = await fetch(
     `${FOXIT_BASE_URL}/pdf-services/api/documents/${documentId}/download`,
     {
-      headers: {
-        client_id: FOXIT_CLIENT_ID,
-        client_secret: FOXIT_CLIENT_SECRET,
-      },
+      headers: foxitAuthHeaders(),
     }
   );
 
