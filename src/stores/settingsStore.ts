@@ -58,7 +58,8 @@ export const useSettingsStore = create<SettingsState>()(
       isConfigured: false,
 
       setApiKey: (key: string) => {
-        set({ openRouterApiKey: key, isConfigured: key.length > 0 });
+        const trimmed = key.trim();
+        set({ openRouterApiKey: trimmed, isConfigured: trimmed.length > 0 });
       },
 
       setModel: (model: string) => {
