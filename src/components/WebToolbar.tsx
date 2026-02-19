@@ -3,7 +3,21 @@
 import { useMemo, useEffect } from "react";
 import { useDocumentStore, getNextNodePosition } from "../stores/documentStore";
 
-export function WebToolbar() {
+interface WebToolbarProps {
+  onToggleDependencyGraph?: () => void;
+  showDependencyGraph?: boolean;
+  onToggleLibrary?: () => void;
+  showLibrary?: boolean;
+  onShowTemplates?: () => void;
+}
+
+export function WebToolbar({
+  onToggleDependencyGraph,
+  showDependencyGraph,
+  onToggleLibrary,
+  showLibrary,
+  onShowTemplates,
+}: WebToolbarProps) {
   const {
     createDocument,
     undo,
@@ -88,6 +102,14 @@ export function WebToolbar() {
           disabled={isLoading}
         >
           New
+        </button>
+        <button
+          className="toolbar-button"
+          onClick={onShowTemplates}
+          title="New from template"
+          disabled={isLoading}
+        >
+          Templates
         </button>
         <button
           className="toolbar-button"
@@ -190,6 +212,20 @@ export function WebToolbar() {
               : `Recalculate (${staleCount})`}
           </button>
         )}
+        <button
+          className={`toolbar-button ${showDependencyGraph ? "active" : ""}`}
+          onClick={onToggleDependencyGraph}
+          title="Toggle Dependency Graph"
+        >
+          Deps
+        </button>
+        <button
+          className={`toolbar-button ${showLibrary ? "active" : ""}`}
+          onClick={onToggleLibrary}
+          title="Toggle Library"
+        >
+          Library
+        </button>
       </div>
 
       <div className="toolbar-spacer" />
