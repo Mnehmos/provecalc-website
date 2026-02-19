@@ -325,6 +325,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .sidebar-panel-top .assumption-ledger {
@@ -337,6 +338,11 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sidebar-panel-bottom .agent-tray {
+  height: 100%;
 }
 
 .panel-header {
