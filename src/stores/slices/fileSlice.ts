@@ -7,8 +7,9 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { logger, startTimer } from '../../utils/logger';
-import type { WorksheetDocument, NodeId } from '../../types/document';
+import type { WorksheetDocument, WorksheetNode, NodeId, Provenance, VerificationStatus } from '../../types/document';
 import type { SliceCreator } from './types';
+import { TEMPLATES, type TemplateNodeData } from '../../data/templates';
 
 const STORAGE_PREFIX = 'provecalc:doc:';
 const STORAGE_INDEX = 'provecalc:docs:index';
@@ -33,6 +34,40 @@ function createEmptyDocument(name: string): WorksheetDocument {
     current_history_id: '',
     audit_trail: [],
     metadata: {},
+  };
+}
+
+/** Hydrate a template node into a full WorksheetNode */
+function hydrateTemplateNode(partial: TemplateNodeData): WorksheetNode {
+  const now = new Date().toISOString();
+  return {
+    id: uuidv4(),
+    provenance: { type: 'library', source: 'template', timestamp: now } as Provenance,
+    verification: { status: 'unverified' } as VerificationStatus,
+    dependencies: [] as NodeId[],
+    dependents: [] as NodeId[],
+    assumptions: [] as string[],
+    ...partial,
+  } as WorksheetNode;
+}
+
+/** Create the default demo document from the cantilever beam template */
+function createDefaultDocument(): WorksheetDocument {
+  const template = TEMPLATES.find(t => t.id === 'cantilever-beam-tutorial');
+  if (!template) return createEmptyDocument('Untitled');
+
+  return {
+    id: uuidv4(),
+    name: template.name,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    version: '1.0.0',
+    nodes: template.nodes.map(hydrateTemplateNode),
+    assumptions: [],
+    history: [],
+    current_history_id: '',
+    audit_trail: [],
+    metadata: { fromTemplate: template.id },
   };
 }
 
@@ -320,16 +355,16 @@ export const createFileSlice: SliceCreator<FileSlice> = (set, get) => {
           }
         }
 
-        // No saved document — create a new one
-        const doc = createEmptyDocument('Untitled');
+        // No saved document — load the cantilever beam demo
+        const doc = createDefaultDocument();
         set((draft) => {
           draft.document = doc;
           draft.isLoading = false;
         });
-        timer.complete({ nodeCount: 0, created: true });
+        timer.complete({ nodeCount: doc.nodes.length, defaultTemplate: true });
       } catch (e) {
         timer.error(e);
-        const doc = createEmptyDocument('Untitled');
+        const doc = createDefaultDocument();
         set((draft) => {
           draft.document = doc;
           draft.error = String(e);

@@ -1120,6 +1120,8 @@ export function getVerification(node: WorksheetNode) {
 
 export function formatUnitLatex(unit: string): string {
   return unit
+    // Convert ** to ^ for exponentiation: m**4 → m^4
+    .replace(/\*\*/g, '^')
     // Wrap exponents in braces: ^2 → ^{2}, ^-1 → ^{-1}
     .replace(/\^(-?\d+)/g, '^{$1}')
     // Replace * with \cdot for multiplication

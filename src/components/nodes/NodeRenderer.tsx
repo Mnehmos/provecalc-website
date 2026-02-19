@@ -29,6 +29,7 @@ import {
   formatSymbolLatex,
   formatNumberLatex,
   formatUnitLatex,
+  formatNumber,
   getCompatibleUnits,
   convertUnit,
   formatConvertedValue,
@@ -601,9 +602,20 @@ function GivenNodeContent({ node }: { node: GivenNode }) {
 
   const hasAltUnits = altUnits.length > 0;
 
-  // Format display value with proper subscript/superscript handling
+  // Format display value with proper notation for large/small numbers
+  const formattedValue = (() => {
+    const v = typeof displayValue === 'number' ? displayValue : Number(displayValue);
+    if (!Number.isFinite(v)) return String(displayValue);
+    const absV = Math.abs(v);
+    // Use engineering notation for very large or very small values
+    if (absV !== 0 && (absV >= 1e6 || absV < 1e-3)) {
+      return formatNumber(v, 'engineering', 4);
+    }
+    return formatNumber(v, 'decimal', 6);
+  })();
+  const unitPart = unit ? ` \\; \\mathrm{${formatUnitLatex(unit)}}` : '';
   const displayLatex = node.latex ||
-    `${formatSymbolLatex(node.symbol)} := ${displayValue}${unit ? ` \\; \\mathrm{${formatUnitLatex(unit)}}` : ''}`;
+    `${formatSymbolLatex(node.symbol)} := ${formattedValue}${unitPart}`;
 
   // Get domain from unit if available
   const domain = node.value.unit?.domain;
