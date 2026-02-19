@@ -15,6 +15,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ valid: false, error: 'API key is required' });
     }
 
+    // Debug: return key metadata so we can verify what the browser sent
+    const keyPreview = `${apiKey.substring(0, 12)}...${apiKey.substring(apiKey.length - 4)} (len=${apiKey.length})`;
+
     // Use auth/key endpoint for validation
     const response = await fetch('https://openrouter.ai/api/v1/auth/key', {
       headers: { 'Authorization': `Bearer ${apiKey}` },
@@ -22,7 +25,7 @@ export async function POST(req: NextRequest) {
 
     if (response.ok) {
       const data = await response.json();
-      return NextResponse.json({ valid: true, label: data?.data?.label });
+      return NextResponse.json({ valid: true, label: data?.data?.label, keyPreview });
     }
 
     // Fallback: try a minimal completion to validate
@@ -49,6 +52,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       valid: false,
       error: errorData?.error?.message || `HTTP ${chatResponse.status}`,
+      keyPreview,
     });
   } catch (err) {
     return NextResponse.json({
