@@ -296,6 +296,49 @@ body {
   border-left: 1px solid var(--border-color);
 }
 
+/* Resize handles */
+.resize-handle {
+  flex-shrink: 0;
+  background: transparent;
+  transition: background 0.15s;
+  z-index: 10;
+}
+
+.resize-handle:hover,
+.resize-handle:active {
+  background: var(--accent-primary);
+}
+
+.resize-handle.vertical {
+  width: 4px;
+  cursor: col-resize;
+}
+
+.resize-handle.horizontal {
+  height: 4px;
+  cursor: row-resize;
+  margin: 0;
+}
+
+/* Sidebar panels when using resizable split */
+.sidebar-panel-top {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-panel-top .assumption-ledger {
+  max-height: none;
+  height: 100%;
+  border-bottom: none;
+}
+
+.sidebar-panel-bottom {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .panel-header {
   display: flex;
   align-items: center;

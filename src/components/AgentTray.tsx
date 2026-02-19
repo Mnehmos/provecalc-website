@@ -25,6 +25,22 @@ import { executeBatch } from '../stores/commandExecutor';
 import { validateBatch, hasInvalidCommands, type ValidationResult } from '../utils/commandValidator';
 import type { WorksheetCommand, BatchResult } from '../types/commands';
 
+/**
+ * Preprocess AI text so remarkMath can find all math delimiters.
+ * Converts LaTeX-style \[...\] and \(...\) to $$...$$ and $...$ respectively.
+ * Also handles bare brackets `[ \formula ]` that LLMs commonly produce.
+ */
+function preprocessLatex(text: string): string {
+  let result = text;
+  // \[...\] → $$...$$  (display math)
+  result = result.replace(/\\\[(.+?)\\\]/gs, (_m, inner) => `$$${inner.trim()}$$`);
+  // \(...\) → $...$  (inline math)
+  result = result.replace(/\\\((.+?)\\\)/gs, (_m, inner) => `$${inner.trim()}$`);
+  // Bare [ \formula ] on its own line — lines starting with [ \ and ending with ]
+  result = result.replace(/^\[\s*(\\[a-zA-Z].+?)\s*\]$/gm, (_m, inner) => `$$${inner.trim()}$$`);
+  return result;
+}
+
 /** Normalize a partial node from AI to ensure required fields exist */
 function normalizeNode(partial: Partial<WorksheetNode>): Partial<WorksheetNode> {
   return {
@@ -894,7 +910,7 @@ export function AgentTray() {
                     {msg.role === 'assistant' ? (
                       <>
                         <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
-                          {msg.parsed?.text ? (hasCommands(msg.parsed.text) ? stripCommandBlocks(msg.parsed.text) : msg.parsed.text) : (hasCommands(msg.content) ? stripCommandBlocks(msg.content) : msg.content)}
+                          {preprocessLatex(msg.parsed?.text ? (hasCommands(msg.parsed.text) ? stripCommandBlocks(msg.parsed.text) : msg.parsed.text) : (hasCommands(msg.content) ? stripCommandBlocks(msg.content) : msg.content))}
                         </ReactMarkdown>
                         {msg.parsed?.suggestions.map((suggestion) => (
                           <SuggestionCard
