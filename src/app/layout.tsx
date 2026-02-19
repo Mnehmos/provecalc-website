@@ -16,13 +16,17 @@ export const metadata: Metadata = {
     "Professional engineering calculation software with full audit trails. Show your work, prove your results.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+    >
       <html lang="en">
         <head>
           <link rel="preconnect" href="https://fonts.googleapis.com" />
