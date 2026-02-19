@@ -33,9 +33,9 @@ import type { WorksheetCommand, BatchResult } from '../types/commands';
 function preprocessLatex(text: string): string {
   let result = text;
   // \[...\] → $$...$$  (display math)
-  result = result.replace(/\\\[(.+?)\\\]/gs, (_m, inner) => `$$${inner.trim()}$$`);
+  result = result.replace(/\\\[([\s\S]+?)\\\]/g, (_m, inner) => `$$${inner.trim()}$$`);
   // \(...\) → $...$  (inline math)
-  result = result.replace(/\\\((.+?)\\\)/gs, (_m, inner) => `$${inner.trim()}$`);
+  result = result.replace(/\\\(([\s\S]+?)\\\)/g, (_m, inner) => `$${inner.trim()}$`);
   // Bare [ \formula ] on its own line — lines starting with [ \ and ending with ]
   result = result.replace(/^\[\s*(\\[a-zA-Z].+?)\s*\]$/gm, (_m, inner) => `$$${inner.trim()}$$`);
   return result;
