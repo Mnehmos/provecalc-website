@@ -18,4 +18,4 @@ COPY src/ src/
 ENV PORT=9743
 EXPOSE 9743
 
-CMD python -m uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-9743}
+CMD ["sh", "-c", "python -m uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-9743}"]
