@@ -185,6 +185,7 @@ export const UNIT_CONVERSIONS: Record<string, UnitConversion> = {
   'm/s^2': { toSI: 1, category: 'acceleration', siUnit: 'm/s^2' },
   'ft/s^2': { toSI: 0.3048, category: 'acceleration', siUnit: 'm/s^2' },
   'gn': { toSI: 9.80665, category: 'acceleration', siUnit: 'm/s^2' }, // Standard gravity (gn not g to avoid conflict with gram)
+  'cm/s^2': { toSI: 0.01, category: 'acceleration', siUnit: 'm/s^2' }, // gal
 
   // Force (base: N)
   'N': { toSI: 1, category: 'force', siUnit: 'N' },
@@ -253,7 +254,9 @@ export const UNIT_CONVERSIONS: Record<string, UnitConversion> = {
   'A': { toSI: 1, category: 'current', siUnit: 'A' },
   'mA': { toSI: 0.001, category: 'current', siUnit: 'A' },
   'Ω': { toSI: 1, category: 'resistance', siUnit: 'Ω' },
+  'ohm': { toSI: 1, category: 'resistance', siUnit: 'Ω' },
   'kΩ': { toSI: 1000, category: 'resistance', siUnit: 'Ω' },
+  'kohm': { toSI: 1000, category: 'resistance', siUnit: 'Ω' },
   'MΩ': { toSI: 1000000, category: 'resistance', siUnit: 'Ω' },
 
   // Angle (base: rad)
@@ -464,7 +467,7 @@ export const QUANTITY_TYPES: Record<string, QuantityType> = {
     units: [
       { abbr: 'm/s^2', name: 'meters per second squared' },
       { abbr: 'ft/s^2', name: 'feet per second squared' },
-      { abbr: 'g', name: 'standard gravity (9.81 m/s²)' },
+      { abbr: 'gn', name: 'standard gravity (9.81 m/s²)' },
       { abbr: 'cm/s^2', name: 'gal (cm per second squared)' },
     ],
     dimension: '[L]/[T]^2',
@@ -659,10 +662,10 @@ export const QUANTITY_TYPES: Record<string, QuantityType> = {
     description: 'Opposition to current flow',
     symbols: ['R', 'Z'],
     units: [
-      { abbr: 'ohm', name: 'ohm (Ω)' },
-      { abbr: 'kohm', name: 'kilohm (kΩ)' },
-      { abbr: 'Mohm', name: 'megohm (MΩ)' },
-      { abbr: 'mohm', name: 'milliohm (mΩ)' },
+      { abbr: 'Ω', name: 'ohm (Ω)' },
+      { abbr: 'kΩ', name: 'kilohm (kΩ)' },
+      { abbr: 'MΩ', name: 'megohm (MΩ)' },
+      { abbr: 'mΩ', name: 'milliohm (mΩ)' },
     ],
     dimension: '[M][L]^2/[I]^2[T]^3',
   },

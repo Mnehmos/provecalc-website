@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
-import NavAuth from "../components/NavAuth";
 import "./globals.css";
 import "../styles/index.css";
 
@@ -34,22 +33,7 @@ export default function RootLayout({
             rel="stylesheet"
           />
         </head>
-        <body>
-          <nav className="fixed top-0 w-full z-50 bg-[var(--stone-950)]/80 backdrop-blur-md border-b border-[var(--stone-800)]">
-            <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-              <a href="/" className="flex items-center gap-2">
-                <img src="/logo.svg" alt="ProveCalc" className="w-8 h-8" />
-                <span className="text-xl font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                  ProveCalc
-                </span>
-              </a>
-              <div className="flex items-center gap-4">
-                <NavAuth />
-              </div>
-            </div>
-          </nav>
-          {children}
-        </body>
+        <body>{children}</body>
       </html>
     </ClerkProvider>
   );

@@ -1,9 +1,26 @@
 "use client";
 
 import { SignUpButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import NavAuth from "../components/NavAuth";
 
 export default function LandingPage() {
   return (
+    <>
+      {/* Marketing Nav */}
+      <nav className="fixed top-0 w-full z-50 bg-[var(--stone-950)]/80 backdrop-blur-md border-b border-[var(--stone-800)]">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+          <a href="/" className="flex items-center gap-2">
+            <img src="/logo.svg" alt="ProveCalc" className="w-8 h-8" />
+            <span className="text-xl font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              ProveCalc
+            </span>
+          </a>
+          <div className="flex items-center gap-4">
+            <NavAuth />
+          </div>
+        </div>
+      </nav>
+
     <main>
       {/* Hero */}
       <section className="min-h-screen flex items-center pt-20">
@@ -232,6 +249,7 @@ export default function LandingPage() {
         </div>
       </footer>
     </main>
+    </>
   );
 }
 

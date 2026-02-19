@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useDocumentStore } from "../../stores/documentStore";
 import { WorksheetCanvas } from "../../components/WorksheetCanvas";
+import { WebToolbar } from "../../components/WebToolbar";
 
 export default function AppPage() {
   const { user, isLoaded } = useUser();
@@ -25,8 +26,11 @@ export default function AppPage() {
   }
 
   return (
-    <div style={{ height: "calc(100vh - 56px)", marginTop: "56px", overflow: "hidden" }}>
-      <WorksheetCanvas />
+    <div className="app-layout">
+      <WebToolbar />
+      <div className="canvas-container">
+        <WorksheetCanvas />
+      </div>
     </div>
   );
 }

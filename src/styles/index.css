@@ -92,6 +92,31 @@ body {
   overflow: hidden;
 }
 
+/* Web App Layout (Next.js) */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+
+.canvas-container {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.toolbar-logo {
+  width: 24px;
+  height: 24px;
+}
+
+.node-count .status-text {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 /* Toolbar */
 .toolbar {
   display: flex;

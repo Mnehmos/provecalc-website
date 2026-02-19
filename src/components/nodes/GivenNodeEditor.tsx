@@ -32,7 +32,7 @@ export function GivenNodeEditor({ node, onSave, onCancel }: { node: WorksheetNod
       const inferred = inferTypeFromUnit(node.value.unit.expression);
       if (inferred) return inferred;
     }
-    return 'length'; // Default
+    return 'dimensionless'; // Default — don't auto-assign units to new nodes
   }, [node.value.unit?.expression]);
 
   const [selectedType, setSelectedType] = useState<string>(initialType);
