@@ -20,7 +20,7 @@ export default function AppPage() {
   const didInitRef = useRef(false);
   const [showDependencyGraph, setShowDependencyGraph] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
-  const [showAgent, setShowAgent] = useState(false);
+  const [showAgent, setShowAgent] = useState(true);
 
   // Load document on mount (once)
   useEffect(() => {
