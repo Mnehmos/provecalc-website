@@ -148,8 +148,8 @@ export function WebToolbar({
 
       if (!res.ok || !result.success) {
         const detail = result.details || result.error || "Unknown error";
-        alert(`Foxit PDF: ${detail}`);
-        console.error("Foxit PDF error:", result);
+        alert(`PDF Export failed: ${detail}`);
+        console.error("PDF export error:", result);
         return;
       }
 
@@ -166,6 +166,13 @@ export function WebToolbar({
       a.download = `${document.name || "ProveCalc-Report"}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
+
+      // Transparent feedback about which engine was used
+      if (result.engine === "local") {
+        console.info("PDF generated locally (Foxit API unavailable, used pdf-lib fallback)");
+      } else {
+        console.info("PDF generated via Foxit Document Generation API");
+      }
     } catch (err) {
       alert(`Export failed: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
@@ -275,10 +282,10 @@ export function WebToolbar({
         <button
           className="toolbar-button foxit-btn"
           onClick={exportFoxitPdf}
-          title="Generate Verified PDF Report (Foxit)"
+          title="Generate Verified PDF Report"
           disabled={isLoading || !document || foxitExporting}
         >
-          {foxitExporting ? "Generating..." : "Foxit PDF"}
+          {foxitExporting ? "Generating..." : "PDF Report"}
         </button>
       </div>
 
