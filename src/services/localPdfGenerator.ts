@@ -5,7 +5,7 @@
  * with the same data that would go to Foxit Doc Gen.
  */
 
-import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { PDFDocument, rgb, StandardFonts, degrees } from "pdf-lib";
 import type { WorksheetExportData } from "./foxitTemplateBuilder";
 
 const PURPLE = rgb(0.486, 0.227, 0.929); // #7c3aed
@@ -162,7 +162,7 @@ export async function generateLocalPdf(
     font: helveticaBold,
     color: rgb(0.486, 0.227, 0.929),
     opacity: 0.08,
-    rotate: { type: "degrees" as const, angle: -45 },
+    rotate: degrees(-45),
   });
 
   // --- Footer ---
