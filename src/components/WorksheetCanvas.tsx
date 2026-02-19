@@ -421,10 +421,14 @@ export function WorksheetCanvas() {
         e.preventDefault();
         redo();
       }
-      // Delete: Delete or Backspace
+      // Delete: Delete or Backspace (only when no input/textarea is focused)
       else if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNodeId) {
-        e.preventDefault();
-        deleteNode(selectedNodeId);
+        const active = window.document.activeElement;
+        const isEditing = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || (active as HTMLElement).isContentEditable);
+        if (!isEditing) {
+          e.preventDefault();
+          deleteNode(selectedNodeId);
+        }
       }
       // Duplicate: Ctrl+D
       else if (e.ctrlKey && e.key === 'd' && selectedNodeId) {
