@@ -21,12 +21,12 @@ const PAGE_W = 612;
 const PAGE_H = 792;
 const CONTENT_W = PAGE_W - MARGIN * 2;
 
-// Verification status symbols
+// Verification status symbols (WinAnsi-safe)
 const STATUS_ICON: Record<string, { symbol: string; color: RGB }> = {
-  verified: { symbol: "\u2713", color: GREEN },      // ✓
-  failed: { symbol: "\u2717", color: RED },           // ✗
-  unverified: { symbol: "\u25CB", color: GRAY },      // ○
-  pending: { symbol: "\u25CF", color: GRAY },         // ●
+  verified: { symbol: "[OK]", color: GREEN },
+  failed: { symbol: "[X]", color: RED },
+  unverified: { symbol: "[ ]", color: GRAY },
+  pending: { symbol: "[..]", color: GRAY },
 };
 
 export async function generateLocalPdf(
@@ -218,7 +218,7 @@ export async function generateLocalPdf(
     for (const a of data.assumptions) {
       ensureSpace(18);
       const display = a.length > 80 ? a.substring(0, 77) + "..." : a;
-      page.drawText(`• ${display}`, { x: MARGIN + 6, y, size: 10, font: helvetica, color: GRAY });
+      page.drawText(`- ${display}`, { x: MARGIN + 6, y, size: 10, font: helvetica, color: GRAY });
       y -= 16;
     }
   }
