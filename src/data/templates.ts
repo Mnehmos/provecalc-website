@@ -35,6 +35,221 @@ export const TEMPLATE_CATEGORIES: Record<TemplateCategory, { label: string; icon
 };
 
 export const TEMPLATES: WorksheetTemplate[] = [
+  // --- Interactive Tutorials (shown first) ---
+  {
+    id: 'cantilever-beam-tutorial',
+    name: 'Cantilever Beam Deflection',
+    category: 'structural',
+    description: 'Complete worked example: maximum deflection of a cantilever beam with point load. Great starting point!',
+    tags: ['tutorial', 'beam', 'deflection', 'cantilever', 'beginner'],
+    nodes: [
+      {
+        type: 'text',
+        content: 'This worksheet models the maximum deflection of a cantilever beam subjected to a concentrated load at the free end. Known variables: end load P, beam length L, Young\'s modulus E, and second moment of area I. Objective: determine the maximum deflection at the free end, delta_max.',
+        format: 'plain',
+        position: { x: 100, y: 40 },
+      },
+      {
+        type: 'annotation',
+        title: 'Diagram',
+        content: 'Cantilever beam with end load:\n```text\nFixed Support\n|====--------------------o  < P\n^                        Free End\n|\nWall\n\nLength = L\n\nLegend:\nP = concentrated load at free end\nL = beam length\nE = Young\'s modulus\nI = second moment of area\ndelta_max = vertical deflection at free end\n```',
+        collapsed: false,
+        position: { x: 100, y: 200 },
+      },
+      {
+        type: 'given',
+        symbol: 'P',
+        value: { value: 1000, unit: { expression: 'N' } },
+        position: { x: 100, y: 560 },
+      },
+      {
+        type: 'given',
+        symbol: 'L',
+        value: { value: 2, unit: { expression: 'm' } },
+        position: { x: 100, y: 640 },
+      },
+      {
+        type: 'given',
+        symbol: 'E',
+        value: { value: 200e9, unit: { expression: 'Pa' } },
+        position: { x: 100, y: 720 },
+      },
+      {
+        type: 'given',
+        symbol: 'I',
+        value: { value: 8e-6, unit: { expression: 'm**4' } },
+        position: { x: 100, y: 800 },
+      },
+      {
+        type: 'equation',
+        latex: '\\delta_{max} = \\frac{P L^3}{3 E I}',
+        lhs: 'delta_max',
+        rhs: '(P*L**3)/(3*E*I)',
+        position: { x: 100, y: 900 },
+      },
+      {
+        type: 'solve_goal',
+        target_symbol: 'delta_max',
+        method: 'symbolic',
+        position: { x: 100, y: 1000 },
+      },
+    ],
+  },
+
+  {
+    id: 'projectile-motion-tutorial',
+    name: 'Projectile Motion',
+    category: 'general',
+    description: 'Classic physics: range, max height, and flight time for a projectile launched at an angle.',
+    tags: ['tutorial', 'projectile', 'kinematics', 'physics', 'beginner'],
+    nodes: [
+      {
+        type: 'text',
+        content: 'A projectile is launched from the ground at velocity v0 and angle theta above horizontal. Ignoring air resistance, calculate the range, maximum height, and total flight time.',
+        format: 'plain',
+        position: { x: 100, y: 40 },
+      },
+      {
+        type: 'annotation',
+        title: 'Diagram',
+        content: 'Projectile trajectory:\n```text\n            * max height\n           / \\\n          /   \\\n         /     \\\n        /       \\\n       /  theta  \\\n------o-----------o------\nLaunch    Range    Landing\n\nv0 = initial velocity\ntheta = launch angle\ng = gravitational acceleration\n```',
+        collapsed: false,
+        position: { x: 100, y: 180 },
+      },
+      {
+        type: 'given',
+        symbol: 'v0',
+        value: { value: 50, unit: { expression: 'm/s' } },
+        description: 'Initial velocity',
+        position: { x: 100, y: 520 },
+      },
+      {
+        type: 'given',
+        symbol: 'theta',
+        value: { value: 45, unit: { expression: 'deg' } },
+        description: 'Launch angle',
+        position: { x: 100, y: 600 },
+      },
+      {
+        type: 'given',
+        symbol: 'g',
+        value: { value: 9.81, unit: { expression: 'm/s**2' } },
+        description: 'Gravitational acceleration',
+        position: { x: 100, y: 680 },
+      },
+      {
+        type: 'equation',
+        latex: 'R = \\frac{v_0^2 \\sin(2\\theta)}{g}',
+        lhs: 'R',
+        rhs: 'v0**2 * sin(2*theta) / g',
+        position: { x: 100, y: 780 },
+      },
+      {
+        type: 'equation',
+        latex: 'H = \\frac{v_0^2 \\sin^2(\\theta)}{2g}',
+        lhs: 'H',
+        rhs: 'v0**2 * sin(theta)**2 / (2*g)',
+        position: { x: 100, y: 860 },
+      },
+      {
+        type: 'equation',
+        latex: 'T = \\frac{2 v_0 \\sin(\\theta)}{g}',
+        lhs: 'T',
+        rhs: '2*v0*sin(theta) / g',
+        position: { x: 100, y: 940 },
+      },
+      {
+        type: 'solve_goal',
+        target_symbol: 'R',
+        method: 'symbolic',
+        position: { x: 100, y: 1040 },
+      },
+      {
+        type: 'solve_goal',
+        target_symbol: 'H',
+        method: 'symbolic',
+        position: { x: 100, y: 1120 },
+      },
+      {
+        type: 'solve_goal',
+        target_symbol: 'T',
+        method: 'symbolic',
+        position: { x: 100, y: 1200 },
+      },
+    ],
+  },
+
+  {
+    id: 'pipe-pressure-drop',
+    name: 'Pipe Pressure Drop',
+    category: 'mechanical',
+    description: 'Darcy-Weisbach equation for pressure drop in a pipe. Fundamental fluid mechanics.',
+    tags: ['tutorial', 'fluid', 'pipe', 'pressure', 'darcy'],
+    nodes: [
+      {
+        type: 'text',
+        content: 'Calculate the pressure drop in a straight pipe section using the Darcy-Weisbach equation. Given pipe diameter D, length L, flow velocity v, fluid density rho, and Darcy friction factor f.',
+        format: 'plain',
+        position: { x: 100, y: 40 },
+      },
+      {
+        type: 'annotation',
+        title: 'Diagram',
+        content: 'Pipe flow with pressure drop:\n```text\n    P1                      P2\n    |                       |\n----+=======================+----\n    |  -->  v  -->  v  -->  |\n----+=======================+----\n    |                       |\n    |<------- L ----------->|\n    |                       |\n    D (diameter)\n\nDelta_P = P1 - P2\nf = Darcy friction factor\nrho = fluid density\n```',
+        collapsed: false,
+        position: { x: 100, y: 180 },
+      },
+      {
+        type: 'given',
+        symbol: 'f_d',
+        value: { value: 0.02 },
+        description: 'Darcy friction factor',
+        position: { x: 100, y: 540 },
+      },
+      {
+        type: 'given',
+        symbol: 'L',
+        value: { value: 100, unit: { expression: 'm' } },
+        description: 'Pipe length',
+        position: { x: 100, y: 620 },
+      },
+      {
+        type: 'given',
+        symbol: 'D',
+        value: { value: 0.1, unit: { expression: 'm' } },
+        description: 'Pipe inner diameter',
+        position: { x: 100, y: 700 },
+      },
+      {
+        type: 'given',
+        symbol: 'v',
+        value: { value: 2, unit: { expression: 'm/s' } },
+        description: 'Flow velocity',
+        position: { x: 100, y: 780 },
+      },
+      {
+        type: 'given',
+        symbol: 'rho',
+        value: { value: 1000, unit: { expression: 'kg/m**3' } },
+        description: 'Fluid density (water)',
+        position: { x: 100, y: 860 },
+      },
+      {
+        type: 'equation',
+        latex: '\\Delta P = f_d \\cdot \\frac{L}{D} \\cdot \\frac{\\rho v^2}{2}',
+        lhs: 'Delta_P',
+        rhs: 'f_d * (L/D) * (rho * v**2 / 2)',
+        position: { x: 100, y: 960 },
+      },
+      {
+        type: 'solve_goal',
+        target_symbol: 'Delta_P',
+        method: 'symbolic',
+        position: { x: 100, y: 1060 },
+      },
+    ],
+  },
+
   // --- Structural Engineering ---
   {
     id: 'simply-supported-beam',
