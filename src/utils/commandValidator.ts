@@ -353,7 +353,7 @@ function applyContextCompletenessRule(
 
   if (targetIndex >= 0) {
     results[targetIndex] = {
-      status: 'invalid',
+      status: 'warning',
       message,
     };
     return { applied: true, message };
