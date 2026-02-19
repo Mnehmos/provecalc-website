@@ -190,6 +190,24 @@ body {
   color: white;
 }
 
+.toolbar-button.foxit-btn {
+  background: linear-gradient(135deg, #e65100, #bf360c);
+  color: white;
+  font-weight: 600;
+  border: 1px solid #e65100;
+}
+
+.toolbar-button.foxit-btn:hover {
+  background: linear-gradient(135deg, #f57c00, #e65100);
+  color: white;
+}
+
+.toolbar-button.foxit-btn:disabled {
+  background: #555;
+  border-color: #555;
+  color: #999;
+}
+
 .toolbar-button.primary:hover {
   background: var(--accent-hover);
 }

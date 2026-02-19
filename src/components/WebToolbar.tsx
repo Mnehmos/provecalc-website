@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useState, useCallback } from "react";
 import { useDocumentStore, getNextNodePosition } from "../stores/documentStore";
+import type { WorksheetExportData } from "../services/foxitTemplateBuilder";
 
 interface WebToolbarProps {
   onToggleDependencyGraph?: () => void;
@@ -39,6 +40,8 @@ export function WebToolbar({
     isLoading,
   } = useDocumentStore();
 
+  const [foxitExporting, setFoxitExporting] = useState(false);
+
   const staleCount = useMemo(() => {
     if (!document) return 0;
     return document.nodes.filter(
@@ -47,6 +50,88 @@ export function WebToolbar({
   }, [document]);
 
   const getNextPosition = () => getNextNodePosition(document);
+
+  // --- Foxit PDF Export ---
+  const exportFoxitPdf = useCallback(async () => {
+    if (!document) return;
+    setFoxitExporting(true);
+
+    try {
+      const givenNodes = document.nodes.filter((n) => n.type === "given");
+      const equationNodes = document.nodes.filter((n) => n.type === "equation");
+      const solveNodes = document.nodes.filter((n) => n.type === "solve_goal");
+      const resultNodes = document.nodes.filter((n) => n.type === "result");
+      const verifiedNodes = document.nodes.filter(
+        (n) => n.verification?.status === "verified"
+      );
+
+      const exportData: WorksheetExportData = {
+        title: document.name || "Untitled Worksheet",
+        author: "ProveCalc User",
+        date: new Date().toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }),
+        nodeCount: document.nodes.length,
+        equationCount: equationNodes.length,
+        givenCount: givenNodes.length,
+        solveCount: solveNodes.length,
+        verifiedCount: verifiedNodes.length,
+        totalNodes: document.nodes.length,
+        verificationScore:
+          document.nodes.length > 0
+            ? `${Math.round((verifiedNodes.length / document.nodes.length) * 100)}%`
+            : "N/A",
+        assumptions: (document.assumptions || []).map((a) => a.statement),
+        variables: givenNodes.map((n) => ({
+          symbol: (n as { symbol?: string }).symbol || "?",
+          value: String((n as { value?: { value?: number } }).value?.value ?? "?"),
+          unit: (n as { value?: { unit?: { expression?: string } } }).value?.unit?.expression || "",
+        })),
+        equations: equationNodes.map((n) => {
+          const eq = n as { raw_expression?: string; equation?: string };
+          return eq.raw_expression || eq.equation || "?";
+        }),
+        results: resultNodes.map((n) => ({
+          symbol: (n as { symbol?: string }).symbol || "?",
+          value: String((n as { value?: { value?: number } }).value?.value ?? "?"),
+          unit: (n as { value?: { unit?: { expression?: string } } }).value?.unit?.expression || "",
+        })),
+      };
+
+      const res = await fetch("/api/foxit/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(exportData),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok || !result.success) {
+        alert(`Foxit PDF generation failed: ${result.error || result.details || "Unknown error"}`);
+        return;
+      }
+
+      // Download the PDF
+      const binaryString = atob(result.pdf);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const blob = new Blob([bytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = window.document.createElement("a");
+      a.href = url;
+      a.download = `${document.name || "ProveCalc-Report"}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(`Export failed: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setFoxitExporting(false);
+    }
+  }, [document]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -146,6 +231,14 @@ export function WebToolbar({
           disabled={isLoading || !document}
         >
           HTML
+        </button>
+        <button
+          className="toolbar-button foxit-btn"
+          onClick={exportFoxitPdf}
+          title="Generate Verified PDF Report (Foxit)"
+          disabled={isLoading || !document || foxitExporting}
+        >
+          {foxitExporting ? "Generating..." : "Foxit PDF"}
         </button>
       </div>
 
