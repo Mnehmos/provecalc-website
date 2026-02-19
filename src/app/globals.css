@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+:root {
+  --copper: #b87333;
+  --copper-light: #d4956a;
+  --copper-dark: #a06429;
+  --stone-950: #0c0a09;
+  --stone-900: #1c1917;
+  --stone-800: #292524;
+  --stone-700: #44403c;
+  --stone-600: #57534e;
+  --stone-500: #78716c;
+  --stone-400: #a8a29e;
+  --stone-300: #d6d3d1;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: var(--stone-950);
+  color: white;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background-color: var(--copper);
+  color: white;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--copper);
+  outline-offset: 2px;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--copper) 0%, var(--copper-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}

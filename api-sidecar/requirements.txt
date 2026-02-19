@@ -1,0 +1,28 @@
+# mnehmos.worksheet Python Sidecar Dependencies
+# Compute Engine for Engineering Calculations
+
+# Web Framework
+fastapi>=0.109.0
+uvicorn[standard]>=0.25.0
+pydantic>=2.5.0
+
+# Symbolic Mathematics
+sympy>=1.12
+
+# Unit Handling
+pint>=0.23
+
+# Numeric Computation
+numpy>=1.26.0
+scipy>=1.12.0
+
+# Utilities
+python-multipart>=0.0.6
+httpx>=0.26.0
+
+# Document Export
+python-docx>=1.1.0
+
+# Testing
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
