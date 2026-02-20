@@ -5,7 +5,7 @@
 **Date**: 2026-02-18, 7:00 PM PST
 **Deadline**: 2026-02-20, 10:00 AM PST (~39 hours)
 **Hackathon**: DeveloperWeek 2026 — Kilo League Challenge #3 "Finally Ship It"
-
+![alt text](image.png)
 ---
 
 ## Communication Protocol
@@ -376,15 +376,17 @@ app/app/layout.tsx      → auth-gated, redirect to sign-in if not authenticated
 
 ---
 
-## Hosting Plan — DECIDED: Railway Only (KISS)
+## Hosting Plan
 
 | Service | Host | Domain |
 |---------|------|--------|
-| Frontend (Next.js) | Railway | `*.up.railway.app` (hackathon), provecalc.com (post-hackathon) |
-| API (Python sidecar) | Railway | Same project, separate service |
-| Auth | Clerk (hosted) | Clerk-managed |
+| Frontend (Next.js) | Vercel OR Railway | provecalc.com |
+| API (Python sidecar) | Railway | api.provecalc.com |
+| Auth | Clerk (hosted) | accounts.provecalc.com (optional) |
 
-**Decision**: Single platform. One project, two services. No DNS changes for hackathon — use Railway auto-domain. Move provecalc.com to Railway after.
+**Decision needed**: Frontend on Vercel (free, optimized for Next.js) or Railway (single platform)?
+
+DNS changes needed if moving from GitHub Pages to Vercel/Railway.
 
 ---
 
