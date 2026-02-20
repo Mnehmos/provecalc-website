@@ -39,8 +39,8 @@ export default function TermsPage() {
             <p>
               ProveCalc is an engineering calculation platform that provides
               symbolic mathematics, unit analysis, verification, and AI-assisted
-              worksheet construction. It is available as a free web demo and a
-              paid desktop application for Windows, macOS, and Linux.
+              worksheet construction. It is available as a desktop application
+              for Windows, macOS, and Linux, purchased with a one-time license.
             </p>
           </section>
 
@@ -60,30 +60,22 @@ export default function TermsPage() {
             <h2 className="text-xl font-semibold text-white mb-3">
               4. Licensing
             </h2>
-            <p className="mb-3">ProveCalc offers the following license tiers:</p>
-            <ul className="list-disc pl-6 space-y-2 text-[var(--stone-400)]">
-              <li>
-                <strong>Free Tier:</strong> Web demo with limited worksheets.
-                No payment required.
-              </li>
-              <li>
-                <strong>Standard License:</strong> One-time payment for the desktop
-                application. Includes offline use, unlimited worksheets, and AI
-                assistant (bring your own API key). Licensed for up to 3 machines.
-              </li>
-              <li>
-                <strong>Professional License:</strong> Everything in Standard plus
-                priority support, team templates, and up to 5 machines.
-              </li>
-              <li>
-                <strong>Enterprise License:</strong> Custom pricing for organizations.
-                Includes SSO, audit logs, unlimited machines, and dedicated support.
-              </li>
+            <p className="mb-3">
+              ProveCalc is sold as a one-time purchase at $200 per license key.
+              Each key activates on up to 3 machines. Features include:
+            </p>
+            <ul className="list-disc pl-6 space-y-1 text-[var(--stone-400)]">
+              <li>Unlimited worksheets and nodes</li>
+              <li>Full SymPy compute engine with Pint unit analysis</li>
+              <li>AI assistant (bring your own API key)</li>
+              <li>PDF, DOCX, and HTML export</li>
+              <li>100% offline after activation</li>
+              <li>1 year of updates included</li>
             </ul>
             <p className="mt-3">
-              Desktop licenses are perpetual (non-subscription) and include one
-              year of updates from the date of purchase. Continued updates after
-              the first year require renewal.
+              Licenses are perpetual (non-subscription). You may continue using
+              the version you have indefinitely. Continued updates after the
+              first year require a renewal purchase.
             </p>
           </section>
 

@@ -1,68 +1,21 @@
 "use client";
 
-import type { Metadata } from "next";
-
-// Note: metadata export won't work with "use client" in the same file.
-// Move to a layout.tsx if needed, or use generateMetadata in a server component wrapper.
-
-const tiers = [
-  {
-    name: "Standard",
-    price: "$200",
-    period: "one-time",
-    description: "For individual engineers",
-    features: [
-      "Unlimited worksheets",
-      "Desktop app (Windows, macOS, Linux)",
-      "100% offline capable",
-      "AI assistant (bring your own key)",
-      "PDF & DOCX export",
-      "Solve goals & system analysis",
-      "Templates library",
-      "3 machine activations",
-      "1 year of updates",
-    ],
-    cta: "buy",
-    highlighted: true,
-  },
-  {
-    name: "Professional",
-    price: "$500",
-    period: "one-time",
-    description: "For power users & small teams",
-    features: [
-      "Everything in Standard",
-      "Priority email support",
-      "Team templates (shared)",
-      "5 machine activations",
-      "1 year of updates",
-    ],
-    cta: "buy",
-    highlighted: false,
-  },
-  {
-    name: "Enterprise",
-    price: "Custom",
-    period: "contact us",
-    description: "For organizations & regulated industries",
-    features: [
-      "Everything in Professional",
-      "SSO / SAML integration",
-      "Audit log export",
-      "Dedicated support",
-      "Unlimited machines",
-      "Custom deployment options",
-      "Volume licensing",
-    ],
-    cta: "contact",
-    highlighted: false,
-  },
+const features = [
+  "Unlimited worksheets",
+  "Desktop app (Windows, macOS, Linux)",
+  "100% offline capable",
+  "AI assistant (bring your own key)",
+  "PDF & DOCX export",
+  "Solve goals & system analysis",
+  "Templates library",
+  "3 machine activations",
+  "1 year of updates included",
 ];
 
 const faq = [
   {
     q: "Is this really a one-time payment?",
-    a: "Yes. Standard and Professional licenses are one-time purchases. You own the software forever. The license includes 1 year of updates; after that, you can continue using the version you have or renew for continued updates.",
+    a: "Yes. You pay $200 once and own the software forever. The license includes 1 year of updates; after that, you can continue using the version you have or renew for continued updates.",
   },
   {
     q: "What does 'bring your own key' mean for AI?",
@@ -74,15 +27,11 @@ const faq = [
   },
   {
     q: "What if I need more machines?",
-    a: "You can deactivate a machine from one device and activate on another at any time. Need more simultaneous activations? Upgrade to Professional (5) or Enterprise (unlimited).",
-  },
-  {
-    q: "How does the web demo compare to the desktop app?",
-    a: "The web demo uses the same SymPy compute engine as the desktop app. It's limited to 3 worksheets and browser-local storage. The desktop app adds unlimited worksheets, local file management, offline use, AI assistant, and export to PDF/DOCX.",
+    a: "Each license key activates on up to 3 machines. You can deactivate a machine from one device and activate on another at any time. Need more? Buy additional keys.",
   },
   {
     q: "Do you offer refunds?",
-    a: "Yes — 30-day money-back guarantee on all desktop licenses, no questions asked.",
+    a: "Yes — 30-day money-back guarantee, no questions asked.",
   },
 ];
 
@@ -99,85 +48,47 @@ export default function PricingPage() {
             Simple, honest pricing
           </h1>
           <p className="text-xl text-[var(--stone-400)]">
-            One price. No subscriptions. No per-seat fees. Your tool, forever.
+            One product. One price. No subscriptions. No per-seat fees.
           </p>
         </div>
 
-        {/* Tier Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mb-20">
-          {tiers.map((tier) => (
-            <div
-              key={tier.name}
-              className={`rounded-xl p-6 flex flex-col relative ${
-                tier.highlighted
-                  ? "bg-gradient-to-br from-[var(--copper)]/20 to-[var(--copper-light)]/10 border border-[var(--copper)]/30"
-                  : "glass-card"
-              }`}
-            >
-              {tier.highlighted && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[var(--copper)] text-xs font-bold px-3 py-1 rounded-full">
-                  MOST POPULAR
-                </div>
-              )}
-              <h3
-                className={`text-sm uppercase tracking-wide mb-2 ${
-                  tier.highlighted
-                    ? "text-[var(--copper-light)]"
-                    : "text-[var(--stone-400)]"
-                }`}
-              >
-                {tier.name}
-              </h3>
-              <div
-                className={`text-4xl font-bold mb-1 ${
-                  tier.highlighted ? "text-[var(--copper-light)]" : ""
-                }`}
-              >
-                {tier.price}
-              </div>
-              <p className="text-sm text-[var(--stone-500)] mb-4">
-                {tier.period}
-              </p>
-              <p className="text-sm text-[var(--stone-400)] mb-6">
-                {tier.description}
-              </p>
-
-              <ul className="space-y-2 mb-8 flex-1">
-                {tier.features.map((feature) => (
-                  <li
-                    key={feature}
-                    className="flex items-start gap-2 text-sm text-[var(--stone-300)]"
-                  >
-                    <span className="text-[var(--copper)] mt-0.5 shrink-0">
-                      &#10003;
-                    </span>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-
-              {tier.cta === "buy" && (
-                <a
-                  href="/download"
-                  className={`block w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors text-center ${
-                    tier.highlighted
-                      ? "bg-[var(--copper)] hover:bg-[var(--copper-dark)]"
-                      : "bg-[var(--stone-800)] hover:bg-[var(--stone-700)]"
-                  }`}
-                >
-                  Buy Now
-                </a>
-              )}
-              {tier.cta === "contact" && (
-                <a
-                  href="mailto:hello@provecalc.com"
-                  className="block w-full bg-[var(--stone-800)] hover:bg-[var(--stone-700)] px-4 py-3 rounded-lg text-sm font-medium transition-colors text-center"
-                >
-                  Contact Sales
-                </a>
-              )}
+        {/* Single Product Card */}
+        <div className="max-w-lg mx-auto mb-20">
+          <div className="bg-gradient-to-br from-[var(--copper)]/20 to-[var(--copper-light)]/10 border border-[var(--copper)]/30 rounded-xl p-8 text-center relative">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[var(--copper)] text-xs font-bold px-3 py-1 rounded-full">
+              LIFETIME LICENSE
             </div>
-          ))}
+            <div className="text-5xl font-bold text-[var(--copper-light)] mb-2 mt-2">
+              $200
+            </div>
+            <p className="text-[var(--stone-400)] mb-8">
+              One-time payment. Yours forever.
+            </p>
+
+            <ul className="text-left space-y-3 mb-8">
+              {features.map((feature) => (
+                <li
+                  key={feature}
+                  className="flex items-start gap-2 text-sm text-[var(--stone-300)]"
+                >
+                  <span className="text-[var(--copper)] mt-0.5 shrink-0">
+                    &#10003;
+                  </span>
+                  {feature}
+                </li>
+              ))}
+            </ul>
+
+            <a
+              href="/download"
+              className="block w-full bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-4 py-3 rounded-lg font-medium transition-colors text-center"
+            >
+              Buy Now
+            </a>
+            <p className="text-xs text-[var(--stone-500)] mt-3">
+              30-day money-back guarantee
+            </p>
+          </div>
         </div>
 
         {/* Competitor Comparison */}
