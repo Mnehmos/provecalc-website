@@ -188,7 +188,7 @@ export default function SuccessPage() {
             {platforms.map((platform) => (
               <a
                 key={platform.name}
-                href="https://github.com/Mnehmos/worksheet-dist/releases/latest"
+                href="https://github.com/Mnehmos/provecalc-releases/releases/latest"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="glass-card rounded-xl p-6 text-center hover:border-[var(--copper)]/30 transition-colors"

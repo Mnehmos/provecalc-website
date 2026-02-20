@@ -136,7 +136,7 @@ export default function DownloadPage() {
               const CardTag = isPaid ? "a" : "div";
               const linkProps = isPaid
                 ? {
-                    href: "https://github.com/Mnehmos/worksheet-dist/releases/latest",
+                    href: "https://github.com/Mnehmos/provecalc-releases/releases/latest",
                     target: "_blank",
                     rel: "noopener noreferrer",
                   }
