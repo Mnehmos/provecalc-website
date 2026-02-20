@@ -6,9 +6,11 @@ import { useState } from "react";
 export function CheckoutButton({
   className = "",
   label = "Buy Now",
+  test = false,
 }: {
   className?: string;
   label?: string;
+  test?: boolean;
 }) {
   const { isSignedIn } = useAuth();
   const { user } = useUser();
@@ -35,7 +37,7 @@ export function CheckoutButton({
   const handleCheckout = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/checkout", { method: "POST" });
+      const res = await fetch(`/api/checkout${test ? "?test=1" : ""}`, { method: "POST" });
       const data = await res.json();
 
       if (data.redirect) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { CheckoutButton } from "../../../components/landing/CheckoutButton";
 
 const features = [
@@ -38,6 +39,9 @@ const faq = [
 ];
 
 export default function PricingPage() {
+  const searchParams = useSearchParams();
+  const isTest = searchParams.get("test") === "1";
+
   return (
     <main className="pt-24 pb-20">
       <div className="max-w-6xl mx-auto px-6">
@@ -83,7 +87,14 @@ export default function PricingPage() {
 
             <CheckoutButton
               className="block w-full bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-4 py-3 rounded-lg font-medium transition-colors text-center"
+              test={isTest}
+              label={isTest ? "Test Purchase — $1" : "Buy Now"}
             />
+            {isTest && (
+              <p className="text-xs text-yellow-400 mt-3 font-semibold">
+                TEST MODE — $1 charge only
+              </p>
+            )}
             <p className="text-xs text-[var(--stone-500)] mt-3">
               30-day money-back guarantee
             </p>
