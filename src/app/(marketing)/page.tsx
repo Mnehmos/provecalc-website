@@ -1,6 +1,7 @@
 "use client";
 
 import { SignUpButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import { CheckoutButton } from "../../components/landing/CheckoutButton";
 
 export default function LandingPage() {
   return (
@@ -248,12 +249,10 @@ export default function LandingPage() {
           <p className="text-[var(--stone-400)] mb-6">
             100% offline. No subscriptions. One-time purchase, yours forever.
           </p>
-          <a
-            href="/pricing"
+          <CheckoutButton
+            label="Buy ProveCalc — $200"
             className="inline-block bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-6 py-3 rounded-lg font-medium transition-colors"
-          >
-            Buy ProveCalc &mdash; $200
-          </a>
+          />
         </div>
       </section>
 

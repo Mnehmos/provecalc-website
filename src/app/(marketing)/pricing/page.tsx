@@ -1,5 +1,7 @@
 "use client";
 
+import { CheckoutButton } from "../../../components/landing/CheckoutButton";
+
 const features = [
   "Unlimited worksheets",
   "Desktop app (Windows, macOS, Linux)",
@@ -79,12 +81,9 @@ export default function PricingPage() {
               ))}
             </ul>
 
-            <a
-              href="/download"
+            <CheckoutButton
               className="block w-full bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-4 py-3 rounded-lg font-medium transition-colors text-center"
-            >
-              Buy Now
-            </a>
+            />
             <p className="text-xs text-[var(--stone-500)] mt-3">
               30-day money-back guarantee
             </p>

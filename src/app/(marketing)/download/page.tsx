@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SignUpButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import { useUser, SignUpButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import { CheckoutButton } from "../../../components/landing/CheckoutButton";
 
 type Platform = "windows" | "macos" | "linux" | null;
 
@@ -52,6 +53,9 @@ const platforms = [
 
 export default function DownloadPage() {
   const [detected, setDetected] = useState<Platform>(null);
+  const { user } = useUser();
+  const isPaid = user?.publicMetadata?.isPaid as boolean | undefined;
+  const licenseKey = user?.publicMetadata?.licenseKey as string | undefined;
 
   useEffect(() => {
     setDetected(detectPlatform());
@@ -72,40 +76,51 @@ export default function DownloadPage() {
             Full-power desktop app. Works offline. Your calculations, your machine.
           </p>
           <p className="text-sm text-[var(--stone-500)]">
-            Purchase a license to download the desktop application.
+            {isPaid
+              ? "Your license is active. Download below."
+              : "Purchase a license to download the desktop application."}
           </p>
         </div>
 
-        {/* Purchase CTA */}
-        <div className="bg-gradient-to-br from-[var(--copper)]/20 to-[var(--copper-light)]/10 border border-[var(--copper)]/30 rounded-xl p-8 text-center mb-16">
-          <h2
-            className="text-2xl font-bold mb-2"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-          >
-            <span className="gradient-text">$200</span>{" "}
-            <span className="text-[var(--stone-400)] text-lg font-normal">one-time</span>
-          </h2>
-          <p className="text-[var(--stone-400)] mb-6">
-            Standard license. Unlimited worksheets. AI-assisted. 3 machines. Forever yours.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <a
-              href="/pricing"
-              className="bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-8 py-3 rounded-lg font-medium transition-colors"
-            >
-              Buy Now
-            </a>
-            <a
-              href="/pricing"
-              className="border border-[var(--stone-700)] hover:border-[var(--stone-500)] px-8 py-3 rounded-lg font-medium transition-colors"
-            >
-              Compare Plans
-            </a>
+        {/* Purchase CTA or License Info */}
+        {isPaid ? (
+          <div className="bg-gradient-to-br from-[var(--copper)]/20 to-[var(--copper-light)]/10 border border-[var(--copper)]/30 rounded-xl p-8 text-center mb-16">
+            <p className="text-sm text-[var(--stone-400)] mb-2">Your License Key</p>
+            <div className="bg-[var(--stone-900)] rounded-lg p-4 mb-3 font-mono text-lg text-[var(--copper-light)] tracking-wider select-all">
+              {licenseKey}
+            </div>
+            <p className="text-xs text-[var(--stone-500)]">
+              Activates on up to 3 machines. Enter this key in the desktop app after installing.
+            </p>
           </div>
-          <p className="text-xs text-[var(--stone-500)] mt-4">
-            30-day money-back guarantee. Download link delivered after purchase.
-          </p>
-        </div>
+        ) : (
+          <div className="bg-gradient-to-br from-[var(--copper)]/20 to-[var(--copper-light)]/10 border border-[var(--copper)]/30 rounded-xl p-8 text-center mb-16">
+            <h2
+              className="text-2xl font-bold mb-2"
+              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            >
+              <span className="gradient-text">$200</span>{" "}
+              <span className="text-[var(--stone-400)] text-lg font-normal">one-time</span>
+            </h2>
+            <p className="text-[var(--stone-400)] mb-6">
+              Unlimited worksheets. AI-assisted. 3 machines. Forever yours.
+            </p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <CheckoutButton
+                className="bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-8 py-3 rounded-lg font-medium transition-colors"
+              />
+              <a
+                href="/pricing"
+                className="border border-[var(--stone-700)] hover:border-[var(--stone-500)] px-8 py-3 rounded-lg font-medium transition-colors"
+              >
+                See Pricing
+              </a>
+            </div>
+            <p className="text-xs text-[var(--stone-500)] mt-4">
+              30-day money-back guarantee. Download link delivered after purchase.
+            </p>
+          </div>
+        )}
 
         {/* Platform Support */}
         <div className="mb-16">
@@ -118,14 +133,23 @@ export default function DownloadPage() {
           <div className="grid md:grid-cols-3 gap-6">
             {platforms.map((platform) => {
               const isDetected = detected === platform.id;
+              const CardTag = isPaid ? "a" : "div";
+              const linkProps = isPaid
+                ? {
+                    href: "https://github.com/Mnehmos/worksheet-dist/releases/latest",
+                    target: "_blank",
+                    rel: "noopener noreferrer",
+                  }
+                : {};
               return (
-                <div
+                <CardTag
                   key={platform.id}
-                  className={`rounded-xl p-6 text-center ${
+                  {...linkProps}
+                  className={`rounded-xl p-6 text-center block ${
                     isDetected
                       ? "bg-gradient-to-br from-[var(--copper)]/10 to-transparent border border-[var(--copper)]/20"
                       : "glass-card"
-                  }`}
+                  } ${isPaid ? "hover:border-[var(--copper)]/30 transition-colors cursor-pointer" : ""}`}
                 >
                   {isDetected && (
                     <div className="text-xs text-[var(--copper)] font-medium mb-2">
@@ -155,7 +179,12 @@ export default function DownloadPage() {
                   <p className="text-xs text-[var(--stone-500)]">
                     {platform.requirement}
                   </p>
-                </div>
+                  {isPaid && (
+                    <p className="text-xs text-[var(--copper)] mt-3 font-medium">
+                      Download &rarr;
+                    </p>
+                  )}
+                </CardTag>
               );
             })}
           </div>
