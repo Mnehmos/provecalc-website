@@ -30,7 +30,7 @@ export function Footer() {
                   href="/download"
                   className="text-sm text-[var(--stone-500)] hover:text-[var(--copper)] transition-colors"
                 >
-                  Download
+                  Buy
                 </a>
               </li>
               <li>

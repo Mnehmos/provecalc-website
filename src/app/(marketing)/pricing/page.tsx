@@ -200,7 +200,7 @@ export default function PricingPage() {
                       : "bg-[var(--stone-800)] hover:bg-[var(--stone-700)]"
                   }`}
                 >
-                  Download & Buy
+                  Buy Now
                 </a>
               )}
               {tier.cta === "contact" && (

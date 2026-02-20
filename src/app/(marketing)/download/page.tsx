@@ -1,10 +1,7 @@
 "use client";
 
-import type { Metadata } from "next";
 import { useEffect, useState } from "react";
-
-const RELEASES_URL =
-  "https://github.com/Mnehmos/worksheet-dist/releases/latest";
+import { SignUpButton, SignedIn, SignedOut } from "@clerk/nextjs";
 
 type Platform = "windows" | "macos" | "linux" | null;
 
@@ -69,148 +66,173 @@ export default function DownloadPage() {
             className="text-4xl md:text-5xl font-bold mb-4"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           >
-            Download ProveCalc
+            Get ProveCalc
           </h1>
           <p className="text-xl text-[var(--stone-400)] mb-2">
             Full-power desktop app. Works offline. Your calculations, your machine.
           </p>
           <p className="text-sm text-[var(--stone-500)]">
-            Free to download. Activate with a license key to unlock all features.
+            Purchase a license to download the desktop application.
           </p>
         </div>
 
-        {/* Platform Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mb-16">
-          {platforms.map((platform) => {
-            const isDetected = detected === platform.id;
-            return (
-              <div
-                key={platform.id}
-                className={`rounded-xl p-6 text-center transition-all ${
-                  isDetected
-                    ? "bg-gradient-to-br from-[var(--copper)]/20 to-[var(--copper-light)]/10 border border-[var(--copper)]/30"
-                    : "glass-card"
-                }`}
-              >
-                {isDetected && (
-                  <div className="text-xs text-[var(--copper)] font-medium mb-2">
-                    Detected your platform
-                  </div>
-                )}
-                <div
-                  className={`flex justify-center mb-4 ${
-                    isDetected
-                      ? "text-[var(--copper-light)]"
-                      : "text-[var(--stone-400)]"
-                  }`}
-                >
-                  {platform.icon}
-                </div>
-                <h3 className="text-xl font-semibold mb-3">{platform.name}</h3>
-                <div className="space-y-1 mb-4">
-                  {platform.formats.map((format) => (
-                    <p
-                      key={format}
-                      className="text-sm text-[var(--stone-400)]"
-                    >
-                      {format}
-                    </p>
-                  ))}
-                </div>
-                <p className="text-xs text-[var(--stone-500)] mb-4">
-                  {platform.requirement}
-                </p>
-                <a
-                  href={RELEASES_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`block w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                    isDetected
-                      ? "bg-[var(--copper)] hover:bg-[var(--copper-dark)]"
-                      : "bg-[var(--stone-800)] hover:bg-[var(--stone-700)]"
-                  }`}
-                >
-                  Download for {platform.name}
-                </a>
-              </div>
-            );
-          })}
+        {/* Purchase CTA */}
+        <div className="bg-gradient-to-br from-[var(--copper)]/20 to-[var(--copper-light)]/10 border border-[var(--copper)]/30 rounded-xl p-8 text-center mb-16">
+          <h2
+            className="text-2xl font-bold mb-2"
+            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+          >
+            <span className="gradient-text">$200</span>{" "}
+            <span className="text-[var(--stone-400)] text-lg font-normal">one-time</span>
+          </h2>
+          <p className="text-[var(--stone-400)] mb-6">
+            Standard license. Unlimited worksheets. AI-assisted. 3 machines. Forever yours.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <a
+              href="/pricing"
+              className="bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-8 py-3 rounded-lg font-medium transition-colors"
+            >
+              Buy Now
+            </a>
+            <a
+              href="/pricing"
+              className="border border-[var(--stone-700)] hover:border-[var(--stone-500)] px-8 py-3 rounded-lg font-medium transition-colors"
+            >
+              Compare Plans
+            </a>
+          </div>
+          <p className="text-xs text-[var(--stone-500)] mt-4">
+            30-day money-back guarantee. Download link delivered after purchase.
+          </p>
         </div>
 
-        {/* What's Included */}
+        {/* Platform Support */}
+        <div className="mb-16">
+          <h2
+            className="text-2xl font-bold text-center mb-8"
+            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+          >
+            Available on every platform
+          </h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            {platforms.map((platform) => {
+              const isDetected = detected === platform.id;
+              return (
+                <div
+                  key={platform.id}
+                  className={`rounded-xl p-6 text-center ${
+                    isDetected
+                      ? "bg-gradient-to-br from-[var(--copper)]/10 to-transparent border border-[var(--copper)]/20"
+                      : "glass-card"
+                  }`}
+                >
+                  {isDetected && (
+                    <div className="text-xs text-[var(--copper)] font-medium mb-2">
+                      Your platform
+                    </div>
+                  )}
+                  <div
+                    className={`flex justify-center mb-4 ${
+                      isDetected
+                        ? "text-[var(--copper-light)]"
+                        : "text-[var(--stone-400)]"
+                    }`}
+                  >
+                    {platform.icon}
+                  </div>
+                  <h3 className="text-xl font-semibold mb-3">{platform.name}</h3>
+                  <div className="space-y-1 mb-3">
+                    {platform.formats.map((format) => (
+                      <p
+                        key={format}
+                        className="text-sm text-[var(--stone-400)]"
+                      >
+                        {format}
+                      </p>
+                    ))}
+                  </div>
+                  <p className="text-xs text-[var(--stone-500)]">
+                    {platform.requirement}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* What You Get */}
         <div className="glass-card rounded-xl p-8 mb-16">
           <h2
             className="text-2xl font-bold mb-6 text-center"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           >
-            What&apos;s included
+            What you get
           </h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="font-semibold mb-2">Free (no license)</h3>
-              <ul className="space-y-1 text-sm text-[var(--stone-400)]">
-                <li className="flex items-center gap-2">
-                  <span className="text-[var(--copper)]">&#10003;</span>
-                  Full compute engine (SymPy + Pint)
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-[var(--copper)]">&#10003;</span>
-                  Up to 20 nodes per worksheet
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-[var(--copper)]">&#10003;</span>
-                  Save & open worksheets
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-[var(--copper)]">&#10003;</span>
-                  Plotting & visualization
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-2">
-                With License{" "}
-                <span className="text-[var(--copper)] text-sm">($200+)</span>
-              </h3>
-              <ul className="space-y-1 text-sm text-[var(--stone-400)]">
-                <li className="flex items-center gap-2">
-                  <span className="text-[var(--copper)]">&#10003;</span>
-                  Unlimited nodes & worksheets
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-[var(--copper)]">&#10003;</span>
-                  AI assistant (bring your own key)
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-[var(--copper)]">&#10003;</span>
-                  PDF & DOCX export
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-[var(--copper)]">&#10003;</span>
-                  Solve goals & templates
-                </li>
-              </ul>
-            </div>
+          <div className="grid md:grid-cols-2 gap-8">
+            <ul className="space-y-3 text-sm text-[var(--stone-300)]">
+              <li className="flex items-start gap-2">
+                <span className="text-[var(--copper)] mt-0.5">&#10003;</span>
+                Unlimited worksheets and nodes
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[var(--copper)] mt-0.5">&#10003;</span>
+                Full SymPy compute engine with Pint unit analysis
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[var(--copper)] mt-0.5">&#10003;</span>
+                AI assistant that structures, never computes (BYOK)
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[var(--copper)] mt-0.5">&#10003;</span>
+                4-gate verification on every calculation
+              </li>
+            </ul>
+            <ul className="space-y-3 text-sm text-[var(--stone-300)]">
+              <li className="flex items-start gap-2">
+                <span className="text-[var(--copper)] mt-0.5">&#10003;</span>
+                Export to PDF, DOCX, and HTML
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[var(--copper)] mt-0.5">&#10003;</span>
+                100% offline after activation
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[var(--copper)] mt-0.5">&#10003;</span>
+                Solve goals and system analysis
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[var(--copper)] mt-0.5">&#10003;</span>
+                1 year of updates included
+              </li>
+            </ul>
           </div>
         </div>
 
-        {/* Installation */}
-        <div className="max-w-2xl mx-auto text-center">
+        {/* How It Works */}
+        <div className="max-w-2xl mx-auto">
           <h2
-            className="text-2xl font-bold mb-4"
+            className="text-2xl font-bold mb-6 text-center"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           >
-            Quick start
+            How it works
           </h2>
-          <div className="space-y-4 text-left">
+          <div className="space-y-4">
             <div className="flex gap-4">
               <div className="w-8 h-8 rounded-full bg-[var(--copper)]/20 text-[var(--copper)] flex items-center justify-center shrink-0 font-bold text-sm">
                 1
               </div>
               <div>
-                <p className="font-medium">Download & install</p>
+                <p className="font-medium">Purchase a license</p>
                 <p className="text-sm text-[var(--stone-400)]">
-                  Pick your platform above and run the installer.
+                  Choose your plan on the{" "}
+                  <a
+                    href="/pricing"
+                    className="text-[var(--copper)] hover:text-[var(--copper-light)]"
+                  >
+                    pricing page
+                  </a>
+                  . Secure checkout via Stripe.
                 </p>
               </div>
             </div>
@@ -219,9 +241,9 @@ export default function DownloadPage() {
                 2
               </div>
               <div>
-                <p className="font-medium">Start calculating</p>
+                <p className="font-medium">Download the installer</p>
                 <p className="text-sm text-[var(--stone-400)]">
-                  The free tier works immediately. No account required.
+                  You&apos;ll receive a download link and license key by email immediately after purchase.
                 </p>
               </div>
             </div>
@@ -230,20 +252,35 @@ export default function DownloadPage() {
                 3
               </div>
               <div>
-                <p className="font-medium">Activate (optional)</p>
+                <p className="font-medium">Activate & start calculating</p>
                 <p className="text-sm text-[var(--stone-400)]">
-                  Purchase a license key from the{" "}
-                  <a
-                    href="/pricing"
-                    className="text-[var(--copper)] hover:text-[var(--copper-light)]"
-                  >
-                    pricing page
-                  </a>{" "}
-                  to unlock all features.
+                  Enter your license key in the app. Works offline from day one.
                 </p>
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Free Demo Callout */}
+        <div className="mt-16 text-center">
+          <p className="text-[var(--stone-500)] mb-3">
+            Not ready to buy? Try the free web demo first.
+          </p>
+          <SignedOut>
+            <SignUpButton mode="modal">
+              <button className="border border-[var(--stone-700)] hover:border-[var(--stone-500)] px-6 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                Try Web Demo
+              </button>
+            </SignUpButton>
+          </SignedOut>
+          <SignedIn>
+            <a
+              href="/app"
+              className="inline-block border border-[var(--stone-700)] hover:border-[var(--stone-500)] px-6 py-2.5 rounded-lg text-sm font-medium transition-colors"
+            >
+              Open Web Demo
+            </a>
+          </SignedIn>
         </div>
       </div>
     </main>
