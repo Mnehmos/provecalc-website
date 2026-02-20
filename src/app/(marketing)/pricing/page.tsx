@@ -1,27 +1,11 @@
 "use client";
 
 import type { Metadata } from "next";
-import { SignUpButton, SignedIn, SignedOut } from "@clerk/nextjs";
 
 // Note: metadata export won't work with "use client" in the same file.
 // Move to a layout.tsx if needed, or use generateMetadata in a server component wrapper.
 
 const tiers = [
-  {
-    name: "Free",
-    price: "$0",
-    period: "forever",
-    description: "Try ProveCalc in your browser",
-    features: [
-      "3 worksheets",
-      "Browser-based (no install)",
-      "Core compute engine",
-      "Unit checking & conversion",
-      "Basic plotting",
-    ],
-    cta: "free",
-    highlighted: false,
-  },
   {
     name: "Standard",
     price: "$200",
@@ -120,7 +104,7 @@ export default function PricingPage() {
         </div>
 
         {/* Tier Cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
+        <div className="grid md:grid-cols-3 gap-6 mb-20">
           {tiers.map((tier) => (
             <div
               key={tier.name}
@@ -172,25 +156,6 @@ export default function PricingPage() {
                 ))}
               </ul>
 
-              {tier.cta === "free" && (
-                <>
-                  <SignedOut>
-                    <SignUpButton mode="modal">
-                      <button className="w-full bg-[var(--stone-800)] hover:bg-[var(--stone-700)] px-4 py-3 rounded-lg text-sm font-medium transition-colors">
-                        Get Started Free
-                      </button>
-                    </SignUpButton>
-                  </SignedOut>
-                  <SignedIn>
-                    <a
-                      href="/app"
-                      className="block w-full bg-[var(--stone-800)] hover:bg-[var(--stone-700)] px-4 py-3 rounded-lg text-sm font-medium transition-colors text-center"
-                    >
-                      Open App
-                    </a>
-                  </SignedIn>
-                </>
-              )}
               {tier.cta === "buy" && (
                 <a
                   href="/download"

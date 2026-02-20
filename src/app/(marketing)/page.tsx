@@ -210,7 +210,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Pricing Preview */}
+      {/* Pricing */}
       <section className="py-20 border-t border-[var(--stone-800)]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="max-w-3xl mx-auto text-center mb-16">
@@ -221,77 +221,17 @@ export default function LandingPage() {
               Stop paying rent
             </h2>
             <p className="text-[var(--stone-400)] text-lg">
-              One price. Forever yours. No subscriptions.
+              5-year total cost of ownership. The math speaks for itself.
             </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            <div className="glass-card rounded-xl p-6 text-center">
-              <h3 className="text-[var(--stone-400)] text-sm uppercase tracking-wide mb-2">Free</h3>
-              <div className="text-3xl font-bold mb-2">$0</div>
-              <p className="text-[var(--stone-500)] text-sm mb-4">Web demo forever</p>
-              <ul className="text-left text-sm text-[var(--stone-400)] space-y-2 mb-6">
-                <li>3 worksheets</li>
-                <li>Browser-based</li>
-                <li>Core compute engine</li>
-              </ul>
-              <SignedOut>
-                <SignUpButton mode="modal">
-                  <button className="w-full bg-[var(--stone-800)] hover:bg-[var(--stone-700)] px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                    Get Started
-                  </button>
-                </SignUpButton>
-              </SignedOut>
-              <SignedIn>
-                <a href="/app" className="block w-full bg-[var(--stone-800)] hover:bg-[var(--stone-700)] px-4 py-2 rounded-lg text-sm font-medium transition-colors text-center">
-                  Open App
-                </a>
-              </SignedIn>
-            </div>
-
-            <div className="bg-gradient-to-br from-[var(--copper)]/20 to-[var(--copper-light)]/10 border border-[var(--copper)]/30 rounded-xl p-6 text-center relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[var(--copper)] text-xs font-bold px-3 py-1 rounded-full">
-                MOST POPULAR
-              </div>
-              <h3 className="text-[var(--copper-light)] text-sm uppercase tracking-wide mb-2">Standard</h3>
-              <div className="text-3xl font-bold text-[var(--copper-light)] mb-2">$200</div>
-              <p className="text-[var(--stone-400)] text-sm mb-4">One-time. Forever.</p>
-              <ul className="text-left text-sm text-[var(--stone-400)] space-y-2 mb-6">
-                <li>Unlimited worksheets</li>
-                <li>Desktop app (offline)</li>
-                <li>AI assistant (BYOK)</li>
-                <li>PDF & DOCX export</li>
-                <li>3 machines</li>
-              </ul>
-              <a
-                href="/pricing"
-                className="block w-full bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-4 py-2 rounded-lg text-sm font-medium transition-colors text-center"
-              >
-                Get Standard
-              </a>
-            </div>
-
-            <div className="glass-card rounded-xl p-6 text-center">
-              <h3 className="text-[var(--stone-400)] text-sm uppercase tracking-wide mb-2">Enterprise</h3>
-              <div className="text-3xl font-bold mb-2">Custom</div>
-              <p className="text-[var(--stone-500)] text-sm mb-4">For teams & orgs</p>
-              <ul className="text-left text-sm text-[var(--stone-400)] space-y-2 mb-6">
-                <li>Everything in Standard</li>
-                <li>SSO & audit logs</li>
-                <li>Priority support</li>
-                <li>Unlimited machines</li>
-              </ul>
-              <a
-                href="mailto:hello@provecalc.com"
-                className="block w-full bg-[var(--stone-800)] hover:bg-[var(--stone-700)] px-4 py-2 rounded-lg text-sm font-medium transition-colors text-center"
-              >
-                Contact Us
-              </a>
-            </div>
+          <div className="grid md:grid-cols-4 gap-6">
+            <PriceCard name="Mathcad Prime" price="$13,500" sub="$2,700/yr x 5 years" variant="expensive" />
+            <PriceCard name="Maple Flow" price="$12,475" sub="$2,495/yr x 5 years" variant="expensive" />
+            <PriceCard name="Blockpad" price="$2,400" sub="$480/yr x 5 years" variant="mid" />
+            <PriceCard name="ProveCalc" price="$200" sub="One-time payment. Forever." variant="ours" />
           </div>
-          <p className="text-center mt-8">
-            <a href="/pricing" className="text-[var(--copper)] hover:text-[var(--copper-light)] text-sm transition-colors">
-              Compare all plans &rarr;
-            </a>
+          <p className="text-center text-[var(--stone-500)] mt-8 text-sm">
+            That&apos;s 67x less than Mathcad over 5 years.
           </p>
         </div>
       </section>
@@ -383,6 +323,39 @@ function StatCard({ value, label }: { value: string; label: string }) {
     <div>
       <div className="text-3xl font-bold gradient-text mb-1">{value}</div>
       <div className="text-sm text-[var(--stone-500)]">{label}</div>
+    </div>
+  );
+}
+
+function PriceCard({
+  name,
+  price,
+  sub,
+  variant,
+}: {
+  name: string;
+  price: string;
+  sub: string;
+  variant: "expensive" | "mid" | "ours";
+}) {
+  if (variant === "ours") {
+    return (
+      <div className="bg-gradient-to-br from-[var(--copper)]/20 to-[var(--copper-light)]/10 border border-[var(--copper)]/30 rounded-xl p-6 text-center relative">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[var(--copper)] text-xs font-bold px-3 py-1 rounded-full">
+          LIFETIME
+        </div>
+        <h3 className="text-[var(--copper-light)] text-sm uppercase tracking-wide mb-2">{name}</h3>
+        <div className="text-3xl font-bold text-[var(--copper-light)] mb-2">{price}</div>
+        <p className="text-[var(--stone-400)] text-sm">{sub}</p>
+      </div>
+    );
+  }
+  const priceColor = variant === "expensive" ? "text-red-400" : "text-orange-400";
+  return (
+    <div className="glass-card rounded-xl p-6 text-center">
+      <h3 className="text-[var(--stone-500)] text-sm uppercase tracking-wide mb-2">{name}</h3>
+      <div className={`text-3xl font-bold ${priceColor} mb-2`}>{price}</div>
+      <p className="text-[var(--stone-500)] text-sm">{sub}</p>
     </div>
   );
 }
