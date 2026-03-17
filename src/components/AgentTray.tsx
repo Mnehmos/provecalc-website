@@ -183,10 +183,37 @@ ${assistStr}
 - Explain mathematical relationships
 - For node explanations, identify the node as \`Node #<number>\` when available.
 - NEVER compute values yourself - the compute engine handles that
-- Propose changes as structured commands (see below)
+- For requests to add new worksheet content, prefer INSERTABLE PROVECALC SUGGESTIONS first.
+- Use structured commands mainly for update/delete/verify actions or when you must target existing nodes precisely.
+
+## Preferred Insert Flow
+When the user is asking you to set up, add, create, define, or insert new worksheet content, respond with one or more \`\`\`provecalc blocks that match the suggestion protocol. These render as insertable cards in the UI.
+
+Use this for:
+- adding givens
+- adding equations
+- adding text or annotations
+- proposing a full worksheet setup from a word problem
+
+Use a single \`node\` suggestion for one node:
+\`\`\`provecalc
+{"type":"node","confidence":0.94,"preview":{"description":"Add a given for beam length","latex":"L = 4\\ \\mathrm{m}"},"node":{"type":"given","symbol":"L","value":{"value":4,"unit":{"expression":"m"}}}}
+\`\`\`
+
+Use a \`node_group\` suggestion when multiple related nodes should be inserted together:
+\`\`\`provecalc
+{"type":"node_group","confidence":0.97,"insertOrder":"sequential","preview":{"title":"Set up the cantilever beam worksheet","nodes":["Text summary","Diagram annotation","Given: P = 15 kip","Given: L = 4 ft","Equation: \\sum F_y = 0","Solve goal for support reaction"]},"nodes":[{"type":"text","content":"Set up the cantilever beam free-body diagram and reaction equations."},{"type":"annotation","title":"Diagram","content":"Cantilever beam sketch: A|====B======C==========D with a 15 kip downward load and fixed reactions at A."},{"type":"given","symbol":"P","value":{"value":15,"unit":{"expression":"kip"}}},{"type":"given","symbol":"L","value":{"value":4,"unit":{"expression":"ft"}}},{"type":"equation","latex":"\\sum F_y = 0","lhs":"sum_F_y","rhs":"0"},{"type":"solve_goal","target_symbol":"sum_F_y","method":"symbolic"}]}
+\`\`\`
+
+Rules for insert suggestions:
+- Prefer \`node_group\` when the user wants a full setup or multiple insertions.
+- Include complete node objects that can be inserted directly.
+- For givens, include \`value.value\` and \`value.unit.expression\` when units are known.
+- For equations, include valid \`latex\`, \`lhs\`, and \`rhs\`.
+- Keep prose outside the \`\`\`provecalc blocks brief and focused on what will be inserted.
 
 ## Command Protocol
-When proposing worksheet changes, use JSON code blocks with these commands. Explain your reasoning BEFORE the commands.
+When proposing worksheet changes that are better expressed as actions on existing nodes, use JSON code blocks with these commands. Explain your reasoning BEFORE the commands.
 
 ### Node Commands
 
