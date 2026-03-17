@@ -86,7 +86,7 @@ function createBaseNode(position?: NodePosition) {
 }
 
 export function createTextNode(content: string, position?: NodePosition): TextNode {
-  return { ...createBaseNode(position), type: 'text', content, format: 'plain' };
+  return { ...createBaseNode(position), type: 'text', content, format: 'markdown' };
 }
 
 export function createAnnotationNode(

@@ -1,5 +1,5 @@
 /**
- * Local PDF Generator — fallback when Foxit API is unavailable.
+ * Local PDF Generator - fallback when Foxit API is unavailable.
  *
  * Uses pdf-lib to create a "Certificate of Computation" PDF
  * with full worksheet data including dependency graph.
@@ -15,6 +15,24 @@ const GREEN = rgb(0.086, 0.635, 0.286);
 const RED = rgb(0.8, 0.15, 0.15);
 const WHITE = rgb(1, 1, 1);
 const LIGHT_BG = rgb(0.95, 0.95, 0.97);
+
+// Replace common Unicode chars with WinAnsi-safe equivalents, strip the rest.
+// Use explicit escapes so this stays robust regardless of editor/terminal encoding.
+function sanitize(text: string): string {
+  return text
+    .replace(/[\u2605\u2606\u2726\u2727]/g, "*")
+    .replace(/[\u2705\u2713\u2714\u2611]/g, "[OK]")
+    .replace(/[\u274c\u2717\u2718\u2612]/g, "[X]")
+    .replace(/\u2192/g, "->")
+    .replace(/\u2190/g, "<-")
+    .replace(/\u2191/g, "^")
+    .replace(/\u2193/g, "v")
+    .replace(/[\u201c\u201d]/g, '"')
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/\u2026/g, "...")
+    .replace(/[\u2013\u2014]/g, "-")
+    .replace(/[^\x00-\xFF]/g, "?");
+}
 
 const MARGIN = 50;
 const PAGE_W = 612;
@@ -74,9 +92,11 @@ export async function generateLocalPdf(
 
   // --- Document Info ---
   const drawField = (label: string, value: string, color = DARK) => {
-    page.drawText(label, { x: MARGIN, y, size: 11, font: helveticaBold, color: DARK });
-    page.drawText(value, {
-      x: MARGIN + helveticaBold.widthOfTextAtSize(label, 11) + 4,
+    const safeLabel = sanitize(label);
+    const safeValue = sanitize(value);
+    page.drawText(safeLabel, { x: MARGIN, y, size: 11, font: helveticaBold, color: DARK });
+    page.drawText(safeValue, {
+      x: MARGIN + helveticaBold.widthOfTextAtSize(safeLabel, 11) + 4,
       y, size: 11, font: helvetica, color,
     });
     y -= 18;
@@ -93,7 +113,7 @@ export async function generateLocalPdf(
   const drawSection = (heading: string) => {
     ensureSpace(30);
     page.drawRectangle({ x: MARGIN, y: y - 2, width: CONTENT_W, height: 20, color: PURPLE });
-    page.drawText(heading, { x: MARGIN + 6, y: y + 2, size: 12, font: helveticaBold, color: WHITE });
+    page.drawText(sanitize(heading), { x: MARGIN + 6, y: y + 2, size: 12, font: helveticaBold, color: WHITE });
     y -= 28;
   };
 
@@ -102,8 +122,8 @@ export async function generateLocalPdf(
     if (shaded) {
       page.drawRectangle({ x: MARGIN, y: y - 4, width: CONTENT_W, height: 18, color: LIGHT_BG });
     }
-    page.drawText(label, { x: MARGIN + 6, y, size: 10, font: helveticaBold, color: DARK });
-    page.drawText(value, { x: 250, y, size: 10, font: helvetica, color: DARK });
+    page.drawText(sanitize(label), { x: MARGIN + 6, y, size: 10, font: helveticaBold, color: DARK });
+    page.drawText(sanitize(value), { x: 250, y, size: 10, font: helvetica, color: DARK });
     y -= 18;
   };
 
@@ -115,13 +135,13 @@ export async function generateLocalPdf(
   drawRow("Verified", `${data.verifiedCount} / ${data.totalNodes}`, false);
   y -= 8;
 
-  // --- Variables (with verification status) ---
+  // --- Variables ---
   if (data.variables.length > 0) {
     drawSection("Input Variables");
     for (const v of data.variables) {
       ensureSpace(18);
       const status = v.verified ? STATUS_ICON.verified : STATUS_ICON.unverified;
-      const line = `${v.symbol} = ${v.value}${v.unit ? " " + v.unit : ""}`;
+      const line = sanitize(`${v.symbol} = ${v.value}${v.unit ? " " + v.unit : ""}`);
       page.drawText(status.symbol, { x: MARGIN + 6, y, size: 10, font: helvetica, color: status.color });
       page.drawText(line, { x: MARGIN + 20, y, size: 10, font: courier, color: DARK });
       y -= 16;
@@ -129,13 +149,13 @@ export async function generateLocalPdf(
     y -= 6;
   }
 
-  // --- Equations (with lhs = rhs) ---
+  // --- Equations ---
   if (data.equations.length > 0) {
     drawSection("Equations");
     for (const eq of data.equations) {
       ensureSpace(18);
       const status = eq.verified ? STATUS_ICON.verified : STATUS_ICON.unverified;
-      const display = `${eq.lhs} = ${eq.rhs}`;
+      const display = sanitize(`${eq.lhs} = ${eq.rhs}`);
       const truncated = display.length > 75 ? display.substring(0, 72) + "..." : display;
       page.drawText(status.symbol, { x: MARGIN + 6, y, size: 10, font: helvetica, color: status.color });
       page.drawText(truncated, { x: MARGIN + 20, y, size: 10, font: courier, color: DARK });
@@ -151,7 +171,7 @@ export async function generateLocalPdf(
       ensureSpace(18);
       const status = sg.verified ? STATUS_ICON.verified : STATUS_ICON.unverified;
       page.drawText(status.symbol, { x: MARGIN + 6, y, size: 10, font: helvetica, color: status.color });
-      page.drawText(`Solve for: ${sg.target}`, { x: MARGIN + 20, y, size: 10, font: courier, color: DARK });
+      page.drawText(sanitize(`Solve for: ${sg.target}`), { x: MARGIN + 20, y, size: 10, font: courier, color: DARK });
       y -= 16;
     }
     y -= 6;
@@ -163,19 +183,19 @@ export async function generateLocalPdf(
     for (const r of data.results) {
       ensureSpace(28);
       const status = r.verified ? STATUS_ICON.verified : STATUS_ICON.unverified;
-      const line = `${r.symbol} = ${r.value}${r.unit ? " " + r.unit : ""}`;
+      const line = sanitize(`${r.symbol} = ${r.value}${r.unit ? " " + r.unit : ""}`);
       page.drawText(status.symbol, { x: MARGIN + 6, y, size: 10, font: helvetica, color: status.color });
       page.drawText(line, { x: MARGIN + 20, y, size: 10, font: courier, color: DARK });
       y -= 16;
       if (r.symbolicForm) {
-        page.drawText(`symbolic: ${r.symbolicForm}`, { x: MARGIN + 20, y, size: 8, font: helvetica, color: GRAY });
+        page.drawText(sanitize(`symbolic: ${r.symbolicForm}`), { x: MARGIN + 20, y, size: 8, font: helvetica, color: GRAY });
         y -= 14;
       }
     }
     y -= 6;
   }
 
-  // --- Dependency Graph (ASCII-style) ---
+  // --- Dependency Graph ---
   if (data.dependencyGraph && data.dependencyGraph.length > 0) {
     const nodesWithDeps = data.dependencyGraph.filter(
       (n) => n.dependsOn.length > 0 || n.dependedBy.length > 0
@@ -186,23 +206,24 @@ export async function generateLocalPdf(
         ensureSpace(30);
         const st = STATUS_ICON[node.status] || STATUS_ICON.unverified;
         page.drawText(st.symbol, { x: MARGIN + 6, y, size: 10, font: helvetica, color: st.color });
-        page.drawText(`${node.label}`, {
+        const safeLabel = sanitize(node.label);
+        page.drawText(safeLabel, {
           x: MARGIN + 20, y, size: 10, font: helveticaBold, color: DARK,
         });
         const typeLabel = `[${node.type}]`;
         page.drawText(typeLabel, {
-          x: MARGIN + 22 + helveticaBold.widthOfTextAtSize(node.label, 10),
+          x: MARGIN + 22 + helveticaBold.widthOfTextAtSize(safeLabel, 10),
           y, size: 8, font: helvetica, color: GRAY,
         });
         y -= 14;
         if (node.dependsOn.length > 0) {
-          const depText = `  depends on: ${node.dependsOn.join(", ")}`;
+          const depText = sanitize(`  depends on: ${node.dependsOn.join(", ")}`);
           const truncDep = depText.length > 85 ? depText.substring(0, 82) + "..." : depText;
           page.drawText(truncDep, { x: MARGIN + 20, y, size: 8, font: helvetica, color: GRAY });
           y -= 12;
         }
         if (node.dependedBy.length > 0) {
-          const byText = `  feeds into: ${node.dependedBy.join(", ")}`;
+          const byText = sanitize(`  feeds into: ${node.dependedBy.join(", ")}`);
           const truncBy = byText.length > 85 ? byText.substring(0, 82) + "..." : byText;
           page.drawText(truncBy, { x: MARGIN + 20, y, size: 8, font: helvetica, color: GRAY });
           y -= 12;
@@ -217,7 +238,7 @@ export async function generateLocalPdf(
     drawSection("Assumptions");
     for (const a of data.assumptions) {
       ensureSpace(18);
-      const display = a.length > 80 ? a.substring(0, 77) + "..." : a;
+      const display = sanitize(a.length > 80 ? a.substring(0, 77) + "..." : a);
       page.drawText(`- ${display}`, { x: MARGIN + 6, y, size: 10, font: helvetica, color: GRAY });
       y -= 16;
     }
@@ -238,7 +259,6 @@ export async function generateLocalPdf(
     rotate: degrees(-45),
   });
 
-  // Footer on last page
   drawFooter(page, helvetica);
 
   const bytes = await doc.save();
@@ -253,7 +273,7 @@ function drawFooter(page: PDFPage, helvetica: PDFFont) {
     color: PURPLE,
   });
 
-  const footer = "Generated by ProveCalc (pdf-lib) — Engine-Verified Engineering Calculations";
+  const footer = sanitize("Generated by ProveCalc (pdf-lib) - Engine-Verified Engineering Calculations");
   const footerWidth = helvetica.widthOfTextAtSize(footer, 8);
   page.drawText(footer, {
     x: (PAGE_W - footerWidth) / 2, y: 38,

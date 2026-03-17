@@ -11,6 +11,8 @@
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import type { WorksheetNode, GivenNode, PlotNode, AnnotationNode, DisplayConfig } from '../../types/document';
 import { DEFAULT_DISPLAY_CONFIG } from '../../types/document';
 import { useDocumentStore, findDuplicateSymbols } from '../../stores/documentStore';
@@ -329,10 +331,7 @@ function TextNodeEditor({ node, onSave, onCancel }: { node: WorksheetNode & { ty
   }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      onSave({ content });
-    } else if (e.key === 'Escape') {
+    if (e.key === 'Escape') {
       onCancel();
     }
   };
@@ -344,11 +343,11 @@ function TextNodeEditor({ node, onSave, onCancel }: { node: WorksheetNode & { ty
         value={content}
         onChange={(e) => setContent(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Enter text..."
-        rows={3}
+        placeholder="Write markdown here... supports headings, lists, tables, and $...$ math"
+        rows={6}
       />
       <div className="editor-actions">
-        <button className="btn-save" onClick={() => onSave({ content })}>Save</button>
+        <button className="btn-save" onClick={() => onSave({ content, format: 'markdown' })}>Save</button>
         <button className="btn-cancel" onClick={onCancel}>Cancel</button>
       </div>
     </div>
@@ -401,7 +400,7 @@ function AnnotationNodeEditor({ node, onSave, onCancel }: { node: AnnotationNode
 
       {showPreview ? (
         <div className="annotation-preview">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
             {content || '*No content*'}
           </ReactMarkdown>
         </div>
@@ -753,7 +752,7 @@ function AnnotationNodeContent({ node }: { node: AnnotationNode }) {
       )}
       {!isCollapsed && (
         <div className="annotation-body">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
             {node.content || '*Empty annotation*'}
           </ReactMarkdown>
         </div>
@@ -767,7 +766,12 @@ function renderNodeContent(node: WorksheetNode) {
     case 'text':
       return (
         <div className="text-content">
-          {node.content}
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm, remarkMath]}
+            rehypePlugins={[rehypeKatex]}
+          >
+            {node.content}
+          </ReactMarkdown>
         </div>
       );
 
