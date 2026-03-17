@@ -38,60 +38,113 @@ export const TEMPLATES: WorksheetTemplate[] = [
   // --- Interactive Tutorials (shown first) ---
   {
     id: 'cantilever-beam-tutorial',
-    name: 'Cantilever Beam Deflection',
+    name: '★ Cantilever Beam — Interactive Tutorial',
     category: 'structural',
-    description: 'Complete worked example: maximum deflection of a cantilever beam with point load. Great starting point!',
-    tags: ['tutorial', 'beam', 'deflection', 'cantilever', 'beginner'],
+    description: 'Step-by-step guided walkthrough: learn ProveCalc by solving a real beam deflection problem.',
+    tags: ['tutorial', 'beam', 'deflection', 'cantilever', 'beginner', 'guided'],
     nodes: [
+      // ── STEP 1: Welcome ──────────────────────────────────────────────
       {
         type: 'text',
-        content: 'This worksheet models the maximum deflection of a cantilever beam subjected to a concentrated load at the free end. Known variables: end load P, beam length L, Young\'s modulus E, and second moment of area I. Objective: determine the maximum deflection at the free end, delta_max.',
-        format: 'plain',
-        position: { x: 100, y: 120 },
+        content: '## Welcome to ProveCalc!\n\nThis is a **guided tutorial worksheet**. Read each instruction node as you scroll down — they will walk you through the core features of the app using a real engineering problem.\n\n**Problem:** Find the maximum tip deflection of a cantilever beam with a point load at the free end.\n\n**You will learn:**\n1. How to read and edit Given values\n2. How equations are structured (display vs compute)\n3. How to add a Solve Goal\n4. How to run Verify\n5. How to export your results\n\nScroll down to begin →',
+        format: 'markdown',
+        position: { x: 100, y: 80 },
+      },
+
+      // ── STEP 2: The diagram ──────────────────────────────────────────
+      {
+        type: 'text',
+        content: '## Step 1 — Understand the Problem\n\nBefore entering any numbers, read the diagram below. It shows the physical setup: a beam fixed at one end (wall), loaded by a downward force P at the free end. The beam has length L, stiffness E (Young\'s modulus), and cross-section property I (second moment of area).\n\nThe formula for maximum tip deflection is:\n$$\\delta_{max} = \\frac{P L^3}{3 E I}$$\n\nEvery term in this formula will appear as a node in this worksheet.',
+        format: 'markdown',
+        position: { x: 100, y: 380 },
       },
       {
         type: 'annotation',
-        title: 'Diagram',
-        content: 'Cantilever beam with end load:\n```text\nFixed Support\n|====--------------------o  < P\n^                        Free End\n|\nWall\n\nLength = L\n\nLegend:\nP = concentrated load at free end\nL = beam length\nE = Young\'s modulus\nI = second moment of area\ndelta_max = vertical deflection at free end\n```',
+        title: 'Diagram — Cantilever Beam with End Load',
+        content: 'Cantilever beam with end load:\n```text\n                                    P\n                                    |\n                                    v\n|===================================o\n^                                Free End\nFixed\nSupport\n\n|<-------------- L ---------------->|\n\nLegend:\n  P   = concentrated load at free end [N]\n  L   = beam length [m]\n  E   = Young\'s modulus [Pa]  (material stiffness)\n  I   = second moment of area [m**4]  (cross-section)\n  delta_max = maximum vertical deflection at free end [m]\n```',
         collapsed: false,
-        position: { x: 100, y: 280 },
+        position: { x: 100, y: 620 },
+      },
+
+      // ── STEP 3: Given values ─────────────────────────────────────────
+      {
+        type: 'text',
+        content: '## Step 2 — Given Values\n\n**Given nodes** store the known quantities for your problem. Each one has:\n- **Symbol** — the variable name used in equations (plain text, no LaTeX)\n- **Value** — the numeric value\n- **Unit** — in Pint format: `m`, `N`, `Pa`, `m**4`, `m/s**2`, etc.\n\n**Try this:** Click any Given node below and change the value. For example, try doubling P to 2000 N. Changing a given marks downstream nodes as *stale* — you\'ll recalculate them in Step 4.',
+        format: 'markdown',
+        position: { x: 100, y: 980 },
       },
       {
         type: 'given',
         symbol: 'P',
         value: { value: 1000, unit: { expression: 'N' } },
-        position: { x: 100, y: 640 },
+        description: 'Point load at free end',
+        position: { x: 100, y: 1220 },
       },
       {
         type: 'given',
         symbol: 'L',
         value: { value: 2, unit: { expression: 'm' } },
-        position: { x: 100, y: 720 },
+        description: 'Beam length',
+        position: { x: 100, y: 1300 },
       },
       {
         type: 'given',
         symbol: 'E',
         value: { value: 200e9, unit: { expression: 'Pa' } },
-        position: { x: 100, y: 800 },
+        description: "Young's modulus (structural steel)",
+        position: { x: 100, y: 1380 },
       },
       {
         type: 'given',
         symbol: 'I',
         value: { value: 8e-6, unit: { expression: 'm**4' } },
-        position: { x: 100, y: 880 },
+        description: 'Second moment of area',
+        position: { x: 100, y: 1460 },
+      },
+
+      // ── STEP 4: Equation ─────────────────────────────────────────────
+      {
+        type: 'text',
+        content: '## Step 3 — The Equation Node\n\nEquation nodes have **three separate fields** — this is important:\n\n| Field | Purpose | Format |\n|-------|---------|--------|\n| `latex` | Display only — rendered beautifully | LaTeX: `\\frac{P L^3}{3 E I}` |\n| `lhs` | Left-hand side for the compute engine | Plain text: `delta_max` |\n| `rhs` | Right-hand side expression | SymPy/Python: `(P*L**3)/(3*E*I)` |\n\n⚠️ Never put LaTeX in `lhs` or `rhs` — the Python compute engine will reject it. Use `*` for multiplication, `/` for division, `**` for powers.\n\nThe equation below is already filled in correctly. Read it and notice how the `rhs` uses Python syntax.',
+        format: 'markdown',
+        position: { x: 100, y: 1600 },
       },
       {
         type: 'equation',
         latex: '\\delta_{max} = \\frac{P L^3}{3 E I}',
         lhs: 'delta_max',
         rhs: '(P*L**3)/(3*E*I)',
-        position: { x: 100, y: 980 },
+        position: { x: 100, y: 1900 },
+      },
+
+      // ── STEP 5: Solve Goal ───────────────────────────────────────────
+      {
+        type: 'text',
+        content: '## Step 4 — Solve Goal\n\nA **Solve Goal** tells the engine which variable to compute. It substitutes all your Given values into the equations and returns a numeric result with units.\n\n- `target_symbol` — must exactly match the `lhs` of an equation\n- `method: symbolic` — uses SymPy for exact algebraic substitution\n\nThe Solve Goal below targets `delta_max`. After you run Verify, it will show the computed deflection in meters.',
+        format: 'markdown',
+        position: { x: 100, y: 2040 },
       },
       {
         type: 'solve_goal',
         target_symbol: 'delta_max',
         method: 'symbolic',
-        position: { x: 100, y: 1080 },
+        position: { x: 100, y: 2220 },
+      },
+
+      // ── STEP 6: Verify ───────────────────────────────────────────────
+      {
+        type: 'text',
+        content: '## Step 5 — Run Verify\n\nNow click **"Verify"** in the toolbar at the top.\n\nThe engine will:\n1. Substitute P, L, E, I into the equation\n2. Check that all units are dimensionally consistent\n3. Compute the numeric value of `delta_max`\n4. Mark each node green (verified) or red (error)\n\nWith the default values (P=1000 N, L=2 m, E=200 GPa, I=8×10⁻⁶ m⁴) you should get:\n$$\\delta_{max} \\approx 1.67 \\times 10^{-3} \\text{ m}$$\n\nIf you changed any Given values earlier, you\'ll see different results — that\'s the point!',
+        format: 'markdown',
+        position: { x: 100, y: 2360 },
+      },
+
+      // ── STEP 7: Export ───────────────────────────────────────────────
+      {
+        type: 'text',
+        content: '## Step 6 — Export Your Work\n\nProveCalc lets you export verified calculations in multiple formats:\n\n- **PDF Report** — formal engineering document with audit trail, all equations rendered, verification status per node\n- **HTML** — shareable web page with KaTeX-rendered math\n- **Export (JSON)** — raw backup you can re-open later with "Open"\n\nClick **"PDF Report"** in the toolbar to generate a report for this worksheet.\n\n---\n\n✅ **Tutorial complete!** You now know how to:\n- Add and edit Given values\n- Read equation nodes (LaTeX display vs SymPy compute)\n- Set up Solve Goals\n- Run Verify\n- Export results\n\nDelete these instruction nodes and replace the values with your own problem to start your first real calculation.',
+        format: 'markdown',
+        position: { x: 100, y: 2680 },
       },
     ],
   },

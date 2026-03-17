@@ -12,6 +12,7 @@ import { DependencyGraph } from "../../components/DependencyGraph";
 import { LibraryPanel } from "../../components/LibraryPanel";
 import { TemplateGallery } from "../../components/TemplateGallery";
 import { AgentTray } from "../../components/AgentTray";
+import { TutorialModal } from "../../components/TutorialModal";
 
 /** Minimum/maximum sidebar widths in px */
 const SIDEBAR_MIN = 200;
@@ -28,6 +29,7 @@ export default function AppPage() {
   const [showDependencyGraph, setShowDependencyGraph] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showAgent, setShowAgent] = useState(true);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   // --- Resizable state ---
   const [leftWidth, setLeftWidth] = useState(280);
@@ -111,6 +113,7 @@ export default function AppPage() {
         onToggleLibrary={toggleLibrary}
         showLibrary={showLibrary}
         onShowTemplates={() => setShowTemplates(true)}
+        onShowTutorial={() => setShowTutorial(true)}
         onToggleAgent={() => setShowAgent((v) => !v)}
         showAgent={showAgent}
       />
@@ -181,6 +184,12 @@ export default function AppPage() {
       <TemplateGallery
         isOpen={showTemplates}
         onClose={() => setShowTemplates(false)}
+      />
+
+      {/* Tutorial Modal */}
+      <TutorialModal
+        isOpen={showTutorial}
+        onClose={() => setShowTutorial(false)}
       />
 
       <footer className="status-bar">

@@ -11,6 +11,7 @@ interface WebToolbarProps {
   onToggleLibrary?: () => void;
   showLibrary?: boolean;
   onShowTemplates?: () => void;
+  onShowTutorial?: () => void;
   onToggleAgent?: () => void;
   showAgent?: boolean;
 }
@@ -21,6 +22,7 @@ export function WebToolbar({
   onToggleLibrary,
   showLibrary,
   onShowTemplates,
+  onShowTutorial,
   onToggleAgent,
   showAgent,
 }: WebToolbarProps) {
@@ -246,6 +248,13 @@ export function WebToolbar({
           disabled={isLoading}
         >
           Templates
+        </button>
+        <button
+          className="toolbar-button"
+          onClick={onShowTutorial}
+          title="Help & Tutorials"
+        >
+          Help
         </button>
         <button
           className="toolbar-button"
