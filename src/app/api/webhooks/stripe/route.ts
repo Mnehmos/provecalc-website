@@ -64,7 +64,7 @@ async function sendLicenseEmail(email: string, licenseKey: string) {
   const resend = getResend();
 
   await resend.emails.send({
-    from: "ProveCalc <noreply@provecalc.com>",
+    from: "The Mnemosyne Research Institute <noreply@themnemosyneresearchinstitute.com>",
     to: email,
     subject: "Your ProveCalc License Key",
     html: `

@@ -111,10 +111,10 @@ export default function PrivacyPage() {
             <p className="mt-3">
               To exercise these rights, contact us at{" "}
               <a
-                href="mailto:hello@provecalc.com"
+                href="mailto:contact@themnemosyneresearchinstitute.com"
                 className="text-[var(--copper)] hover:text-[var(--copper-light)]"
               >
-                hello@provecalc.com
+                contact@themnemosyneresearchinstitute.com
               </a>
               .
             </p>
@@ -148,10 +148,10 @@ export default function PrivacyPage() {
             <p>
               For questions about this privacy policy, contact us at{" "}
               <a
-                href="mailto:hello@provecalc.com"
+                href="mailto:contact@themnemosyneresearchinstitute.com"
                 className="text-[var(--copper)] hover:text-[var(--copper-light)]"
               >
-                hello@provecalc.com
+                contact@themnemosyneresearchinstitute.com
               </a>
               .
             </p>

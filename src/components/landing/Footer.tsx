@@ -70,7 +70,7 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="mailto:hello@provecalc.com"
+                  href="mailto:contact@themnemosyneresearchinstitute.com"
                   className="text-sm text-[var(--stone-500)] hover:text-[var(--copper)] transition-colors"
                 >
                   Contact
