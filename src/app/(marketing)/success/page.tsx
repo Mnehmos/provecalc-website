@@ -36,6 +36,7 @@ const platforms = [
 export default function SuccessPage() {
   const { user, isLoaded } = useUser();
   const [copied, setCopied] = useState(false);
+  const [revealed, setRevealed] = useState(false);
 
   if (!isLoaded) {
     return (
@@ -162,15 +163,27 @@ export default function SuccessPage() {
           <p className="text-sm text-[var(--stone-400)] mb-3">
             Your License Key
           </p>
-          <div className="bg-[var(--stone-900)] rounded-lg p-4 mb-4 font-mono text-lg text-[var(--copper-light)] tracking-wider select-all">
-            {licenseKey}
-          </div>
-          <button
+          <div
+            className="relative group bg-[var(--stone-900)] rounded-lg p-4 mb-4 cursor-pointer"
+            onMouseEnter={() => setRevealed(true)}
+            onMouseLeave={() => setRevealed(false)}
             onClick={copyKey}
-            className="text-sm text-[var(--copper)] hover:text-[var(--copper-light)] transition-colors"
+            title="Click to copy"
           >
-            {copied ? "Copied!" : "Copy to clipboard"}
-          </button>
+            <div className={`font-mono text-xs text-[var(--copper-light)] break-all leading-relaxed transition-all duration-200 select-all ${revealed ? 'opacity-100 blur-0' : 'opacity-0 blur-sm select-none'}`}>
+              {licenseKey}
+            </div>
+            {!revealed && (
+              <div className="absolute inset-0 flex items-center justify-center text-sm text-[var(--stone-400)]">
+                Hover to reveal · Click to copy
+              </div>
+            )}
+            {revealed && (
+              <div className="absolute top-2 right-2 text-xs text-[var(--copper)] opacity-0 group-hover:opacity-100 transition-opacity">
+                {copied ? "Copied!" : "Click to copy"}
+              </div>
+            )}
+          </div>
           <p className="text-xs text-[var(--stone-500)] mt-3">
             This key is saved to your account. You can always find it here.
           </p>
