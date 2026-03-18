@@ -60,7 +60,7 @@ export function Footer() {
             <ul className="space-y-2">
               <li>
                 <a
-                  href="https://github.com/Mnehmos/worksheet-dist"
+                  href="https://github.com/Mnehmos/provecalc-releases/releases"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-[var(--stone-500)] hover:text-[var(--copper)] transition-colors"
@@ -70,7 +70,7 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="mailto:contact@themnemosyneresearchinstitute.com"
+                  href="/contact"
                   className="text-sm text-[var(--stone-500)] hover:text-[var(--copper)] transition-colors"
                 >
                   Contact
