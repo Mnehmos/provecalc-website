@@ -13,7 +13,10 @@ import {
   createAuditEntry,
   generateVerificationReport,
 } from './helpers';
-import { evaluate, checkUnits } from '../../services/computeService';
+import { checkUnits, validateEquation } from '../../services/computeService';
+import { extractKnownSymbolTable } from '../../utils/solveContext';
+import { getEquationSolveExpression } from '../../utils/mathParsing';
+import type { EquationNode } from '../../types/document';
 
 export interface VerificationSlice {
   isVerifying: boolean;
@@ -49,10 +52,15 @@ export const createVerificationSlice: SliceCreator<VerificationSlice> = (set, ge
       let unitDetails = '';
 
       if (node.type === 'equation') {
-        const eq = node as { lhs: string; rhs: string };
-        const unitResult = await checkUnits(`(${eq.lhs}) - (${eq.rhs})`);
-        unitPassed = unitResult.consistent;
-        unitDetails = unitResult.error || unitResult.details || '';
+        const eq = node as EquationNode;
+        const symbolTable = extractKnownSymbolTable(state.document);
+        const equation = getEquationSolveExpression(eq);
+        const validation = await validateEquation(equation, symbolTable, eq.lhs);
+        unitPassed = validation.valid;
+        unitDetails = [
+          ...validation.errors,
+          ...validation.warnings,
+        ].join(' | ');
       } else if (node.type === 'given') {
         const given = node as { symbol: string; value: { value: number; unit?: { expression: string } } };
         if (given.value.unit?.expression) {
