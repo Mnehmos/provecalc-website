@@ -53,9 +53,19 @@ const platforms = [
 
 export default function DownloadPage() {
   const [detected, setDetected] = useState<Platform>(null);
+  const [revealed, setRevealed] = useState(false);
+  const [copied, setCopied] = useState(false);
   const { user } = useUser();
   const isPaid = user?.publicMetadata?.isPaid as boolean | undefined;
   const licenseKey = user?.publicMetadata?.licenseKey as string | undefined;
+
+  const copyKey = () => {
+    if (licenseKey) {
+      navigator.clipboard.writeText(licenseKey);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   useEffect(() => {
     setDetected(detectPlatform());
@@ -85,9 +95,27 @@ export default function DownloadPage() {
         {/* Purchase CTA or License Info */}
         {isPaid ? (
           <div className="bg-gradient-to-br from-[var(--copper)]/20 to-[var(--copper-light)]/10 border border-[var(--copper)]/30 rounded-xl p-8 text-center mb-16">
-            <p className="text-sm text-[var(--stone-400)] mb-2">Your License Key</p>
-            <div className="bg-[var(--stone-900)] rounded-lg p-4 mb-3 font-mono text-lg text-[var(--copper-light)] tracking-wider select-all">
-              {licenseKey}
+            <p className="text-sm text-[var(--stone-400)] mb-3">Your License Key</p>
+            <div
+              className="relative group bg-[var(--stone-900)] rounded-lg p-4 mb-3 cursor-pointer"
+              onMouseEnter={() => setRevealed(true)}
+              onMouseLeave={() => setRevealed(false)}
+              onClick={copyKey}
+              title="Click to copy"
+            >
+              <div className={`font-mono text-xs text-[var(--copper-light)] break-all leading-relaxed transition-all duration-200 select-all ${revealed ? 'opacity-100 blur-0' : 'opacity-0 blur-sm select-none'}`}>
+                {licenseKey}
+              </div>
+              {!revealed && (
+                <div className="absolute inset-0 flex items-center justify-center text-sm text-[var(--stone-400)]">
+                  Hover to reveal · Click to copy
+                </div>
+              )}
+              {revealed && (
+                <div className="absolute top-2 right-2 text-xs text-[var(--copper)] opacity-0 group-hover:opacity-100 transition-opacity">
+                  {copied ? "Copied!" : "Click to copy"}
+                </div>
+              )}
             </div>
             <p className="text-xs text-[var(--stone-500)]">
               Activates on up to 3 machines. Enter this key in the desktop app after installing.
