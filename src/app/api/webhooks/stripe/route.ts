@@ -13,16 +13,50 @@ function getResend() {
   return new Resend(process.env.RESEND_API_KEY!);
 }
 
-function generateLicenseKey(): string {
-  // Unambiguous characters (no 0/O, 1/I/L)
-  const chars = "BCDFGHJKMNPQRTVWXYZ2345678";
-  let key = "";
-  const bytes = crypto.randomBytes(24);
-  for (let i = 0; i < 24; i++) {
-    key += chars[bytes[i] % chars.length];
-    if ((i + 1) % 4 === 0 && i < 23) key += "-";
+// Ed25519 PKCS8 DER header for wrapping a raw 32-byte private key (RFC 8410)
+const ED25519_PKCS8_HEADER = Buffer.from(
+  "302e020100300506032b657004220420",
+  "hex"
+);
+
+/**
+ * Generate a signed Ed25519 license key that the desktop app can verify.
+ *
+ * Requires env var LICENSE_PRIVATE_KEY = base64 of the raw 32-byte Ed25519
+ * private key produced by `python tools/license-keygen.py keygen`.
+ *
+ * Output: base64(JSON{email, issued, tier, signature}) — matches the
+ * LicenseFile struct in src-tauri/src/api/license.rs.
+ */
+function generateSignedLicense(email: string, tier: string = "standard"): string {
+  const privateKeyB64 = process.env.LICENSE_PRIVATE_KEY;
+  if (!privateKeyB64) {
+    throw new Error("LICENSE_PRIVATE_KEY environment variable is not set");
   }
-  return key;
+
+  const privateKeyBytes = Buffer.from(privateKeyB64, "base64");
+  if (privateKeyBytes.length !== 32) {
+    throw new Error("LICENSE_PRIVATE_KEY must be exactly 32 bytes (base64-encoded raw Ed25519 key)");
+  }
+
+  // Wrap raw key bytes in PKCS8 DER format so Node.js crypto can load it
+  const pkcs8Der = Buffer.concat([ED25519_PKCS8_HEADER, privateKeyBytes]);
+  const privateKey = crypto.createPrivateKey({ key: pkcs8Der, format: "der", type: "pkcs8" });
+
+  const issued = new Date().toISOString();
+
+  // Payload field order must match Rust's LicensePayload serde_json::to_string output:
+  // serde(rename_all = "camelCase") → keys: email, issued, tier
+  // LicenseTier serde(rename_all = "snake_case") → values: "standard", etc.
+  const payload = { email, issued, tier };
+  const payloadJson = JSON.stringify(payload);
+
+  const signature = crypto.sign(null, Buffer.from(payloadJson), privateKey);
+
+  // LicenseFile matches Rust struct (also camelCase): email, issued, tier, signature
+  const licenseFile = { email, issued, tier, signature: signature.toString("base64") };
+
+  return Buffer.from(JSON.stringify(licenseFile)).toString("base64");
 }
 
 async function sendLicenseEmail(email: string, licenseKey: string) {
@@ -117,7 +151,17 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ received: true });
       }
 
-      const licenseKey = generateLicenseKey();
+      // Resolve email before generating the signed license (email is embedded in the key)
+      const customerEmail =
+        session.customer_details?.email ||
+        user.emailAddresses?.[0]?.emailAddress;
+
+      if (!customerEmail) {
+        console.error(`No email found for user ${clerkUserId} — cannot generate license`);
+        return NextResponse.json({ received: true });
+      }
+
+      const licenseKey = generateSignedLicense(customerEmail, "standard");
 
       await clerk.users.updateUserMetadata(clerkUserId, {
         publicMetadata: {
@@ -133,19 +177,12 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Send license key email
-      const customerEmail =
-        session.customer_details?.email ||
-        user.emailAddresses?.[0]?.emailAddress;
-
-      if (customerEmail) {
-        try {
-          await sendLicenseEmail(customerEmail, licenseKey);
-          console.log(`License email sent to ${customerEmail}`);
-        } catch (emailErr) {
-          // Don't fail the webhook if email fails - key is still in Clerk metadata
-          console.error("Failed to send license email:", emailErr);
-        }
+      try {
+        await sendLicenseEmail(customerEmail, licenseKey);
+        console.log(`License email sent to ${customerEmail}`);
+      } catch (emailErr) {
+        // Don't fail the webhook if email fails - key is still in Clerk metadata
+        console.error("Failed to send license email:", emailErr);
       }
 
       console.log(`License issued to user ${clerkUserId}: ${licenseKey}`);
