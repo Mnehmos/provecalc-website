@@ -43,7 +43,7 @@ export async function POST(req: Request) {
             product_data: {
               name: productName,
               description:
-                "Lifetime desktop license. 3 machines. 1 year of updates included.",
+                "Lifetime desktop license. 3 machines. Free updates for life.",
             },
             unit_amount: amount,
           },

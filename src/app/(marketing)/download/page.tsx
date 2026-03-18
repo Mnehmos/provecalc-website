@@ -108,7 +108,7 @@ export default function DownloadPage() {
               </div>
               {!revealed && (
                 <div className="absolute inset-0 flex items-center justify-center text-sm text-[var(--stone-400)]">
-                  Hover to reveal · Click to copy
+                  Hover to reveal | Click to copy
                 </div>
               )}
               {revealed && (
@@ -260,7 +260,7 @@ export default function DownloadPage() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[var(--copper)] mt-0.5">&#10003;</span>
-                1 year of updates included
+                Free updates for life
               </li>
             </ul>
           </div>

@@ -70,6 +70,16 @@ export function Footer() {
               </li>
               <li>
                 <a
+                  href="https://themnemosyneresearchinstitute.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-[var(--stone-500)] hover:text-[var(--copper)] transition-colors"
+                >
+                  Company
+                </a>
+              </li>
+              <li>
+                <a
                   href="/contact"
                   className="text-sm text-[var(--stone-500)] hover:text-[var(--copper)] transition-colors"
                 >
@@ -108,7 +118,8 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="pt-8 border-t border-[var(--stone-800)] text-center">
           <p className="text-[var(--stone-500)] text-sm">
-            &copy; {new Date().getFullYear()} ProveCalc. Built in Arizona.
+            &copy; {new Date().getFullYear()} ProveCalc. Built by The Mnemosyne
+            Research Institute in Arizona.
           </p>
         </div>
       </div>

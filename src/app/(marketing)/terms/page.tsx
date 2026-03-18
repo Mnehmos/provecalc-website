@@ -70,12 +70,12 @@ export default function TermsPage() {
               <li>AI assistant (bring your own API key)</li>
               <li>PDF, DOCX, and HTML export</li>
               <li>100% offline after activation</li>
-              <li>1 year of updates included</li>
+              <li>Free updates for life</li>
             </ul>
             <p className="mt-3">
               Licenses are perpetual (non-subscription). You may continue using
-              the version you have indefinitely. Continued updates after the
-              first year require a renewal purchase.
+              the version you have indefinitely, and product updates are
+              included at no additional charge.
             </p>
           </section>
 
