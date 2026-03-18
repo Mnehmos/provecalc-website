@@ -5,8 +5,11 @@ function getTransport() {
   return nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: process.env.GMAIL_USER,        // mnehmos@themnemosyneresearchinstitute.com
-      pass: process.env.GMAIL_APP_PASSWORD, // 16-char Google App Password
+      type: "OAuth2",
+      user: process.env.GMAIL_USER,
+      clientId: process.env.GMAIL_CLIENT_ID,
+      clientSecret: process.env.GMAIL_CLIENT_SECRET,
+      refreshToken: process.env.GMAIL_REFRESH_TOKEN,
     },
   });
 }
