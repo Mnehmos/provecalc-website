@@ -10,6 +10,13 @@ const server = spawn(process.execPath, [
 ], {
   env: {
     ...process.env,
+    // The route smoke does not authenticate, but Clerk still requires a
+    // syntactically valid publishable key while rendering the root layout.
+    // This fixture key is intentionally non-secret and is used only when CI
+    // has not supplied the deployment's real public key.
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
+      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
+      "pk_test_Y2xlcmsuaW5zcGlyZWQucHVtYS03NC5sY2wuZGV2JA",
     PORT: port,
     PAID_CHECKOUT_ENABLED: "false",
     NEXT_PUBLIC_PAID_CHECKOUT_ENABLED: "false",

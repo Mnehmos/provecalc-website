@@ -17,6 +17,11 @@ jobs:
     name: Next.js build and route smoke
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      # The containment smoke renders the public Clerk provider but never
+      # authenticates. Keep the fixture non-secret and separate from any
+      # deployment credentials so CI can build without enabling providers.
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_Y2xlcmsuaW5zcGlyZWQucHVtYS03NC5sY2wuZGV2JA
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
