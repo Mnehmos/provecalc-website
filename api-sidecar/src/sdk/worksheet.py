@@ -373,7 +373,7 @@ class Worksheet:
             symbolic_form=str(symbolic),
             solve_goal_id="",
             residual=None,
-            solution_steps=steps if steps else None,
+            solutionSteps=steps if steps else None,
         )
         self._doc.nodes.append(result_node)
         self._doc.updated_at = _now()

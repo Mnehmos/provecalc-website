@@ -18,8 +18,8 @@ try:
     from .parsing import parse_equation, safe_parse_expression
     from .units import UnitRegistry
 except ImportError:
-    from parsing import parse_equation, safe_parse_expression
-    from units import UnitRegistry
+    from parsing import parse_equation, safe_parse_expression  # type: ignore[no-redef]
+    from units import UnitRegistry  # type: ignore[no-redef]
 
 logger = logging.getLogger(__name__)
 
@@ -622,6 +622,11 @@ class ComputeEngine:
                         "steps": steps,
                     }
 
+                return {
+                    "success": False,
+                    "error": f"Unsupported numeric method: {method_used}",
+                }
+
             # Multi-equation system (use fsolve)
             else:
                 all_vars = set()
@@ -789,7 +794,7 @@ class ComputeEngine:
         """
         try:
             known_set = set(known_variables or [])
-            all_variables = set()
+            all_variables: set[str] = set()
             parsed_eqs = []
 
             # Build local_dict with known variable symbols so subscripted

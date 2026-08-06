@@ -12,7 +12,7 @@ from pint import UnitRegistry as PintRegistry, DimensionalityError
 try:
     from .parsing import parse_equation
 except ImportError:
-    from parsing import parse_equation
+    from parsing import parse_equation  # type: ignore[no-redef]
 
 logger = logging.getLogger(__name__)
 
@@ -424,7 +424,9 @@ class UnitRegistry:
             logger.debug("simplify_unit reduction failed for '%s': %s", unit, e)
             return str(parsed)
 
-    def _get_dimensionality_tuple(self, dims: dict) -> Optional[Tuple[int, ...]]:
+    def _get_dimensionality_tuple(
+        self, dims: dict
+    ) -> Optional[Tuple[int, int, int, int, int, int, int]]:
         """Convert Pint dimensionality dict to a tuple for lookup.
 
         Returns None if any dimension has a fractional exponent (e.g., m^0.5),
@@ -444,7 +446,15 @@ class UnitRegistry:
         for val in raw:
             if float(val) != int(val):
                 return None
-        return tuple(int(v) for v in raw)
+        return (
+            int(raw[0]),
+            int(raw[1]),
+            int(raw[2]),
+            int(raw[3]),
+            int(raw[4]),
+            int(raw[5]),
+            int(raw[6]),
+        )
 
     def simplify_to_derived(self, value: float, unit: str) -> Dict[str, Any]:
         """
@@ -860,7 +870,7 @@ class EquationUnitValidator:
 
         errors = []
         warnings = []
-        variable_analysis = {}
+        variable_analysis: Dict[str, Dict[str, Any]] = {}
 
         # Parse equation sides
         _lhs_str, rhs_str = parse_equation(equation)
