@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import NavAuth from "../NavAuth";
 
 const navLinks = [
@@ -15,7 +16,7 @@ export function Navbar() {
   return (
     <nav className="fixed top-0 w-full z-50 bg-[var(--stone-950)]/80 backdrop-blur-md border-b border-[var(--stone-800)]">
       <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-        <a href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <img src="/logo.svg" alt="ProveCalc" className="w-8 h-8" />
           <span
             className="text-xl font-semibold"
@@ -23,7 +24,7 @@ export function Navbar() {
           >
             ProveCalc
           </span>
-        </a>
+        </Link>
 
         {/* Desktop nav links */}
         <div className="hidden md:flex items-center gap-6">

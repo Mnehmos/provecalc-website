@@ -3,20 +3,23 @@ Compute Engine - Symbolic and numeric computation using SymPy
 """
 
 import logging
-from typing import Optional, Dict, Any, List, Tuple, Union
+import math
+from numbers import Real
+from typing import Optional, Dict, Any, List, Tuple
 import sympy as sp
-from sympy.parsing.sympy_parser import parse_expr, standard_transformations, implicit_multiplication_application, convert_xor
 from sympy import latex, simplify as sp_simplify, solve as sp_solve, diff, integrate as sp_integrate
-from sympy import Symbol, symbols, Eq, N
+from sympy import Symbol, Eq, N
 from sympy import lambdify
 import numpy as np
 from scipy.optimize import fsolve, brentq, newton
 import re
 
 try:
-    from .parsing import parse_equation
+    from .parsing import parse_equation, safe_parse_expression
+    from .units import UnitRegistry
 except ImportError:
-    from parsing import parse_equation
+    from parsing import parse_equation, safe_parse_expression
+    from units import UnitRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -29,11 +32,9 @@ class ComputeEngine:
     """
 
     def __init__(self):
-        # Standard transformations for parsing
-        self.transformations = standard_transformations + (implicit_multiplication_application, convert_xor)
-
         # Cache for parsed symbols
         self._symbol_cache: Dict[str, Symbol] = {}
+        self._unit_registry = UnitRegistry()
 
         # Physical constants (value, unit)
         self.constants: Dict[str, Tuple[float, str]] = {
@@ -64,7 +65,17 @@ class ComputeEngine:
         if local_dict is None:
             local_dict = {}
 
-        # Strip LaTeX formatting before parsing
+        # LaTeX is parsed directly by the same allowlisted grammar.  This
+        # prevents the legacy cleanup below from stripping unknown commands
+        # into a different expression.
+        if "\\" in expr_str:
+            return safe_parse_expression(
+                expr_str,
+                local_dict=local_dict,
+                symbol_factory=self._get_symbol,
+            )
+
+        # Legacy pre-processing is bypassed for LaTeX input above.
         expr_str = re.sub(r'\^{([^}]*)}', r'^\1', expr_str)   # ^{2} → ^2
         expr_str = re.sub(r'_{([^}]*)}', r'_\1', expr_str)    # _{x} → _x
         # Convert LaTeX function braces to parens: sqrt{...} → sqrt(...)
@@ -91,9 +102,41 @@ class ComputeEngine:
 
         # Parse with transformations
         try:
-            return parse_expr(expr_str, local_dict=local_dict, transformations=self.transformations)
+            return safe_parse_expression(
+                expr_str,
+                local_dict=local_dict,
+                symbol_factory=self._get_symbol,
+            )
         except Exception as e:
             raise ValueError(f"Failed to parse expression '{expr_str}': {e}")
+
+    def _coerce_variable_value(self, name: str, value: Any) -> Any:
+        """Require an explicit finite numeric value for a known variable."""
+        unit: Optional[str] = None
+        if isinstance(value, dict):
+            if "value" not in value:
+                raise ValueError(f"Variable '{name}' is missing its value")
+            unit = value.get("unit")
+            value = value["value"]
+        if isinstance(value, bool) or not isinstance(value, (Real, sp.Number)):
+            raise ValueError(f"Variable '{name}' must have a numeric value")
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise ValueError(f"Variable '{name}' must have a finite numeric value") from exc
+        if not math.isfinite(numeric):
+            raise ValueError(f"Variable '{name}' must have a finite numeric value")
+        if unit:
+            if not isinstance(unit, str):
+                raise ValueError(f"Variable '{name}' has an invalid unit")
+            try:
+                numeric, _ = self._unit_registry.to_si(numeric, unit)
+            except Exception as exc:
+                raise ValueError(f"Variable '{name}' has an invalid unit: {exc}") from exc
+            if not math.isfinite(float(numeric)):
+                raise ValueError(f"Variable '{name}' must have a finite numeric value")
+            return numeric
+        return value
 
     def evaluate(self, expression: str, variables: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
@@ -111,11 +154,7 @@ class ComputeEngine:
             local_dict = {}
             if variables:
                 for name, value in variables.items():
-                    if isinstance(value, dict):
-                        # Value with unit: {"value": 5, "unit": "m"}
-                        local_dict[name] = value.get("value", 0)
-                    else:
-                        local_dict[name] = value
+                    local_dict[name] = self._coerce_variable_value(name, value)
 
             # Parse expression
             expr = self._parse_expression(expression, local_dict)
@@ -162,6 +201,16 @@ class ComputeEngine:
             Dict with solutions, method_used, steps
         """
         try:
+            if method not in (None, "symbolic", "numeric", "auto"):
+                raise ValueError("Solve method must be 'symbolic', 'numeric', or 'auto'")
+            if method == "numeric":
+                return self.solve_numeric(
+                    equations,
+                    target,
+                    variables,
+                    method="fsolve",
+                )
+
             target_sym = self._get_symbol(target)
             parsed_eqs = []
             steps = []
@@ -194,11 +243,7 @@ class ComputeEngine:
                         continue
                     sym = self._get_symbol(name)
                     local_dict[name] = sym  # Add to local_dict for parsing
-                    if isinstance(value, dict):
-                        # Value with unit: {"value": 5, "unit": "m"}
-                        subs_dict[sym] = value.get("value", 0)
-                    else:
-                        subs_dict[sym] = value
+                    subs_dict[sym] = self._coerce_variable_value(name, value)
 
                 if subs_dict:
                     steps.append({
@@ -327,6 +372,7 @@ class ComputeEngine:
 
                 # Try numeric evaluation with variable substitution
                 numeric = None
+                residual = None
                 try:
                     if subs_dict:
                         sol_substituted = sol_simplified.subs(subs_dict)
@@ -341,6 +387,17 @@ class ComputeEngine:
 
                     if evaluated.is_number:
                         numeric = float(evaluated)
+                        residual_values = []
+                        for parsed_eq in parsed_eqs:
+                            residual_value = N(
+                                (parsed_eq.lhs - parsed_eq.rhs)
+                                .subs(subs_dict)
+                                .subs(target_sym, sol_simplified)
+                            )
+                            if residual_value.is_real and residual_value.is_number:
+                                residual_values.append(abs(float(residual_value)))
+                        if residual_values:
+                            residual = max(residual_values)
                 except (TypeError, ValueError, AttributeError, OverflowError) as e:
                     logger.debug("Numeric conversion failed for solution of '%s': %s", target, e)
 
@@ -349,6 +406,7 @@ class ComputeEngine:
                     "symbolic": symbolic_str,
                     "numeric": numeric,
                     "latex": symbolic_latex,
+                    "residual": residual,
                 })
 
             if solution_values:
@@ -359,7 +417,7 @@ class ComputeEngine:
                 })
                 if solution_values[0].get("numeric") is not None:
                     steps.append({
-                        "description": f"Numeric result",
+                        "description": "Numeric result",
                         "expression": f"{target} = {solution_values[0]['numeric']}",
                         "latex": f"{target} = {solution_values[0]['numeric']}",
                     })
@@ -367,7 +425,10 @@ class ComputeEngine:
             return {
                 "success": True,
                 "solutions": solution_values,
-                "method_used": "symbolic" if not subs_dict else "symbolic+numeric",
+                "method_used": "symbolic",
+                "root_count": len(solution_values),
+                "root_selection_required": len(solution_values) > 1,
+                "selection_policy": "explicit_root_selection_required" if len(solution_values) > 1 else "unique_root",
                 "steps": steps,
             }
         except Exception as e:
@@ -411,10 +472,7 @@ class ComputeEngine:
                         continue
                     sym = self._get_symbol(name)
                     local_dict[name] = sym
-                    if isinstance(value, dict):
-                        subs_dict[sym] = value.get("value", 0)
-                    else:
-                        subs_dict[sym] = value
+                    subs_dict[sym] = self._coerce_variable_value(name, value)
 
             # Parse equations into expressions (LHS - RHS = 0 form)
             expressions = []
@@ -473,6 +531,16 @@ class ComputeEngine:
                     try:
                         sym_solutions = sp_solve(expr, target_sym)
                         if sym_solutions and isinstance(sym_solutions, list):
+                            if len(sym_solutions) > 1:
+                                return {
+                                    "success": False,
+                                    "error": (
+                                        f"Multiple roots found for {target}; provide an explicit "
+                                        "numeric method and initial guess or select a branch."
+                                    ),
+                                    "root_count": len(sym_solutions),
+                                    "root_selection_required": True,
+                                }
                             # Found symbolic solution, evaluate it
                             numeric = float(N(sym_solutions[0]))
                             steps.append({
@@ -536,7 +604,7 @@ class ComputeEngine:
 
                 if solution is not None:
                     steps.append({
-                        "description": f"Numeric solution",
+                        "description": "Numeric solution",
                         "expression": f"{target} ≈ {solution:.10g}",
                         "latex": f"{target} \\approx {solution:.10g}",
                     })
@@ -582,7 +650,7 @@ class ComputeEngine:
                 residual = float(np.max(np.abs(system(solutions_arr))))
 
                 steps.append({
-                    "description": f"Numeric solution (system)",
+                    "description": "Numeric solution (system)",
                     "expression": f"{target} ≈ {solution:.10g}",
                     "latex": f"{target} \\approx {solution:.10g}",
                 })

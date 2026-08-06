@@ -16,6 +16,8 @@ import type {
   ResultNode,
   Assumption,
 } from '../types/document';
+import katex from 'katex';
+import katexCss from 'katex/dist/katex.min.css?inline';
 
 export interface HtmlExportOptions {
   /** If true, embeds all CSS inline. If false, uses CDN links. */
@@ -35,8 +37,8 @@ const DEFAULT_OPTIONS: HtmlExportOptions = {
   theme: 'dark',
 };
 
-/** KaTeX CDN version matching the app */
-const KATEX_VERSION = '0.16.9';
+/** KaTeX is rendered during export; saved HTML does not execute remote code. */
+const INLINE_KATEX_CSS = katexCss.replace(/@font-face\{[^}]+\}/g, '');
 
 /** Generate dark theme CSS */
 function getDarkThemeCSS(): string {
@@ -402,6 +404,19 @@ function formatUnit(unit: string | undefined): string {
     .replace(/\*/g, ' &middot; ');
 }
 
+function renderMath(latex: string, displayMode: boolean): string {
+  try {
+    return katex.renderToString(latex, {
+      displayMode,
+      throwOnError: false,
+      strict: false,
+      trust: false,
+    });
+  } catch {
+    return escapeHtml(latex);
+  }
+}
+
 /** Get verification badge HTML */
 function getVerificationBadge(node: WorksheetNode): string {
   const status = node.verification.status;
@@ -466,7 +481,6 @@ function renderGivenNode(node: GivenNode, showVerification: boolean): string {
 
 /** Render an equation node */
 function renderEquationNode(node: EquationNode, showVerification: boolean): string {
-  // Use KaTeX to render the LaTeX
   const latex = node.latex || `${node.lhs} = ${node.rhs}`;
 
   return `
@@ -476,7 +490,7 @@ function renderEquationNode(node: EquationNode, showVerification: boolean): stri
         ${showVerification ? getVerificationBadge(node) : ''}
       </div>
       <div class="node-content">
-        <span class="katex-display">${escapeHtml(latex)}</span>
+        <span class="katex-display">${renderMath(latex, true)}</span>
       </div>
     </div>
   `;
@@ -491,7 +505,7 @@ function renderConstraintNode(node: ConstraintNode, showVerification: boolean): 
         ${showVerification ? getVerificationBadge(node) : ''}
       </div>
       <div class="node-content">
-        <span class="katex-display">${escapeHtml(node.latex)}</span>
+        <span class="katex-display">${renderMath(node.latex, true)}</span>
         ${node.description ? `<div class="description">${escapeHtml(node.description)}</div>` : ''}
       </div>
     </div>
@@ -529,7 +543,11 @@ function renderResultNode(node: ResultNode, showVerification: boolean): string {
       <div class="node-content">
         <span class="symbol">${escapeHtml(node.symbol)}</span> =
         <span class="value">${value}</span> ${unitHtml}
-        ${node.symbolic_form ? `<div class="symbolic">${escapeHtml(node.symbolic_form)}</div>` : ''}
+        ${node.latex
+          ? `<div class="symbolic katex-display">${renderMath(node.latex, true)}</div>`
+          : node.symbolic_form
+            ? `<div class="symbolic">${escapeHtml(node.symbolic_form)}</div>`
+            : ''}
       </div>
     </div>
   `;
@@ -564,7 +582,7 @@ function renderAssumptions(assumptions: Assumption[]): string {
   const assumptionItems = assumptions.map(a => `
     <div class="assumption ${a.active ? '' : 'assumption-inactive'}">
       ${escapeHtml(a.statement)}
-      ${a.formal_expression ? `<br><small>${escapeHtml(a.formal_expression)}</small>` : ''}
+       ${a.formal_expression ? `<br><small>${renderMath(a.formal_expression, false)}</small>` : ''}
     </div>
   `).join('');
 
@@ -611,33 +629,12 @@ export function exportToHtml(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'none'; style-src 'unsafe-inline' data:; script-src 'none'; font-src 'none'; img-src data:;">
   <title>${escapeHtml(document.name)} - ProveCalc</title>
   ${opts.standalone
-    ? `<style>${css}</style>`
-    : `<link rel="stylesheet" href="data:text/css,${encodeURIComponent(css)}">`
+    ? `<style>${css}${INLINE_KATEX_CSS}</style>`
+    : `<link rel="stylesheet" href="data:text/css,${encodeURIComponent(`${css}${INLINE_KATEX_CSS}`)}">`
   }
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@${KATEX_VERSION}/dist/katex.min.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@${KATEX_VERSION}/dist/katex.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@${KATEX_VERSION}/dist/contrib/auto-render.min.js"></script>
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      renderMathInElement(document.body, {
-        delimiters: [
-          {left: "$$", right: "$$", display: true},
-          {left: "$", right: "$", display: false}
-        ],
-        throwOnError: false
-      });
-      // Also render elements with katex-display class
-      document.querySelectorAll('.katex-display').forEach(function(el) {
-        try {
-          katex.render(el.textContent, el, { displayMode: true, throwOnError: false });
-        } catch (e) {
-          console.warn('KaTeX render error:', e);
-        }
-      });
-    });
-  </script>
 </head>
 <body>
   <div class="container">

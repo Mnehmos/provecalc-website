@@ -1,7 +1,7 @@
 /**
  * POST /api/foxit/generate
  *
- * Generates a verified PDF report from worksheet data.
+ * Generates a calculation review PDF from worksheet data.
  *
  * Strategy:
  * 1. Try Foxit Document Generation API (template + data → PDF)
@@ -11,6 +11,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { generateDocument } from "../../../../services/foxitService";
 import {
   buildTemplateDocx,
@@ -21,6 +22,11 @@ import { generateLocalPdf } from "../../../../services/localPdfGenerator";
 
 export async function POST(req: NextRequest) {
   try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+
     const body: WorksheetExportData = await req.json();
 
     // Try Foxit Document Generation API first

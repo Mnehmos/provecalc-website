@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function Footer() {
   return (
     <footer className="py-16 border-t border-[var(--stone-800)]">
@@ -5,7 +7,7 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <a href="/" className="flex items-center gap-2 mb-3">
+            <Link href="/" className="flex items-center gap-2 mb-3">
               <img src="/logo.svg" alt="" className="w-6 h-6" />
               <span
                 style={{ fontFamily: "'Space Grotesk', sans-serif" }}
@@ -13,7 +15,7 @@ export function Footer() {
               >
                 ProveCalc
               </span>
-            </a>
+            </Link>
             <p className="text-[var(--stone-500)] text-sm leading-relaxed">
               Engineering calculations you can prove.
             </p>

@@ -3,20 +3,23 @@
  * Tests the key by making a minimal chat completion request.
  */
 
+import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
-    const { apiKey } = await req.json();
-
-    if (!apiKey) {
-      return NextResponse.json({ valid: false, error: 'API key is required' });
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ valid: false, error: 'Authentication required' }, { status: 401 });
     }
 
-    // Debug: return key metadata so we can verify what the browser sent
-    const keyPreview = `${apiKey.substring(0, 12)}...${apiKey.substring(apiKey.length - 4)} (len=${apiKey.length})`;
+    const { apiKey } = await req.json();
+
+    if (typeof apiKey !== 'string' || apiKey.length < 8 || apiKey.length > 512) {
+      return NextResponse.json({ valid: false, error: 'API key is required' });
+    }
 
     // Use auth/key endpoint for validation
     const response = await fetch('https://openrouter.ai/api/v1/auth/key', {
@@ -25,7 +28,7 @@ export async function POST(req: NextRequest) {
 
     if (response.ok) {
       const data = await response.json();
-      return NextResponse.json({ valid: true, label: data?.data?.label, keyPreview });
+      return NextResponse.json({ valid: true, label: data?.data?.label });
     }
 
     // Fallback: try a minimal completion to validate
@@ -52,7 +55,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       valid: false,
       error: errorData?.error?.message || `HTTP ${chatResponse.status}`,
-      keyPreview,
     });
   } catch (err) {
     return NextResponse.json({

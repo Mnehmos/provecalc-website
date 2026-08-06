@@ -74,7 +74,7 @@ const trustItems = [
   {
     title: "Low purchase risk",
     description:
-      "One-time license, 3 machine activations, 30-day refund, and no subscription server checks for desktop use after activation.",
+      "One-time license, local desktop work after activation, and a 30-day refund policy.",
   },
 ];
 
@@ -455,14 +455,14 @@ export default function LandingPage() {
           </div>
           <div className="max-w-3xl mx-auto glass-card rounded-2xl p-8 text-center">
             <div className="inline-flex items-center gap-2 bg-[var(--copper)]/15 text-[var(--copper-light)] rounded-full px-4 py-1.5 text-sm font-medium mb-5">
-              Lifetime desktop license
+              Perpetual desktop license
             </div>
             <div className="text-5xl font-bold text-[var(--copper-light)] mb-3">
               $200
             </div>
             <p className="text-[var(--stone-400)] text-lg mb-8">
-              Includes 3 activations, free updates for life, and a 30-day
-              money-back guarantee.
+              Includes local license verification, signed release updates under
+              published terms, and a 30-day money-back guarantee.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <CheckoutButton

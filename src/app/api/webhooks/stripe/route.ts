@@ -13,6 +13,10 @@ function getResend() {
   return new Resend(process.env.RESEND_API_KEY!);
 }
 
+const EXPECTED_LICENSE_AMOUNT_CENTS = 20000;
+const EXPECTED_LICENSE_CURRENCY = "usd";
+const EXPECTED_LICENSE_PRODUCT = "provecalc-desktop-license";
+
 // Ed25519 PKCS8 DER header for wrapping a raw 32-byte private key (RFC 8410)
 const ED25519_PKCS8_HEADER = Buffer.from(
   "302e020100300506032b657004220420",
@@ -98,7 +102,7 @@ async function sendLicenseEmail(email: string, licenseKey: string) {
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 32px 0;" />
 
         <p style="color: #9ca3af; font-size: 12px; text-align: center;">
-          This license activates on up to 3 machines and works offline after activation.<br/>
+           This license is verified locally after activation; core desktop work does not require a subscription check.<br/>
           Questions? Reply to this email or visit <a href="${appUrl}" style="color: #b87333;">provecalc.com</a>
         </p>
       </div>
@@ -138,6 +142,41 @@ export async function POST(req: NextRequest) {
       const session = event.data.object as Stripe.Checkout.Session;
       const clerkUserId = session.metadata?.clerkUserId;
 
+      const expectedPriceId = process.env.STRIPE_LICENSE_PRICE_ID;
+      const paidLineItems = expectedPriceId
+        ? await getStripe().checkout.sessions.listLineItems(session.id, {
+            limit: 2,
+            expand: ["data.price"],
+          })
+        : null;
+      const exactPrice =
+        paidLineItems?.data.length === 1 &&
+        paidLineItems.data[0]?.quantity === 1 &&
+        paidLineItems.data[0]?.price?.id === expectedPriceId;
+      const exactPaidProduct =
+        event.livemode === true &&
+        session.mode === "payment" &&
+        session.payment_status === "paid" &&
+        session.currency === EXPECTED_LICENSE_CURRENCY &&
+        session.amount_total === EXPECTED_LICENSE_AMOUNT_CENTS &&
+        exactPrice &&
+        session.metadata?.product === EXPECTED_LICENSE_PRODUCT &&
+        session.metadata?.amountCents === String(EXPECTED_LICENSE_AMOUNT_CENTS) &&
+        session.client_reference_id === clerkUserId;
+
+      if (!exactPaidProduct) {
+        console.error("Rejected Stripe session outside the paid ProveCalc license contract", {
+          sessionId: session.id,
+          mode: session.mode,
+          paymentStatus: session.payment_status,
+          currency: session.currency,
+        amountTotal: session.amount_total,
+        product: session.metadata?.product,
+        priceId: paidLineItems?.data[0]?.price?.id,
+        });
+        return NextResponse.json({ error: "Unrecognized paid product" }, { status: 400 });
+      }
+
       if (!clerkUserId) {
         console.error("No clerkUserId in session metadata");
         return NextResponse.json({ received: true });
@@ -146,7 +185,10 @@ export async function POST(req: NextRequest) {
       // Check if user already has a license (idempotency)
       const clerk = await clerkClient();
       const user = await clerk.users.getUser(clerkUserId);
-      if (user.publicMetadata?.isPaid) {
+      if (
+        user.publicMetadata?.isPaid ||
+        user.privateMetadata?.stripeSessionId === session.id
+      ) {
         console.log(`User ${clerkUserId} already has a license, skipping`);
         return NextResponse.json({ received: true });
       }
@@ -166,13 +208,13 @@ export async function POST(req: NextRequest) {
       await clerk.users.updateUserMetadata(clerkUserId, {
         publicMetadata: {
           isPaid: true,
-          licenseKey,
           purchaseDate: new Date().toISOString(),
-          maxMachines: 3,
         },
         privateMetadata: {
+          licenseKey,
           stripeCustomerId: session.customer as string,
           stripeSessionId: session.id,
+          stripeEventId: event.id,
           paymentStatus: session.payment_status,
         },
       });
@@ -185,7 +227,7 @@ export async function POST(req: NextRequest) {
         console.error("Failed to send license email:", emailErr);
       }
 
-      console.log(`License issued to user ${clerkUserId}: ${licenseKey}`);
+      console.log("License issued", { userId: clerkUserId, sessionId: session.id });
     }
 
     return NextResponse.json({ received: true });

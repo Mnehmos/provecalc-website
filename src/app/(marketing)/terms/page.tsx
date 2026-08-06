@@ -62,15 +62,15 @@ export default function TermsPage() {
             </h2>
             <p className="mb-3">
               ProveCalc is sold as a one-time purchase at $200 per license key.
-              Each key activates on up to 3 machines. Features include:
+              The key is verified locally after activation. Features include:
             </p>
             <ul className="list-disc pl-6 space-y-1 text-[var(--stone-400)]">
               <li>Unlimited worksheets and nodes</li>
               <li>Full SymPy compute engine with Pint unit analysis</li>
               <li>AI assistant (bring your own API key)</li>
               <li>PDF, DOCX, and HTML export</li>
-              <li>100% offline after activation</li>
-              <li>Free updates for life</li>
+              <li>Core desktop calculation work remains local after activation</li>
+              <li>Signed updates under the published license terms</li>
             </ul>
             <p className="mt-3">
               Licenses are perpetual (non-subscription). You may continue using

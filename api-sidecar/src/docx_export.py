@@ -6,7 +6,6 @@ Equations are rendered as styled text (editable in Word).
 """
 
 import io
-import base64
 from typing import List, Dict, Any, Optional
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor
@@ -20,6 +19,9 @@ def export_to_docx(
     nodes: List[Dict[str, Any]],
     assumptions: List[Dict[str, Any]],
     metadata: Optional[Dict[str, Any]] = None,
+    source_revision: Optional[str] = None,
+    verification_summary: Optional[Dict[str, Any]] = None,
+    audit_trail: Optional[List[Dict[str, Any]]] = None,
 ) -> bytes:
     """
     Export a worksheet to Word document format.
@@ -46,6 +48,13 @@ def export_to_docx(
     if metadata:
         _add_metadata_section(doc, metadata)
 
+    _add_verification_summary(
+        doc,
+        source_revision=source_revision,
+        verification_summary=verification_summary,
+        audit_trail=audit_trail,
+    )
+
     # Add separator
     doc.add_paragraph()
 
@@ -71,7 +80,52 @@ def export_to_docx(
     return buffer.getvalue()
 
 
-def _setup_styles(doc: Document):
+def _add_verification_summary(
+    doc: Any,
+    *,
+    source_revision: Optional[str],
+    verification_summary: Optional[Dict[str, Any]],
+    audit_trail: Optional[List[Dict[str, Any]]],
+) -> None:
+    """Make unresolved and stale report scope explicit in the DOCX artifact."""
+    summary = verification_summary or {}
+    entries = audit_trail or []
+    if not source_revision and not summary and not entries:
+        return
+
+    doc.add_heading('Verification scope', level=1)
+    if source_revision:
+        paragraph = doc.add_paragraph()
+        paragraph.add_run('Source revision: ').bold = True
+        paragraph.add_run(str(source_revision))
+
+    labels = (
+        ('Verified', 'verified'),
+        ('Failed', 'failed'),
+        ('Unchecked', 'unchecked'),
+        ('Pending', 'pending'),
+        ('Unverified', 'unverified'),
+        ('Stale', 'stale'),
+    )
+    counts = '; '.join(f'{label}: {int(summary.get(key, 0) or 0)}' for label, key in labels)
+    doc.add_paragraph(f'{counts}; Audit entries: {len(entries)}')
+
+    issues = summary.get('issues') or []
+    if issues:
+        doc.add_paragraph('Unresolved node statuses:', style='Intense Quote')
+        for issue in issues:
+            node_id = str(issue.get('node_id', 'unknown'))
+            status = str(issue.get('status', 'unknown'))
+            suffix = ' (stale)' if issue.get('stale') else ''
+            reason = issue.get('reason')
+            if reason:
+                suffix += f' — {reason}'
+            doc.add_paragraph(f'{node_id}: {status}{suffix}', style='List Bullet')
+    else:
+        doc.add_paragraph('No unresolved node statuses recorded.')
+
+
+def _setup_styles(doc: Any):
     """Set up custom styles for the document."""
     styles = doc.styles
 
@@ -99,7 +153,7 @@ def _setup_styles(doc: Document):
         pass
 
 
-def _add_metadata_section(doc: Document, metadata: Dict[str, Any]):
+def _add_metadata_section(doc: Any, metadata: Dict[str, Any]):
     """Add document metadata section."""
     if metadata.get('author'):
         p = doc.add_paragraph()
@@ -112,7 +166,7 @@ def _add_metadata_section(doc: Document, metadata: Dict[str, Any]):
         p.add_run(metadata['description'])
 
 
-def _add_node(doc: Document, node: Dict[str, Any], index: int):
+def _add_node(doc: Any, node: Dict[str, Any], index: int):
     """Add a single node to the document."""
     node_type = node.get('type', 'unknown')
 
@@ -130,14 +184,14 @@ def _add_node(doc: Document, node: Dict[str, Any], index: int):
         _add_solve_goal_node(doc, node)
 
 
-def _add_text_node(doc: Document, node: Dict[str, Any]):
+def _add_text_node(doc: Any, node: Dict[str, Any]):
     """Add a text node as a paragraph."""
     content = node.get('content', '')
     p = doc.add_paragraph(content)
     p.paragraph_format.space_after = Pt(12)
 
 
-def _add_given_node(doc: Document, node: Dict[str, Any], index: int):
+def _add_given_node(doc: Any, node: Dict[str, Any], index: int):
     """Add a given node with variable definition."""
     symbol = node.get('symbol', '?')
     value_obj = node.get('value', {})
@@ -169,7 +223,7 @@ def _add_given_node(doc: Document, node: Dict[str, Any], index: int):
         desc.runs[0].font.size = Pt(10)
 
 
-def _add_equation_node(doc: Document, node: Dict[str, Any], index: int):
+def _add_equation_node(doc: Any, node: Dict[str, Any], index: int):
     """Add an equation node."""
     latex = node.get('latex', '')
     lhs = node.get('lhs', '')
@@ -188,7 +242,7 @@ def _add_equation_node(doc: Document, node: Dict[str, Any], index: int):
     eq.style = 'Equation'
 
 
-def _add_result_node(doc: Document, node: Dict[str, Any]):
+def _add_result_node(doc: Any, node: Dict[str, Any]):
     """Add a result node (computed value)."""
     symbol = node.get('symbol', '?')
     value_obj = node.get('value', {})
@@ -221,7 +275,7 @@ def _add_result_node(doc: Document, node: Dict[str, Any]):
         verified.paragraph_format.left_indent = Inches(0.5)
 
 
-def _add_constraint_node(doc: Document, node: Dict[str, Any]):
+def _add_constraint_node(doc: Any, node: Dict[str, Any]):
     """Add a constraint node."""
     latex = node.get('latex', '')
     sympy = node.get('sympy', '')
@@ -247,7 +301,7 @@ def _add_constraint_node(doc: Document, node: Dict[str, Any]):
         desc.runs[0].font.size = Pt(10)
 
 
-def _add_solve_goal_node(doc: Document, node: Dict[str, Any]):
+def _add_solve_goal_node(doc: Any, node: Dict[str, Any]):
     """Add a solve goal node."""
     target = node.get('target_symbol', '?')
     method = node.get('method', 'auto')
@@ -258,7 +312,7 @@ def _add_solve_goal_node(doc: Document, node: Dict[str, Any]):
         label.add_run(f' (method: {method})')
 
 
-def _add_assumptions_section(doc: Document, assumptions: List[Dict[str, Any]]):
+def _add_assumptions_section(doc: Any, assumptions: List[Dict[str, Any]]):
     """Add assumptions section at the end of document."""
     doc.add_heading('Assumptions', level=1)
 

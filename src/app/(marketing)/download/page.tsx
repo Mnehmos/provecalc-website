@@ -57,7 +57,7 @@ export default function DownloadPage() {
   const [copied, setCopied] = useState(false);
   const { user } = useUser();
   const isPaid = user?.publicMetadata?.isPaid as boolean | undefined;
-  const licenseKey = user?.publicMetadata?.licenseKey as string | undefined;
+  const [licenseKey, setLicenseKey] = useState<string>();
 
   const copyKey = () => {
     if (licenseKey) {
@@ -71,6 +71,31 @@ export default function DownloadPage() {
     setDetected(detectPlatform());
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id || !isPaid) {
+      setLicenseKey(undefined);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    void fetch("/api/license", { cache: "no-store", credentials: "include" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload: { licenseKey?: unknown } | null) => {
+        if (!cancelled) {
+          setLicenseKey(typeof payload?.licenseKey === "string" ? payload.licenseKey : undefined);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setLicenseKey(undefined);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isPaid, user?.id]);
+
   return (
     <main className="pt-24 pb-20">
       <div className="max-w-4xl mx-auto px-6">
@@ -83,7 +108,7 @@ export default function DownloadPage() {
             Get ProveCalc
           </h1>
           <p className="text-xl text-[var(--stone-400)] mb-2">
-            Full-power desktop app. Works offline. Your calculations, your machine.
+            Full-power desktop app. Core calculations run locally after activation.
           </p>
           <p className="text-sm text-[var(--stone-500)]">
             {isPaid
@@ -118,7 +143,7 @@ export default function DownloadPage() {
               )}
             </div>
             <p className="text-xs text-[var(--stone-500)]">
-              Activates on up to 3 machines. Enter this key in the desktop app after installing.
+              Enter this key in the desktop app after installing. Core desktop work remains local after activation.
             </p>
           </div>
         ) : (
@@ -131,7 +156,7 @@ export default function DownloadPage() {
               <span className="text-[var(--stone-400)] text-lg font-normal">one-time</span>
             </h2>
             <p className="text-[var(--stone-400)] mb-6">
-              Unlimited worksheets. AI-assisted. 3 machines. Forever yours.
+              Unlimited worksheets. AI-assisted. Perpetual use of the purchased version.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <CheckoutButton
@@ -145,7 +170,7 @@ export default function DownloadPage() {
               </a>
             </div>
             <p className="text-xs text-[var(--stone-500)] mt-4">
-              30-day money-back guarantee. Download link delivered after purchase.
+              30-day money-back guarantee. License details remain available while signed in.
             </p>
           </div>
         )}
@@ -242,7 +267,7 @@ export default function DownloadPage() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[var(--copper)] mt-0.5">&#10003;</span>
-                4-gate verification on every calculation
+                Typed verification status for supported checks
               </li>
             </ul>
             <ul className="space-y-3 text-sm text-[var(--stone-300)]">
@@ -252,7 +277,7 @@ export default function DownloadPage() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[var(--copper)] mt-0.5">&#10003;</span>
-                100% offline after activation
+                Core calculation work remains local after activation
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[var(--copper)] mt-0.5">&#10003;</span>
@@ -260,7 +285,7 @@ export default function DownloadPage() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[var(--copper)] mt-0.5">&#10003;</span>
-                Free updates for life
+                Signed updates under the published license terms
               </li>
             </ul>
           </div>
@@ -300,7 +325,7 @@ export default function DownloadPage() {
               <div>
                 <p className="font-medium">Download the installer</p>
                 <p className="text-sm text-[var(--stone-400)]">
-                  You&apos;ll receive a download link and license key by email immediately after purchase.
+                  We email the license details when delivery succeeds; you can also retrieve them here while signed in.
                 </p>
               </div>
             </div>
@@ -311,7 +336,7 @@ export default function DownloadPage() {
               <div>
                 <p className="font-medium">Activate & start calculating</p>
                 <p className="text-sm text-[var(--stone-400)]">
-                  Enter your license key in the app. Works offline from day one.
+                  Enter your license key in the app. Core calculation work remains local after activation.
                 </p>
               </div>
             </div>

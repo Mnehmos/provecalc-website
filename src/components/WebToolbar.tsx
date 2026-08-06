@@ -291,7 +291,7 @@ export function WebToolbar({
         <button
           className="toolbar-button foxit-btn"
           onClick={exportFoxitPdf}
-          title="Generate Verified PDF Report"
+          title="Generate Calculation PDF Report"
           disabled={isLoading || !document || foxitExporting}
         >
           {foxitExporting ? "Generating..." : "PDF Report"}

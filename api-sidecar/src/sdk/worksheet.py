@@ -18,8 +18,6 @@ from __future__ import annotations
 
 import json
 import logging
-import uuid
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
@@ -34,10 +32,8 @@ from .models import (
     NodeChange,
     ResultNode,
     SolutionStep,
-    SolveGoalNode,
     SolveResult,
     TextNode,
-    AnnotationNode,
     Unverified,
     Unit,
     ValueWithUnit,

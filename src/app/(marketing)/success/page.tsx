@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser, SignUpButton, SignedIn, SignedOut } from "@clerk/nextjs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const platforms = [
   {
@@ -37,6 +37,33 @@ export default function SuccessPage() {
   const { user, isLoaded } = useUser();
   const [copied, setCopied] = useState(false);
   const [revealed, setRevealed] = useState(false);
+  const isPaid = user?.publicMetadata?.isPaid as boolean | undefined;
+  const [licenseKey, setLicenseKey] = useState<string>();
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id || !isPaid) {
+      setLicenseKey(undefined);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    void fetch("/api/license", { cache: "no-store", credentials: "include" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload: { licenseKey?: unknown } | null) => {
+        if (!cancelled) {
+          setLicenseKey(typeof payload?.licenseKey === "string" ? payload.licenseKey : undefined);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setLicenseKey(undefined);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isPaid, user?.id]);
 
   if (!isLoaded) {
     return (
@@ -47,9 +74,6 @@ export default function SuccessPage() {
       </main>
     );
   }
-
-  const licenseKey = user?.publicMetadata?.licenseKey as string | undefined;
-  const isPaid = user?.publicMetadata?.isPaid as boolean | undefined;
 
   // Not signed in
   if (!user) {
@@ -261,8 +285,8 @@ export default function SuccessPage() {
               <div>
                 <p className="font-medium">Activate with your license key</p>
                 <p className="text-sm text-[var(--stone-400)]">
-                  Paste your key when prompted. Works on up to 3 machines.
-                  100% offline after activation.
+                  Paste your key when prompted. Core desktop work remains local
+                  after activation.
                 </p>
               </div>
             </div>

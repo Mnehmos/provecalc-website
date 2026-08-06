@@ -3,16 +3,29 @@
  * Keeps the API key on the server and avoids browser CORS / auth issues.
  */
 
+import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: { message: 'Authentication required', code: 401 } }, { status: 401 });
+    }
+
     const body = await req.json();
     const { apiKey, model, messages, max_tokens } = body;
 
-    if (!apiKey) {
+    if (
+      typeof apiKey !== 'string' ||
+      apiKey.length < 8 ||
+      apiKey.length > 512 ||
+      !Array.isArray(messages) ||
+      messages.length === 0 ||
+      messages.length > 64
+    ) {
       return NextResponse.json({ error: { message: 'API key is required', code: 400 } }, { status: 400 });
     }
 

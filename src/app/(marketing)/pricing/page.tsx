@@ -1,6 +1,5 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { CheckoutButton } from "../../../components/landing/CheckoutButton";
 
 const features = [
@@ -11,15 +10,15 @@ const features = [
   "PDF, DOCX, and HTML export",
   "Solve goals and system analysis",
   "Templates library",
-  "3 machine activations",
-  "Free updates for life",
+  "Offline license verification after activation",
+  "Signed updates under published license terms",
 ];
 
 const assurances = [
   {
     title: "Perpetual license",
     description:
-      "You buy the desktop app once, keep it forever, and receive ongoing updates without a renewal fee.",
+      "You buy the desktop app once and receive perpetual use of the purchased version. Update eligibility is stated in the published license terms.",
   },
   {
     title: "Readable files",
@@ -29,7 +28,7 @@ const assurances = [
   {
     title: "Simple activation",
     description:
-      "Each key activates on up to 3 machines, and you can move a seat by deactivating one device and activating another.",
+      "Enter the signed license key in the desktop app. Core calculation work remains local after activation.",
   },
   {
     title: "Low buyer risk",
@@ -74,7 +73,7 @@ const comparisonRows = [
 const faq = [
   {
     q: "Is this really a one-time payment?",
-    a: "Yes. You pay $200 once, own the desktop license forever, and updates are included for life.",
+    a: "Yes. You pay $200 once for perpetual use of the purchased desktop version. Update eligibility and supported versions are stated in the published license terms.",
   },
   {
     q: "What does 'bring your own key' mean for AI?",
@@ -95,9 +94,6 @@ const faq = [
 ];
 
 export default function PricingPage() {
-  const searchParams = useSearchParams();
-  const isTest = searchParams.get("test") === "1";
-
   return (
     <main className="pt-24 pb-20">
       <div className="max-w-6xl mx-auto px-6">
@@ -117,13 +113,13 @@ export default function PricingPage() {
         <div className="max-w-lg mx-auto mb-20">
           <div className="bg-gradient-to-br from-[var(--copper)]/20 to-[var(--copper-light)]/10 border border-[var(--copper)]/30 rounded-xl p-8 text-center relative">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[var(--copper)] text-xs font-bold px-3 py-1 rounded-full">
-              LIFETIME LICENSE
+              PERPETUAL LICENSE
             </div>
             <div className="text-5xl font-bold text-[var(--copper-light)] mb-2 mt-2">
               $200
             </div>
             <p className="text-[var(--stone-400)] mb-8">
-              One-time payment. Yours forever.
+              One-time payment. Perpetual use of the purchased version.
             </p>
 
             <ul className="text-left space-y-3 mb-8">
@@ -142,14 +138,8 @@ export default function PricingPage() {
 
             <CheckoutButton
               className="block w-full bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-4 py-3 rounded-lg font-medium transition-colors text-center"
-              test={isTest}
-              label={isTest ? "Test Purchase - $1" : "Buy Now"}
+              label="Buy Now"
             />
-            {isTest && (
-              <p className="text-xs text-yellow-400 mt-3 font-semibold">
-                TEST MODE - $1 charge only
-              </p>
-            )}
             <p className="text-xs text-[var(--stone-500)] mt-3">
               30-day money-back guarantee
             </p>

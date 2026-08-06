@@ -9,17 +9,19 @@ It never makes decisions - only the LLM proposes, and the engine verifies.
 
 import logging
 import os
-from fastapi import FastAPI, HTTPException
+import asyncio
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import Optional, List, Dict, Any, Tuple
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
+from typing import Optional, List, Dict, Any, Tuple, Literal, Annotated
 import uvicorn
-import numpy as np
-
-logger = logging.getLogger(__name__)
 
 from .compute import ComputeEngine
+from .sandbox import run_isolated
 from .units import UnitRegistry, EquationUnitValidator, PhysicalDomainClassifier
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="mnehmos.worksheet Compute Engine",
@@ -35,6 +37,27 @@ _ALLOWED_ORIGINS = [
     "https://tauri.localhost",
     "tauri://localhost",
 ]
+
+# Hosted computation is an explicit opt-in. If enabled, it must be reached
+# through a server-to-server caller carrying the private bearer token; the
+# browser client is intentionally disabled until that proxy exists.
+_COMPUTE_ENABLED = os.environ.get("PROVECALC_COMPUTE_ENABLED") == "1"
+_COMPUTE_TOKEN = os.environ.get("PROVECALC_COMPUTE_TOKEN", "")
+
+
+@app.middleware("http")
+async def protect_hosted_compute(request: Request, call_next):
+    if request.url.path == "/health":
+        return await call_next(request)
+    if not _COMPUTE_ENABLED:
+        return JSONResponse(
+            {"error": "Hosted computation is disabled while the release gate is closed."},
+            status_code=503,
+        )
+    authorization = request.headers.get("authorization", "")
+    if not _COMPUTE_TOKEN or authorization != f"Bearer {_COMPUTE_TOKEN}":
+        return JSONResponse({"error": "Hosted computation authorization required."}, status_code=401)
+    return await call_next(request)
 
 # Add Railway/production origins from env
 _extra_origins = os.environ.get("PROVECALC_CORS_ORIGINS", "")
@@ -54,7 +77,13 @@ app.add_middleware(
 
 # Default configuration constants
 PLOT_DEFAULT_POINT_COUNT = 100
-PLOT_Y_PADDING_RATIO = 0.1
+
+MAX_EXPRESSION_LENGTH = 4096
+MAX_EQUATIONS = 16
+MAX_VARIABLES = 128
+MAX_BATCH_UNITS = 128
+BoundedExpression = Annotated[str, Field(min_length=1, max_length=MAX_EXPRESSION_LENGTH)]
+BoundedIdentifier = Annotated[str, Field(min_length=1, max_length=64, pattern=r"^[A-Za-z_][A-Za-z0-9_]*$")]
 
 # Initialize engines
 compute = ComputeEngine()
@@ -63,10 +92,16 @@ unit_validator = EquationUnitValidator(units)
 domain_classifier = PhysicalDomainClassifier(units)
 
 
+async def _run_isolated(operation: str, *args: Any) -> Any:
+    """Keep process creation and the hard join timeout off the event loop."""
+
+    return await asyncio.to_thread(run_isolated, operation, *args)
+
+
 # Request/Response Models
 class EvaluateRequest(BaseModel):
-    expression: str
-    variables: Optional[Dict[str, Any]] = None
+    expression: BoundedExpression
+    variables: Optional[Dict[str, Any]] = Field(default=None, max_length=MAX_VARIABLES)
 
 
 class ComputeResponse(BaseModel):
@@ -80,7 +115,7 @@ class ComputeResponse(BaseModel):
 
 
 class CheckUnitsRequest(BaseModel):
-    expression: str
+    expression: BoundedExpression
     expected_unit: Optional[str] = None
 
 
@@ -94,18 +129,18 @@ class UnitCheckResponse(BaseModel):
 
 
 class SolveRequest(BaseModel):
-    equations: List[str]
-    target: str
-    method: Optional[str] = None  # "symbolic", "numeric", "auto"
-    variables: Optional[Dict[str, Any]] = None  # Known variable values
+    equations: List[BoundedExpression] = Field(min_length=1, max_length=MAX_EQUATIONS)
+    target: BoundedIdentifier
+    method: Optional[Literal["symbolic", "numeric", "auto"]] = None
+    variables: Optional[Dict[str, Any]] = Field(default=None, max_length=MAX_VARIABLES)  # Known variable values
 
 
 class SolveNumericRequest(BaseModel):
-    equations: List[str]
-    target: str
-    variables: Optional[Dict[str, Any]] = None  # Known variable values
-    method: str = "auto"  # "fsolve", "brentq", "newton", "auto"
-    initial_guess: float = 1.0
+    equations: List[BoundedExpression] = Field(min_length=1, max_length=MAX_EQUATIONS)
+    target: BoundedIdentifier
+    variables: Optional[Dict[str, Any]] = Field(default=None, max_length=MAX_VARIABLES)  # Known variable values
+    method: Literal["fsolve", "brentq", "newton", "auto"] = "auto"
+    initial_guess: float = Field(default=1.0, allow_inf_nan=False)
     bounds: Optional[Tuple[float, float]] = None  # For brentq bracketed method
 
 
@@ -115,6 +150,7 @@ class SolutionValue(BaseModel):
     numeric: Optional[float] = None
     unit: Optional[str] = None
     latex: Optional[str] = None
+    residual: Optional[float] = None
 
 
 class SolveStep(BaseModel):
@@ -139,15 +175,18 @@ class SolveResponse(BaseModel):
     solutions: Optional[List[SolutionValue]] = None
     method_used: Optional[str] = None
     residual: Optional[float] = None
+    root_count: Optional[int] = None
+    root_selection_required: Optional[bool] = None
+    selection_policy: Optional[str] = None
     error: Optional[str] = None
     steps: Optional[List[SolveStep]] = None
     system_analysis: Optional[SystemAnalysis] = None
 
 
 class ValidateEquationRequest(BaseModel):
-    equation: str
-    variables: Dict[str, Dict[str, Any]]  # {var_name: {value: ..., unit: ...}}
-    target: Optional[str] = None
+    equation: BoundedExpression
+    variables: Dict[str, Dict[str, Any]] = Field(max_length=MAX_VARIABLES)  # {var_name: {value: ..., unit: ...}}
+    target: Optional[BoundedIdentifier] = None
 
 
 class VariableAnalysis(BaseModel):
@@ -168,8 +207,8 @@ class ValidateEquationResponse(BaseModel):
 
 
 class AnalyzeSystemRequest(BaseModel):
-    equations: List[str]
-    known_variables: Optional[List[str]] = None
+    equations: List[BoundedExpression] = Field(min_length=1, max_length=MAX_EQUATIONS)
+    known_variables: Optional[List[BoundedIdentifier]] = Field(default=None, max_length=MAX_VARIABLES)
 
 
 class AnalyzeSystemResponse(BaseModel):
@@ -188,35 +227,35 @@ class AnalyzeSystemResponse(BaseModel):
 
 
 class SimplifyRequest(BaseModel):
-    expression: str
+    expression: BoundedExpression
 
 
 class DifferentiateRequest(BaseModel):
-    expression: str
-    variable: str
-    order: int = 1
+    expression: BoundedExpression
+    variable: BoundedIdentifier
+    order: int = Field(default=1, ge=1, le=16)
 
 
 class IntegrateRequest(BaseModel):
-    expression: str
-    variable: str
+    expression: BoundedExpression
+    variable: BoundedIdentifier
     limits: Optional[Tuple[float, float]] = None
 
 
 class PlotExpressionRequest(BaseModel):
-    id: str
-    expr: str
-    variable: str
+    id: Annotated[str, Field(min_length=1, max_length=64)]
+    expr: BoundedExpression
+    variable: BoundedIdentifier
     label: Optional[str] = None
     color: Optional[str] = None
 
 
 class PlotDataRequest(BaseModel):
-    expressions: List[PlotExpressionRequest]
-    x_min: float
-    x_max: float
-    point_count: int = PLOT_DEFAULT_POINT_COUNT
-    variables: Optional[Dict[str, Any]] = None  # Additional variable values
+    expressions: List[PlotExpressionRequest] = Field(min_length=1, max_length=8)
+    x_min: float = Field(allow_inf_nan=False)
+    x_max: float = Field(allow_inf_nan=False)
+    point_count: int = Field(default=PLOT_DEFAULT_POINT_COUNT, ge=2, le=1000)
+    variables: Optional[Dict[str, Any]] = Field(default=None, max_length=MAX_VARIABLES)  # Additional variable values
 
 
 class PlotSeriesData(BaseModel):
@@ -282,7 +321,8 @@ class DomainListResponse(BaseModel):
 # Health check
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
-    return HealthResponse(status="healthy", engine="sympy+pint")
+    status = "healthy" if _COMPUTE_ENABLED and _COMPUTE_TOKEN else "disabled"
+    return HealthResponse(status=status, engine="sympy+pint")
 
 
 # Compute endpoints
@@ -290,7 +330,7 @@ async def health_check():
 async def evaluate(request: EvaluateRequest):
     """Evaluate a mathematical expression."""
     try:
-        result = compute.evaluate(request.expression, request.variables)
+        result = await _run_isolated("compute.evaluate", request.expression, request.variables)
         return result
     except Exception as e:
         logger.error("POST /compute/evaluate failed: %s", e)
@@ -301,7 +341,7 @@ async def evaluate(request: EvaluateRequest):
 async def check_units(request: CheckUnitsRequest):
     """Check unit consistency of an expression."""
     try:
-        result = units.check_units(request.expression, request.expected_unit)
+        result = await _run_isolated("units.check_units", request.expression, request.expected_unit)
         return result
     except Exception as e:
         logger.error("POST /compute/check_units failed: %s", e)
@@ -316,10 +356,16 @@ async def solve(request: SolveRequest):
         known_vars = list(request.variables.keys()) if request.variables else []
         if request.target and request.target in known_vars:
             known_vars = [v for v in known_vars if v != request.target]
-        analysis = compute.analyze_system(request.equations, known_vars)
+        analysis = await _run_isolated("compute.analyze_system", request.equations, known_vars)
 
         # Solve the equations
-        result = compute.solve(request.equations, request.target, request.method, request.variables)
+        result = await _run_isolated(
+            "compute.solve",
+            request.equations,
+            request.target,
+            request.method,
+            request.variables,
+        )
 
         # Add system analysis to response
         if analysis.get("success"):
@@ -356,7 +402,8 @@ async def solve_numeric(request: SolveNumericRequest):
     Returns numeric solution with residual (error measure).
     """
     try:
-        result = compute.solve_numeric(
+        result = await _run_isolated(
+            "compute.solve_numeric",
             request.equations,
             request.target,
             request.variables,
@@ -383,7 +430,11 @@ async def analyze_system(request: AnalyzeSystemRequest):
     Use this before solving to warn users about potential issues.
     """
     try:
-        result = compute.analyze_system(request.equations, request.known_variables)
+        result = await _run_isolated(
+            "compute.analyze_system",
+            request.equations,
+            request.known_variables,
+        )
         return AnalyzeSystemResponse(**result)
     except Exception as e:
         logger.error("POST /compute/analyze_system failed: %s", e)
@@ -403,10 +454,11 @@ async def validate_equation(request: ValidateEquationRequest):
     Call this before /compute/solve to catch unit errors early.
     """
     try:
-        result = unit_validator.validate_equation(
+        result = await _run_isolated(
+            "unit.validate_equation",
             request.equation,
             request.variables,
-            request.target
+            request.target,
         )
         # Convert variable_analysis dict values to VariableAnalysis models
         var_analysis = {}
@@ -441,7 +493,7 @@ async def validate_equation(request: ValidateEquationRequest):
 async def simplify(request: SimplifyRequest):
     """Simplify a mathematical expression."""
     try:
-        result = compute.simplify(request.expression)
+        result = await _run_isolated("compute.simplify", request.expression)
         return result
     except Exception as e:
         logger.error("POST /compute/simplify failed: %s", e)
@@ -452,7 +504,12 @@ async def simplify(request: SimplifyRequest):
 async def differentiate(request: DifferentiateRequest):
     """Differentiate an expression."""
     try:
-        result = compute.differentiate(request.expression, request.variable, request.order)
+        result = await _run_isolated(
+            "compute.differentiate",
+            request.expression,
+            request.variable,
+            request.order,
+        )
         return result
     except Exception as e:
         logger.error("POST /compute/differentiate failed: %s", e)
@@ -463,7 +520,12 @@ async def differentiate(request: DifferentiateRequest):
 async def integrate(request: IntegrateRequest):
     """Integrate an expression."""
     try:
-        result = compute.integrate(request.expression, request.variable, request.limits)
+        result = await _run_isolated(
+            "compute.integrate",
+            request.expression,
+            request.variable,
+            request.limits,
+        )
         return result
     except Exception as e:
         logger.error("POST /compute/integrate failed: %s", e)
@@ -479,70 +541,8 @@ async def generate_plot_data(request: PlotDataRequest):
     points between x_min and x_max.
     """
     try:
-        series_list = []
-        all_y_values = []
-
-        # Generate x values
-        x_values = np.linspace(request.x_min, request.x_max, request.point_count).tolist()
-
-        for expr_req in request.expressions:
-            y_values = []
-            expr_error = None
-
-            for x in x_values:
-                try:
-                    # Build variable dict with current x value
-                    vars_dict = {expr_req.variable: x}
-                    if request.variables:
-                        vars_dict.update(request.variables)
-
-                    # Evaluate the expression
-                    result = compute.evaluate(expr_req.expr, vars_dict)
-
-                    if result.get("success") and result.get("numeric_result") is not None:
-                        val = result["numeric_result"]
-                        # Replace non-finite values with None for JSON safety
-                        if isinstance(val, (int, float)) and np.isfinite(val):
-                            y_values.append(float(val))
-                        else:
-                            y_values.append(None)
-                    else:
-                        # Handle undefined points (asymptotes, etc.)
-                        y_values.append(None)
-                except Exception:
-                    y_values.append(None)
-
-            # Filter out None values for bounds calculation
-            valid_y = [y for y in y_values if y is not None and np.isfinite(y)]
-            if valid_y:
-                all_y_values.extend(valid_y)
-
-            series_list.append(PlotSeriesData(
-                expression_id=expr_req.id,
-                x=x_values,
-                y=y_values,
-                label=expr_req.label,
-                color=expr_req.color,
-                error=expr_error,
-            ))
-
-        # Calculate y bounds
-        y_min = min(all_y_values) if all_y_values else 0
-        y_max = max(all_y_values) if all_y_values else 1
-
-        # Add padding to y bounds
-        y_range = y_max - y_min
-        if y_range == 0:
-            y_range = 1
-        y_min -= y_range * PLOT_Y_PADDING_RATIO
-        y_max += y_range * PLOT_Y_PADDING_RATIO
-
-        return PlotDataResponse(
-            success=True,
-            series=series_list,
-            x_bounds=(request.x_min, request.x_max),
-            y_bounds=(y_min, y_max),
-        )
+        result = await _run_isolated("plot_data", request.model_dump())
+        return result
     except Exception as e:
         logger.error("POST /compute/plot_data failed: %s", e)
         return PlotDataResponse(success=False, error=str(e))
@@ -553,7 +553,7 @@ async def generate_plot_data(request: PlotDataRequest):
 async def convert_unit(value: float, from_unit: str, to_unit: str):
     """Convert a value from one unit to another."""
     try:
-        result = units.convert(value, from_unit, to_unit)
+        result = await _run_isolated("units.convert", value, from_unit, to_unit)
         return UnitConvertResponse(success=True, value=result, unit=to_unit)
     except Exception as e:
         logger.error("POST /units/convert failed: %s", e)
@@ -564,7 +564,7 @@ async def convert_unit(value: float, from_unit: str, to_unit: str):
 async def get_dimensions(unit: str):
     """Get the dimensionality of a unit."""
     try:
-        dims = units.get_dimensions(unit)
+        dims = await _run_isolated("units.get_dimensions", unit)
         return UnitDimensionsResponse(success=True, unit=unit, dimensions=dims)
     except Exception as e:
         logger.error("GET /units/dimensions failed for '%s': %s", unit, e)
@@ -589,7 +589,10 @@ class ClassifyDomainResponse(BaseModel):
 
 
 class ClassifyBatchRequest(BaseModel):
-    units: List[str]
+    units: List[Annotated[str, Field(min_length=1, max_length=512)]] = Field(
+        min_length=1,
+        max_length=MAX_BATCH_UNITS,
+    )
 
 
 class ClassifyBatchItem(BaseModel):
@@ -619,7 +622,7 @@ async def classify_domain(unit: str):
     and specific quantity name (density, force, pressure, etc.)
     """
     try:
-        result = domain_classifier.classify(unit)
+        result = await _run_isolated("domain.classify", unit)
         has_error = "error" in result
         return ClassifyDomainResponse(
             success=not has_error,
@@ -643,9 +646,11 @@ async def classify_domains_batch(request: ClassifyBatchRequest):
     Per-item errors are recorded individually rather than failing the whole batch.
     """
     results = []
-    for unit in request.units:
+    classified = await _run_isolated("domain.batch", request.units)
+    for unit, result in zip(request.units, classified):
         try:
-            result = domain_classifier.classify(unit)
+            if "error" in result:
+                raise ValueError(result["error"])
             # Defensive access to nested fields
             domain_info = result.get("domain_info", {})
             results.append(ClassifyBatchItem(
@@ -686,7 +691,7 @@ async def list_domains():
 async def get_constant(name: str):
     """Get a physical constant by name."""
     try:
-        value, unit = compute.get_constant(name)
+        value, unit = await _run_isolated("constants.get", name)
         return ConstantResponse(success=True, name=name, value=value, unit=unit)
     except Exception as e:
         logger.error("GET /constants/%s failed: %s", name, e)
@@ -696,17 +701,21 @@ async def get_constant(name: str):
 @app.get("/constants", response_model=ConstantListResponse)
 async def list_constants():
     """List all available physical constants."""
+    constants = await _run_isolated("constants.list")
     return ConstantListResponse(
-        constants=[ConstantListItem(**c) for c in compute.list_constants()]
+        constants=[ConstantListItem(**c) for c in constants]
     )
 
 
 # Document Export Models
 class ExportDocxRequest(BaseModel):
-    document_name: str
-    nodes: List[Dict[str, Any]]
-    assumptions: List[Dict[str, Any]] = []
-    metadata: Optional[Dict[str, Any]] = None
+    document_name: Annotated[str, Field(min_length=1, max_length=256)]
+    nodes: List[Dict[str, Any]] = Field(min_length=1, max_length=512)
+    assumptions: List[Dict[str, Any]] = Field(default_factory=list, max_length=256)
+    metadata: Optional[Dict[str, Any]] = Field(default=None, max_length=128)
+    source_revision: Optional[str] = Field(default=None, max_length=256)
+    verification_summary: Dict[str, Any] = Field(default_factory=dict, max_length=32)
+    audit_trail: List[Dict[str, Any]] = Field(default_factory=list, max_length=512)
 
 
 class ExportDocxResponse(BaseModel):
@@ -719,14 +728,17 @@ class ExportDocxResponse(BaseModel):
 async def export_to_docx(request: ExportDocxRequest):
     """Export worksheet to Word document format (.docx)."""
     try:
-        from .docx_export import export_to_docx as do_export
         import base64
 
-        docx_bytes = do_export(
-            document_name=request.document_name,
-            nodes=request.nodes,
-            assumptions=request.assumptions,
-            metadata=request.metadata,
+        docx_bytes = await _run_isolated(
+            "export.docx",
+            request.document_name,
+            request.nodes,
+            request.assumptions,
+            request.metadata,
+            request.source_revision,
+            request.verification_summary,
+            request.audit_trail,
         )
 
         # Return as base64 encoded string
