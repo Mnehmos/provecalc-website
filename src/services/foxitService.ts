@@ -44,6 +44,7 @@ export async function generateDocument(
 
   const res = await fetch(url, {
     method: "POST",
+    signal: AbortSignal.timeout(20_000),
     headers,
     body: JSON.stringify(body),
   });

@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import {
+  getRequestBodyError,
+  readJsonBody,
+} from "../_lib/request";
 
 const CONTACT_FORM_ENABLED = process.env.CONTACT_FORM_ENABLED === "true";
 
@@ -35,28 +39,51 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { name, email, subject, message } = await req.json();
+    const { name, email, subject, message } = await readJsonBody<{
+      name?: unknown;
+      email?: unknown;
+      subject?: unknown;
+      message?: unknown;
+    }>(req, 64 * 1024);
 
-    if (!name || !email || !message) {
+    const nameValue = typeof name === "string" ? name.trim() : "";
+    const emailValue = typeof email === "string" ? email.trim() : "";
+    const subjectValue = typeof subject === "string" ? subject.trim() : "";
+    const messageValue = typeof message === "string" ? message.trim() : "";
+    const hasHeaderInjection = [nameValue, emailValue, subjectValue].some((value) =>
+      /[\r\n]/.test(value),
+    );
+
+    if (
+      !nameValue ||
+      !emailValue ||
+      !messageValue ||
+      nameValue.length > 120 ||
+      emailValue.length > 320 ||
+      subjectValue.length > 200 ||
+      messageValue.length > 20_000 ||
+      hasHeaderInjection ||
+      !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(emailValue)
+    ) {
       return NextResponse.json(
-        { error: "Name, email, and message are required." },
+        { error: "Enter a valid name, email, and message within the size limits." },
         { status: 400 }
       );
     }
 
     const transporter = getTransport();
-    const safeName = escapeHtml(String(name));
-    const safeEmail = escapeHtml(String(email));
-    const safeSubject = subject ? escapeHtml(String(subject)) : "";
-    const safeMessage = escapeHtml(String(message));
+    const safeName = escapeHtml(nameValue);
+    const safeEmail = escapeHtml(emailValue);
+    const safeSubject = escapeHtml(subjectValue);
+    const safeMessage = escapeHtml(messageValue);
 
     await transporter.sendMail({
       from: `"ProveCalc Contact" <${process.env.GMAIL_USER}>`,
       to: "mnehmos@themnemosyneresearchinstitute.com",
-      replyTo: `"${name}" <${email}>`,
-      subject: subject
-        ? `[ProveCalc] ${subject}`
-        : `[ProveCalc] Message from ${name}`,
+      replyTo: { name: nameValue, address: emailValue },
+      subject: subjectValue
+        ? `[ProveCalc] ${subjectValue}`
+        : `[ProveCalc] Message from ${nameValue}`,
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 20px;">
           <h2 style="color: #1a1a2e; margin-bottom: 24px;">New Contact Form Submission</h2>
@@ -85,15 +112,22 @@ export async function POST(req: NextRequest) {
 
           <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 32px 0;" />
           <p style="color: #9ca3af; font-size: 12px; text-align: center;">
-            Sent from provecalc.com/contact &mdash; reply directly to respond to ${name}
+            Sent from provecalc.com/contact &mdash; reply directly to respond to ${safeName}
           </p>
         </div>
       `,
-      text: `From: ${name} <${email}>${subject ? `\nSubject: ${subject}` : ""}\n\n${message}`,
+      text: `From: ${nameValue} <${emailValue}>${subjectValue ? `\nSubject: ${subjectValue}` : ""}\n\n${messageValue}`,
     });
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    const bodyError = getRequestBodyError(error);
+    if (bodyError) {
+      return NextResponse.json(
+        { error: bodyError.message },
+        { status: bodyError.status },
+      );
+    }
     console.error("Contact form error:", error);
     return NextResponse.json(
       { error: "Failed to send message. Please try again." },

@@ -2,12 +2,24 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
+const PAID_CHECKOUT_ENABLED = process.env.PAID_CHECKOUT_ENABLED === "true";
+
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!);
 }
 
 export async function POST(req: Request) {
   try {
+    if (!PAID_CHECKOUT_ENABLED) {
+      return NextResponse.json(
+        {
+          error:
+            "Paid checkout is temporarily closed. ProveCalc is in design-partner beta.",
+        },
+        { status: 503 },
+      );
+    }
+
     const { userId } = await auth();
 
     if (!userId) {

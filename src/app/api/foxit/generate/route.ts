@@ -19,15 +19,43 @@ import {
   type WorksheetExportData,
 } from "../../../../services/foxitTemplateBuilder";
 import { generateLocalPdf } from "../../../../services/localPdfGenerator";
+import {
+  getRequestBodyError,
+  readJsonBody,
+} from "../../_lib/request";
+
+const REPORT_GENERATION_ENABLED = process.env.REPORT_GENERATION_ENABLED === "true";
+const MAX_REPORT_BODY_BYTES = 2 * 1024 * 1024;
+const MAX_REPORT_ITEMS = 2_000;
 
 export async function POST(req: NextRequest) {
   try {
+    if (!REPORT_GENERATION_ENABLED) {
+      return NextResponse.json(
+        {
+          error:
+            "Report generation is temporarily closed while ProveCalc is in design-partner beta.",
+        },
+        { status: 503 },
+      );
+    }
+
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
     }
 
-    const body: WorksheetExportData = await req.json();
+    const body = await readJsonBody<WorksheetExportData>(req, MAX_REPORT_BODY_BYTES);
+    if (
+      !body ||
+      typeof body !== "object" ||
+      Object.values(body).some((value) => Array.isArray(value) && value.length > MAX_REPORT_ITEMS)
+    ) {
+      return NextResponse.json(
+        { error: "Report payload is invalid or contains too many items." },
+        { status: 400 },
+      );
+    }
 
     // Try Foxit Document Generation API first
     const hasFoxitCreds =
@@ -65,6 +93,13 @@ export async function POST(req: NextRequest) {
       engine: "local",
     });
   } catch (error) {
+    const bodyError = getRequestBodyError(error);
+    if (bodyError) {
+      return NextResponse.json(
+        { error: bodyError.message },
+        { status: bodyError.status },
+      );
+    }
     console.error("PDF generate error:", error);
     const msg = error instanceof Error ? error.message : String(error);
     return NextResponse.json(

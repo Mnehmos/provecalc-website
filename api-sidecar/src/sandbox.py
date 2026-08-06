@@ -5,7 +5,7 @@ from __future__ import annotations
 import multiprocessing as mp
 import os
 import pickle
-import queue
+import time
 from typing import Any
 
 import numpy as np
@@ -143,14 +143,40 @@ def _execute(operation: str, args: tuple[Any, ...]) -> Any:
     raise ValueError(f"Unsupported isolated operation: {operation}")
 
 
-def _worker(operation: str, args: tuple[Any, ...], result_queue: Any) -> None:
+def _encode_worker_message(ok: bool, value: Any) -> bytes:
+    """Serialize one bounded IPC message before touching the pipe."""
+
+    payload = pickle.dumps((ok, value), protocol=pickle.HIGHEST_PROTOCOL)
+    if len(payload) > MAX_WORKER_RESULT_BYTES:
+        raise ValueError("isolated computation result exceeds the 32 MiB limit")
+    return payload
+
+
+def _decode_worker_message(payload: bytes) -> tuple[bool, Any]:
+    """Decode and validate one worker message from the untrusted boundary."""
+
+    if len(payload) > MAX_WORKER_RESULT_BYTES:
+        raise ValueError("isolated computation result exceeds the 32 MiB limit")
+    try:
+        message = pickle.loads(payload)
+    except (EOFError, pickle.PickleError, TypeError, ValueError) as exc:
+        raise ValueError("isolated computation returned corrupted IPC data") from exc
+    if not isinstance(message, tuple) or len(message) != 2 or not isinstance(message[0], bool):
+        raise ValueError("isolated computation returned an invalid IPC message")
+    return message
+
+
+def _worker(operation: str, args: tuple[Any, ...], connection: Any) -> None:
     try:
         result = _execute(operation, args)
-        if len(pickle.dumps(result, protocol=pickle.HIGHEST_PROTOCOL)) > MAX_WORKER_RESULT_BYTES:
-            raise ValueError("isolated computation result exceeds the 32 MiB limit")
-        result_queue.put((True, result))
+        connection.send_bytes(_encode_worker_message(True, result))
     except BaseException as exc:  # pragma: no cover
-        result_queue.put((False, f"{type(exc).__name__}: {exc}"))
+        try:
+            connection.send_bytes(_encode_worker_message(False, f"{type(exc).__name__}: {exc}"))
+        except BaseException:
+            pass
+    finally:
+        connection.close()
 
 
 def run_isolated(operation: str, *args: Any) -> Any:
@@ -164,12 +190,25 @@ def run_isolated(operation: str, *args: Any) -> Any:
         return {"success": False, "error": f"Computation request is not serializable: {exc}"}
 
     context = mp.get_context("spawn")
-    result_queue = context.Queue(maxsize=1)
-    process = context.Process(target=_worker, args=(operation, args, result_queue), daemon=True)
+    receive_connection, send_connection = context.Pipe(duplex=False)
+    process = context.Process(target=_worker, args=(operation, args, send_connection), daemon=True)
     process.start()
+    send_connection.close()
     try:
-        process.join(_timeout_seconds())
-        if process.is_alive():
+        deadline = time.monotonic() + _timeout_seconds()
+        payload: bytes | None = None
+        while time.monotonic() < deadline:
+            remaining = deadline - time.monotonic()
+            if receive_connection.poll(min(0.05, max(remaining, 0.0))):
+                try:
+                    payload = receive_connection.recv_bytes(MAX_WORKER_RESULT_BYTES)
+                except (EOFError, OSError, ValueError) as exc:
+                    return {"success": False, "error": f"Isolated computation IPC failed: {type(exc).__name__}"}
+                break
+            if not process.is_alive():
+                break
+
+        if payload is None and process.is_alive():
             process.terminate()
             process.join(1.0)
             if process.is_alive() and hasattr(process, "kill"):
@@ -182,16 +221,22 @@ def run_isolated(operation: str, *args: Any) -> Any:
                     "reduce the expression or choose a bounded numeric method."
                 ),
             }
-        try:
-            ok, value = result_queue.get(timeout=0.25)
-        except queue.Empty:
+
+        if payload is None:
             return {
                 "success": False,
                 "error": f"Computation worker exited without a result (exit code {process.exitcode}).",
             }
+
+        try:
+            ok, value = _decode_worker_message(payload)
+        except ValueError as exc:
+            return {"success": False, "error": str(exc)}
         if ok:
             return value
         return {"success": False, "error": f"Isolated computation failed: {value}"}
     finally:
-        result_queue.close()
-        result_queue.join_thread()
+        if process.is_alive():
+            process.terminate()
+        process.join(1.0)
+        receive_connection.close()

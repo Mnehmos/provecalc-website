@@ -3,6 +3,9 @@
 import { useAuth, useUser, SignUpButton } from "@clerk/nextjs";
 import { useState } from "react";
 
+const PAID_CHECKOUT_ENABLED =
+  process.env.NEXT_PUBLIC_PAID_CHECKOUT_ENABLED === "true";
+
 export function CheckoutButton({
   className = "",
   label = "Buy Now",
@@ -24,6 +27,20 @@ export function CheckoutButton({
   }
 
   // Not signed in — sign up first
+  if (!PAID_CHECKOUT_ENABLED) {
+    return (
+      <button
+        type="button"
+        disabled
+        aria-disabled="true"
+        className={className}
+        title="Paid sales are closed during the design-partner beta"
+      >
+        Design-partner beta - sales closed
+      </button>
+    );
+  }
+
   if (!isSignedIn) {
     return (
       <SignUpButton mode="modal">
