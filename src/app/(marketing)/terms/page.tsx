@@ -26,7 +26,8 @@ export default function TermsPage() {
             </h2>
             <p>
               By accessing or using ProveCalc (&quot;the Service&quot;), including the
-              website at provecalc.com, the web demo, and the desktop application,
+              website at provecalc.com, the read-only product preview, and the
+              desktop application,
               you agree to be bound by these Terms of Service. If you do not agree,
               do not use the Service.
             </p>
@@ -37,10 +38,11 @@ export default function TermsPage() {
               2. Service Description
             </h2>
             <p>
-              ProveCalc is an engineering calculation platform that provides
-              symbolic mathematics, unit analysis, verification, and AI-assisted
-              worksheet construction. It is available as a desktop application
-              for Windows, macOS, and Linux, purchased with a one-time license.
+              ProveCalc is an engineering calculation platform with a desktop
+              application for symbolic mathematics, unit analysis, verification,
+              and AI-assisted worksheet construction. The current web experience
+              is a read-only product preview; hosted browser computation is not
+              enabled.
             </p>
           </section>
 
@@ -66,7 +68,7 @@ export default function TermsPage() {
             </p>
             <ul className="list-disc pl-6 space-y-1 text-[var(--stone-400)]">
               <li>Unlimited worksheets and nodes</li>
-              <li>Full SymPy compute engine with Pint unit analysis</li>
+              <li>Local SymPy compute engine with Pint unit analysis</li>
               <li>AI assistant (bring your own API key)</li>
               <li>PDF, DOCX, and HTML export</li>
               <li>Core desktop calculation work remains local after activation</li>
@@ -141,8 +143,8 @@ export default function TermsPage() {
             </h2>
             <p>
               We may suspend or terminate your access to the Service at any time
-              for violation of these terms, including abuse of the compute API,
-              redistribution of the software, or fraudulent activity. Upon
+              for violation of these terms, including redistribution of the
+              software or fraudulent activity. Upon
               termination, your right to use the Service ceases immediately, but
               your locally stored worksheet data remains yours.
             </p>

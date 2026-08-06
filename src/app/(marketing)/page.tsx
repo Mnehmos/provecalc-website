@@ -1,6 +1,6 @@
 "use client";
 
-import { SignUpButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { CheckoutButton } from "../../components/landing/CheckoutButton";
 
 const proofItems = [
@@ -10,9 +10,9 @@ const proofItems = [
       "Keep formulas, assumptions, units, and intermediate results visible in one worksheet instead of scattered across cells or screenshots.",
   },
   {
-    title: "Validate with the engine",
+    title: "Verify on desktop",
     description:
-      "Each node is checked for unit consistency, constraint satisfaction, numeric residuals, and sanity before you trust the result.",
+      "The desktop app can re-run a selected calculation and surface unit, constraint, residual, and sanity evidence. The web preview does not execute calculations.",
   },
   {
     title: "Own the file",
@@ -27,9 +27,9 @@ const proofItems = [
 ];
 
 const demoHighlights = [
-  "See a real worksheet build from inputs to checked result.",
-  "Watch ProveCalc flag a unit mismatch before it becomes a report problem.",
-  "Follow the audit trail from symbolic expression to export-ready output.",
+  "See a read-only walkthrough of a real worksheet structure.",
+  "Follow formulas, assumptions, units, and result lineage at a glance.",
+  "Review the export-ready presentation without uploading calculation data.",
 ];
 
 const featureItems = [
@@ -99,19 +99,19 @@ const useCases = [
 const platformRows = [
   {
     label: "Where compute runs",
-    web: "Hosted SymPy + Pint compute for the browser demo.",
+    web: "No browser compute in this containment preview.",
     desktop: "Local SymPy + Pint sidecar on your machine.",
     ai: "Only when you choose an external model for drafting help.",
   },
   {
     label: "Where files live",
-    web: "Browser local storage for demo worksheets.",
+    web: "No worksheet calculation session is stored or synced.",
     desktop: "Local files you save anywhere on disk.",
     ai: "No file storage unless your provider stores prompts under its own policy.",
   },
   {
     label: "Internet requirement",
-    web: "Required because the demo is hosted.",
+    web: "Not applicable to the read-only preview.",
     desktop: "Not required after license activation for core work.",
     ai: "Required only for non-local AI providers.",
   },
@@ -131,7 +131,7 @@ export default function LandingPage() {
           <div className="max-w-4xl">
             <div className="inline-flex items-center gap-2 bg-[var(--stone-800)]/50 rounded-full px-4 py-1.5 text-sm text-[var(--stone-300)] mb-6">
               <span className="w-2 h-2 bg-[var(--copper)] rounded-full animate-pulse" />
-              Free demo available
+              Read-only product preview
             </div>
             <h1
               className="text-5xl md:text-6xl font-bold leading-tight mb-6"
@@ -148,18 +148,19 @@ export default function LandingPage() {
             </p>
             <div className="flex flex-wrap gap-4 mb-8">
               <SignedOut>
-                <SignUpButton mode="modal">
-                  <button className="bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-6 py-3 rounded-lg font-medium transition-colors">
-                    Try Free Demo
-                  </button>
-                </SignUpButton>
+                <a
+                  href="#demo"
+                  className="bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-6 py-3 rounded-lg font-medium transition-colors"
+                >
+                  View Product Preview
+                </a>
               </SignedOut>
               <SignedIn>
                 <a
-                  href="/app"
+                  href="#demo"
                   className="bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-6 py-3 rounded-lg font-medium transition-colors"
                 >
-                  Open App
+                  View Product Preview
                 </a>
               </SignedIn>
               <a
@@ -406,7 +407,7 @@ export default function LandingPage() {
               className="text-3xl font-bold mb-4"
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}
             >
-              Web demo, desktop app, and AI each do different jobs
+              Product preview, desktop app, and AI each do different jobs
             </h2>
             <p className="text-[var(--stone-400)] text-lg">
               This is the operational model in plain language so buyers do not
@@ -417,7 +418,7 @@ export default function LandingPage() {
             <div className="min-w-[800px] border border-[var(--stone-800)] rounded-2xl overflow-hidden">
               <div className="grid grid-cols-[1.1fr_1fr_1fr_1fr] bg-[var(--stone-900)]/70">
                 <TableHeaderCell>Question</TableHeaderCell>
-                <TableHeaderCell>Web demo</TableHeaderCell>
+                <TableHeaderCell>Web preview</TableHeaderCell>
                 <TableHeaderCell>Desktop app</TableHeaderCell>
                 <TableHeaderCell>AI assistant</TableHeaderCell>
               </div>
@@ -486,25 +487,27 @@ export default function LandingPage() {
             className="text-3xl font-bold mb-4"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           >
-            Try ProveCalc free
+            Explore the read-only preview
           </h2>
           <p className="text-[var(--stone-400)] text-lg mb-8">
-            No credit card. No install. Open the browser demo and see how the
-            worksheet model feels before you buy the desktop app.
+            The preview is for orientation only. Calculation execution and
+            verification remain in the desktop application while hosted
+            compute is disabled.
           </p>
           <SignedOut>
-            <SignUpButton mode="modal">
-              <button className="bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-8 py-4 rounded-lg font-medium text-lg transition-colors">
-                Start Free Demo
-              </button>
-            </SignUpButton>
+            <a
+              href="/contact"
+              className="inline-block bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-8 py-4 rounded-lg font-medium text-lg transition-colors"
+            >
+              Request Design-Partner Access
+            </a>
           </SignedOut>
           <SignedIn>
             <a
-              href="/app"
+              href="/contact"
               className="inline-block bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-8 py-4 rounded-lg font-medium text-lg transition-colors"
             >
-              Open App
+              Request Design-Partner Access
             </a>
           </SignedIn>
         </div>

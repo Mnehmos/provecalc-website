@@ -48,8 +48,9 @@ export default function PrivacyPage() {
                 Web application
               </h3>
               <p className="mb-3">
-                When you use the web app, we collect only what is needed to run
-                a hosted service:
+                The current web experience is a read-only product preview. We
+                collect only what is needed for account, support, and purchase
+                flows:
               </p>
               <ul className="list-disc pl-6 space-y-2 text-[var(--stone-400)]">
                 <li>
@@ -58,16 +59,14 @@ export default function PrivacyPage() {
                   identity through Clerk.
                 </li>
                 <li>
-                  <strong className="text-white">Worksheet data</strong>:
-                  stored in your browser&apos;s local storage. We do not sync or
-                  store web worksheets on ProveCalc servers.
+                  <strong className="text-white">Preview data</strong>: the
+                  containment preview does not create or sync a worksheet
+                  calculation session.
                 </li>
                 <li>
                   <strong className="text-white">Compute requests</strong>:
-                  when you evaluate an expression in the web app, the
-                  mathematical content is sent to our hosted compute API for
-                  processing by the SymPy + Pint engine. Requests are processed
-                  in memory and are not stored for later use.
+                  hosted browser computation is disabled. Desktop calculation
+                  runs locally in the application.
                 </li>
                 <li>
                   <strong className="text-white">Payment data</strong>:
@@ -187,8 +186,8 @@ export default function PrivacyPage() {
                 frontend hosting.
               </li>
               <li>
-                <strong className="text-white">Railway</strong>: hosted compute
-                API for the web app only.
+                <strong className="text-white">Railway</strong>: no hosted
+                compute is used by the current web preview.
               </li>
             </ul>
 
@@ -240,10 +239,9 @@ export default function PrivacyPage() {
               4. Data storage and security
             </h2>
             <p className="mb-3">
-              <strong className="text-white">Web app:</strong> authentication
-              tokens are encrypted, all API communications use HTTPS, and web
-              compute requests are processed in memory rather than persisted as a
-              worksheet database.
+              <strong className="text-white">Web preview:</strong>
+              authentication and account APIs use HTTPS; the preview does not
+              accept worksheet calculation data.
             </p>
             <p>
               <strong className="text-white">Desktop app:</strong> worksheet

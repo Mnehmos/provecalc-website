@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useUser, SignUpButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
+import Link from "next/link";
 import { CheckoutButton } from "../../../components/landing/CheckoutButton";
 
 type Platform = "windows" | "macos" | "linux" | null;
@@ -343,26 +344,17 @@ export default function DownloadPage() {
           </div>
         </div>
 
-        {/* Free Demo Callout */}
+        {/* Containment Preview Callout */}
         <div className="mt-16 text-center">
           <p className="text-[var(--stone-500)] mb-3">
-            Not ready to buy? Try the free web demo first.
+            Not ready to buy? Review the read-only product preview first.
           </p>
-          <SignedOut>
-            <SignUpButton mode="modal">
-              <button className="border border-[var(--stone-700)] hover:border-[var(--stone-500)] px-6 py-2.5 rounded-lg text-sm font-medium transition-colors">
-                Try Web Demo
-              </button>
-            </SignUpButton>
-          </SignedOut>
-          <SignedIn>
-            <a
-              href="/app"
-              className="inline-block border border-[var(--stone-700)] hover:border-[var(--stone-500)] px-6 py-2.5 rounded-lg text-sm font-medium transition-colors"
-            >
-              Open Web Demo
-            </a>
-          </SignedIn>
+          <Link
+            href="/#demo"
+            className="inline-block border border-[var(--stone-700)] hover:border-[var(--stone-500)] px-6 py-2.5 rounded-lg text-sm font-medium transition-colors"
+          >
+            View Product Preview
+          </Link>
         </div>
       </div>
     </main>

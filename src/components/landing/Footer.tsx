@@ -44,12 +44,12 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a
-                  href="/app"
+                <Link
+                  href="/#demo"
                   className="text-sm text-[var(--stone-500)] hover:text-[var(--copper)] transition-colors"
                 >
-                  Web Demo
-                </a>
+                  Product Preview
+                </Link>
               </li>
             </ul>
           </div>

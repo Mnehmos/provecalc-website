@@ -1,208 +1,41 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
-import { useUser } from "@clerk/nextjs";
-import { useDocumentStore } from "../../stores/documentStore";
-import { useLibraryStore } from "../../stores/libraryStore";
-import { WorksheetCanvas } from "../../components/WorksheetCanvas";
-import { WebToolbar } from "../../components/WebToolbar";
-import { VariableInspector } from "../../components/VariableInspector";
-import { AssumptionLedger } from "../../components/AssumptionLedger";
-import { DependencyGraph } from "../../components/DependencyGraph";
-import { LibraryPanel } from "../../components/LibraryPanel";
-import { TemplateGallery } from "../../components/TemplateGallery";
-import { AgentTray } from "../../components/AgentTray";
-import { TutorialModal } from "../../components/TutorialModal";
-
-/** Minimum/maximum sidebar widths in px */
-const SIDEBAR_MIN = 200;
-const SIDEBAR_MAX = 600;
-
-/** Minimum panel height for either Assumptions or Agent (px) */
-const PANEL_MIN_HEIGHT = 80;
+import Link from "next/link";
 
 export default function AppPage() {
-  const { isLoaded } = useUser();
-  const { document, loadDocument } = useDocumentStore();
-  const { isOpen: showLibrary, toggleOpen: toggleLibrary } = useLibraryStore();
-  const didInitRef = useRef(false);
-  const [showDependencyGraph, setShowDependencyGraph] = useState(false);
-  const [showTemplates, setShowTemplates] = useState(false);
-  const [showAgent, setShowAgent] = useState(true);
-  const [showTutorial, setShowTutorial] = useState(false);
-
-  // --- Resizable state ---
-  const [leftWidth, setLeftWidth] = useState(280);
-  const [rightWidth, setRightWidth] = useState(280);
-  // Fraction of the right sidebar devoted to the Assumptions panel (0..1)
-  const [assumptionFraction, setAssumptionFraction] = useState(0.35);
-
-  const rightSidebarRef = useRef<HTMLElement>(null);
-
-  // Generic drag handler factory
-  const useDrag = useCallback(
-    (onMove: (e: MouseEvent) => void) => {
-      return (startEvent: React.MouseEvent) => {
-        startEvent.preventDefault();
-        const handleMove = (e: MouseEvent) => onMove(e);
-        const handleUp = () => {
-          window.removeEventListener("mousemove", handleMove);
-          window.removeEventListener("mouseup", handleUp);
-          // Remove cursor override
-          window.document.body.style.cursor = "";
-          window.document.body.style.userSelect = "";
-        };
-        window.document.body.style.userSelect = "none";
-        window.addEventListener("mousemove", handleMove);
-        window.addEventListener("mouseup", handleUp);
-      };
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  );
-
-  // Left sidebar resize (drag right edge)
-  const onLeftResize = useDrag((e: MouseEvent) => {
-    const w = Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, e.clientX));
-    setLeftWidth(w);
-  });
-
-  // Right sidebar resize (drag left edge)
-  const onRightResize = useDrag((e: MouseEvent) => {
-    const w = Math.min(
-      SIDEBAR_MAX,
-      Math.max(SIDEBAR_MIN, window.innerWidth - e.clientX),
-    );
-    setRightWidth(w);
-  });
-
-  // Vertical split between Assumptions and Agent
-  const onSplitResize = useDrag((e: MouseEvent) => {
-    const sidebar = rightSidebarRef.current;
-    if (!sidebar) return;
-    const rect = sidebar.getBoundingClientRect();
-    const offsetY = e.clientY - rect.top;
-    const totalH = rect.height;
-    const clamped = Math.min(
-      totalH - PANEL_MIN_HEIGHT,
-      Math.max(PANEL_MIN_HEIGHT, offsetY),
-    );
-    setAssumptionFraction(clamped / totalH);
-  });
-
-  // Load document on mount (once)
-  useEffect(() => {
-    if (didInitRef.current) return;
-    didInitRef.current = true;
-    if (!document) loadDocument();
-  }, [document, loadDocument]);
-
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div style={{ color: "var(--text-secondary)" }}>Loading...</div>
-      </div>
-    );
-  }
-
   return (
-    <div className="app">
-      <WebToolbar
-        onToggleDependencyGraph={() => setShowDependencyGraph((v) => !v)}
-        showDependencyGraph={showDependencyGraph}
-        onToggleLibrary={toggleLibrary}
-        showLibrary={showLibrary}
-        onShowTemplates={() => setShowTemplates(true)}
-        onShowTutorial={() => setShowTutorial(true)}
-        onToggleAgent={() => setShowAgent((v) => !v)}
-        showAgent={showAgent}
-      />
-      <div className="main-content">
-        {/* Left sidebar */}
-        <aside className="sidebar left" style={{ width: leftWidth }}>
-          <VariableInspector />
-        </aside>
-        <div className="resize-handle vertical" onMouseDown={onLeftResize} />
-
-        <main className="worksheet-area">
-          <WorksheetCanvas />
-        </main>
-
-        <div className="resize-handle vertical" onMouseDown={onRightResize} />
-        {/* Right sidebar with resizable split */}
-        <aside
-          className="sidebar right"
-          style={{ width: rightWidth }}
-          ref={rightSidebarRef}
+    <main className="min-h-screen flex items-center justify-center px-6 py-24">
+      <section className="max-w-2xl text-center glass-card rounded-2xl p-10">
+        <p className="text-sm uppercase tracking-[0.2em] text-[var(--copper-light)] mb-4">
+          Containment preview
+        </p>
+        <h1
+          className="text-4xl font-bold mb-5"
+          style={{ fontFamily: "'Space Grotesk', sans-serif" }}
         >
-          <div
-            className="sidebar-panel-top"
-            style={{ height: `${assumptionFraction * 100}%` }}
+          The browser workspace is not enabled yet
+        </h1>
+        <p className="text-[var(--stone-400)] text-lg leading-relaxed mb-8">
+          Hosted calculation is intentionally disabled while the durable
+          compute proxy and entitlement ledger are completed. Explore the
+          product preview or request design-partner access; desktop
+          verification remains the supported calculation path.
+        </p>
+        <div className="flex flex-wrap justify-center gap-4">
+          <Link
+            href="/#demo"
+            className="bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-6 py-3 rounded-lg font-medium transition-colors"
           >
-            <AssumptionLedger />
-          </div>
-          {showAgent && (
-            <>
-              <div
-                className="resize-handle horizontal"
-                onMouseDown={onSplitResize}
-              />
-              <div
-                className="sidebar-panel-bottom"
-                style={{ height: `${(1 - assumptionFraction) * 100}%` }}
-              >
-                <AgentTray />
-              </div>
-            </>
-          )}
-        </aside>
-      </div>
-
-      {/* Library Panel */}
-      <LibraryPanel />
-
-      {/* Dependency Graph */}
-      {showDependencyGraph && (
-        <div className="dependency-panel">
-          <div className="panel-header">
-            <h3>Dependency Graph</h3>
-            <button
-              className="close-btn"
-              onClick={() => setShowDependencyGraph(false)}
-              title="Close"
-            >
-              x
-            </button>
-          </div>
-          <div className="panel-content">
-            <DependencyGraph />
-          </div>
+            View Product Preview
+          </Link>
+          <a
+            href="/contact"
+            className="border border-[var(--stone-700)] hover:border-[var(--stone-500)] px-6 py-3 rounded-lg font-medium transition-colors"
+          >
+            Request Access
+          </a>
         </div>
-      )}
-
-      {/* Template Gallery */}
-      <TemplateGallery
-        isOpen={showTemplates}
-        onClose={() => setShowTemplates(false)}
-      />
-
-      {/* Tutorial Modal */}
-      <TutorialModal
-        isOpen={showTutorial}
-        onClose={() => setShowTutorial(false)}
-      />
-
-      <footer className="status-bar">
-        <span className="status-item">
-          {document?.name || "Untitled"}
-        </span>
-        <span className="status-item">
-          {document?.nodes.length || 0} nodes
-        </span>
-        <span className="status-item verification-status">
-          Engine: Ready
-        </span>
-      </footer>
-    </div>
+      </section>
+    </main>
   );
 }
