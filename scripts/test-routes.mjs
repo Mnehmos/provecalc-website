@@ -17,6 +17,7 @@ const server = spawn(process.execPath, [
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
       "pk_test_Y2xlcmsuaW5zcGlyZWQucHVtYS03NC5sY2wuZGV2JA",
+    CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY || "sk_test_ci_fixture",
     PORT: port,
     PAID_CHECKOUT_ENABLED: "false",
     NEXT_PUBLIC_PAID_CHECKOUT_ENABLED: "false",
