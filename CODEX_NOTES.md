@@ -14,8 +14,10 @@ pricing, download, success, terms, metadata, and footer surfaces must describe
 the signed build as pending until the desktop release gate and entitlement
 ledger pass independent review.
 
-Current correction commit: `dcc32de5a5e5951c9d724be60d24f902b1bbed23`.
-Hosted CI is running at https://github.com/Mnehmos/provecalc-website/actions/runs/31144604466.
+Current containment implementation commit: `dcc32de5a5e5951c9d724be60d24f902b1bbed23`;
+handoff metadata commit: `d095df7`. Hosted CI for the implementation commit ran at
+https://github.com/Mnehmos/provecalc-website/actions/runs/31144604466; query PR #1
+for the final exact head after the metadata note is pushed.
 
 ---
 
