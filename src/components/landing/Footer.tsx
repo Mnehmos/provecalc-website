@@ -62,12 +62,10 @@ export function Footer() {
             <ul className="space-y-2">
               <li>
                 <a
-                  href="https://github.com/Mnehmos/provecalc-releases/releases"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="/download"
                   className="text-sm text-[var(--stone-500)] hover:text-[var(--copper)] transition-colors"
                 >
-                  GitHub
+                  Release status
                 </a>
               </li>
               <li>

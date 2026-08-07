@@ -1,7 +1,6 @@
 "use client";
 
 import { SignedIn, SignedOut } from "@clerk/nextjs";
-import { CheckoutButton } from "../../components/landing/CheckoutButton";
 
 const proofItems = [
   {
@@ -72,9 +71,9 @@ const trustItems = [
       "Built by The Mnemosyne Research Institute in Arizona, with direct support at contact@themnemosyneresearchinstitute.com.",
   },
   {
-    title: "Low purchase risk",
+    title: "Design-partner release boundary",
     description:
-      "One-time license, local desktop work after activation, and a 30-day refund policy.",
+      "The web surface is a read-only preview. Paid checkout and public desktop delivery remain closed during containment.",
   },
 ];
 
@@ -447,34 +446,36 @@ export default function LandingPage() {
               className="text-3xl font-bold mb-4"
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}
             >
-              Predictable pricing
+              Predictable release status
             </h2>
             <p className="text-[var(--stone-400)] text-lg">
-              One license, one price, local files, and no subscription to keep
-              using the version you already bought.
+              Read-only preview now; hardened signed desktop delivery and paid
+              entitlement controls are still under audit.
             </p>
           </div>
           <div className="max-w-3xl mx-auto glass-card rounded-2xl p-8 text-center">
             <div className="inline-flex items-center gap-2 bg-[var(--copper)]/15 text-[var(--copper-light)] rounded-full px-4 py-1.5 text-sm font-medium mb-5">
-              Perpetual desktop license
+              Design-partner containment
             </div>
             <div className="text-5xl font-bold text-[var(--copper-light)] mb-3">
-              $200
+              Signed build pending
             </div>
             <p className="text-[var(--stone-400)] text-lg mb-8">
-              Includes local license verification, signed release updates under
-              published terms, and a 30-day money-back guarantee.
+              Request release notifications while the hardened build, updater
+              verification, and entitlement ledger complete audit.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <CheckoutButton
-                label="Buy ProveCalc - $200"
+              <a
+                href="mailto:contact@themnemosyneresearchinstitute.com?subject=ProveCalc%20design-partner%20release%20notification"
                 className="inline-block bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-6 py-3 rounded-lg font-medium transition-colors"
-              />
+              >
+                Request release notification
+              </a>
               <a
                 href="/pricing"
                 className="border border-[var(--stone-700)] hover:border-[var(--stone-500)] px-6 py-3 rounded-lg font-medium transition-colors"
               >
-                Read pricing details
+                Review containment details
               </a>
             </div>
           </div>

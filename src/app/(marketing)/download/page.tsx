@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { CheckoutButton } from "../../../components/landing/CheckoutButton";
 
 type Platform = "windows" | "macos" | "linux" | null;
 
@@ -113,8 +112,8 @@ export default function DownloadPage() {
           </p>
           <p className="text-sm text-[var(--stone-500)]">
             {isPaid
-              ? "Your license is active. Download below."
-              : "Purchase a license to download the desktop application."}
+              ? "Your license record is available. The hardened signed build is pending."
+              : "Join the design-partner release list; desktop builds are not downloadable during the containment preview."}
           </p>
         </div>
 
@@ -144,7 +143,10 @@ export default function DownloadPage() {
               )}
             </div>
             <p className="text-xs text-[var(--stone-500)]">
-              Enter this key in the desktop app after installing. Core desktop work remains local after activation.
+              Keep this key for the hardened signed build. Existing license records remain retrievable while signed in.
+            </p>
+            <p className="text-sm text-[var(--copper-light)] mt-4 font-medium">
+              Hardened signed build pending — do not use the older public release.
             </p>
           </div>
         ) : (
@@ -153,25 +155,21 @@ export default function DownloadPage() {
               className="text-2xl font-bold mb-2"
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}
             >
-              <span className="gradient-text">$200</span>{" "}
-              <span className="text-[var(--stone-400)] text-lg font-normal">one-time</span>
+              <span className="gradient-text">Design-partner preview</span>
             </h2>
             <p className="text-[var(--stone-400)] mb-6">
-              Unlimited worksheets. AI-assisted. Perpetual use of the purchased version.
+              Review the read-only product preview and request release notifications while signed desktop delivery is being hardened.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <CheckoutButton
-                className="bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-8 py-3 rounded-lg font-medium transition-colors"
-              />
               <a
-                href="/pricing"
-                className="border border-[var(--stone-700)] hover:border-[var(--stone-500)] px-8 py-3 rounded-lg font-medium transition-colors"
+                href="mailto:contact@themnemosyneresearchinstitute.com?subject=ProveCalc%20design-partner%20release%20notification"
+                className="bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-8 py-3 rounded-lg font-medium transition-colors"
               >
-                See Pricing
+                Request release notification
               </a>
             </div>
             <p className="text-xs text-[var(--stone-500)] mt-4">
-              30-day money-back guarantee. License details remain available while signed in.
+              No checkout or browser compute is enabled in this containment deployment.
             </p>
           </div>
         )}
@@ -187,23 +185,14 @@ export default function DownloadPage() {
           <div className="grid md:grid-cols-3 gap-6">
             {platforms.map((platform) => {
               const isDetected = detected === platform.id;
-              const CardTag = isPaid ? "a" : "div";
-              const linkProps = isPaid
-                ? {
-                    href: "https://github.com/Mnehmos/provecalc-releases/releases/latest",
-                    target: "_blank",
-                    rel: "noopener noreferrer",
-                  }
-                : {};
               return (
-                <CardTag
+                <div
                   key={platform.id}
-                  {...linkProps}
                   className={`rounded-xl p-6 text-center block ${
                     isDetected
                       ? "bg-gradient-to-br from-[var(--copper)]/10 to-transparent border border-[var(--copper)]/20"
                       : "glass-card"
-                  } ${isPaid ? "hover:border-[var(--copper)]/30 transition-colors cursor-pointer" : ""}`}
+                  }`}
                 >
                   {isDetected && (
                     <div className="text-xs text-[var(--copper)] font-medium mb-2">
@@ -233,12 +222,10 @@ export default function DownloadPage() {
                   <p className="text-xs text-[var(--stone-500)]">
                     {platform.requirement}
                   </p>
-                  {isPaid && (
-                    <p className="text-xs text-[var(--copper)] mt-3 font-medium">
-                      Download &rarr;
-                    </p>
-                  )}
-                </CardTag>
+                  <p className="text-xs text-[var(--copper)] mt-3 font-medium">
+                    {isPaid ? "Hardened signed build pending" : "Build delivery pending"}
+                  </p>
+                </div>
               );
             })}
           </div>
@@ -286,7 +273,7 @@ export default function DownloadPage() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[var(--copper)] mt-0.5">&#10003;</span>
-                Signed updates under the published license terms
+                Release notes and signed-build status
               </li>
             </ul>
           </div>
@@ -306,16 +293,9 @@ export default function DownloadPage() {
                 1
               </div>
               <div>
-                <p className="font-medium">Purchase a license</p>
+                <p className="font-medium">Request release notification</p>
                 <p className="text-sm text-[var(--stone-400)]">
-                  Choose your plan on the{" "}
-                  <a
-                    href="/pricing"
-                    className="text-[var(--copper)] hover:text-[var(--copper-light)]"
-                  >
-                    pricing page
-                  </a>
-                  . Secure checkout via Stripe.
+                  Contact the team to join the design-partner release list. Paid checkout and public desktop delivery are closed during containment.
                 </p>
               </div>
             </div>
@@ -324,9 +304,9 @@ export default function DownloadPage() {
                 2
               </div>
               <div>
-                <p className="font-medium">Download the installer</p>
+                <p className="font-medium">Wait for the hardened signed build</p>
                 <p className="text-sm text-[var(--stone-400)]">
-                  We email the license details when delivery succeeds; you can also retrieve them here while signed in.
+                  Existing customers can retrieve license records here, but the older public release is not linked while the release gate is open.
                 </p>
               </div>
             </div>
@@ -335,9 +315,9 @@ export default function DownloadPage() {
                 3
               </div>
               <div>
-                <p className="font-medium">Activate & start calculating</p>
+                <p className="font-medium">Activate after release approval</p>
                 <p className="text-sm text-[var(--stone-400)]">
-                  Enter your license key in the app. Core calculation work remains local after activation.
+                  Use the license key only with the hardened signed build and its published verification instructions.
                 </p>
               </div>
             </div>

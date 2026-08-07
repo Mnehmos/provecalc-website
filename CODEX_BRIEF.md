@@ -8,6 +8,12 @@
 ![alt text](image.png)
 ---
 
+> Historical sprint brief. As of the 2026-08-06 release review, the website
+> PR is containment-only: the browser surface is a read-only preview, paid
+> checkout and public desktop delivery are disabled, and the signed build plus
+> durable entitlement ledger remain release blockers. Do not use the older
+> free-tier/demo or pricing claims below as current product status.
+
 ## Communication Protocol
 
 We're collaborating in the same IDE on the same repo. Leave notes in this file or create `CODEX_NOTES.md` for feedback. Claude Code will check both.

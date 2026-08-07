@@ -34,6 +34,7 @@ const platforms = [
 ];
 
 export default function SuccessPage() {
+  void platforms;
   const { user, isLoaded } = useUser();
   const [copied, setCopied] = useState(false);
   const [revealed, setRevealed] = useState(false);
@@ -118,18 +119,19 @@ export default function SuccessPage() {
             className="text-4xl font-bold mb-4"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           >
-            No license found
+            No existing license record found
           </h1>
           <p className="text-[var(--stone-400)] mb-8">
-            It looks like you haven&apos;t purchased ProveCalc yet. If you just
-            completed a purchase, it may take a moment to process.
+            Paid checkout is closed during containment. Existing customers can
+            retry their account lookup; new design partners can request release
+            notifications.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <a
-              href="/pricing"
+              href="mailto:contact@themnemosyneresearchinstitute.com?subject=ProveCalc%20design-partner%20release%20notification"
               className="bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-6 py-3 rounded-lg font-medium transition-colors"
             >
-              Buy ProveCalc &mdash; $200
+              Request release notification
             </a>
             <button
               onClick={() => window.location.reload()}
@@ -213,38 +215,22 @@ export default function SuccessPage() {
           </p>
         </div>
 
-        {/* Download */}
+        {/* Download is intentionally held until the hardened signed build is published. */}
         <div className="mb-12">
           <h2
             className="text-2xl font-bold text-center mb-6"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           >
-            Download ProveCalc
+            Delivery status
           </h2>
-          <div className="grid md:grid-cols-3 gap-4">
-            {platforms.map((platform) => (
-              <a
-                key={platform.name}
-                href="https://github.com/Mnehmos/provecalc-releases/releases/latest"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="glass-card rounded-xl p-6 text-center hover:border-[var(--copper)]/30 transition-colors"
-              >
-                <div className="flex justify-center mb-3 text-[var(--stone-400)]">
-                  {platform.icon}
-                </div>
-                <h3 className="font-semibold mb-2">{platform.name}</h3>
-                {platform.formats.map((f) => (
-                  <p key={f} className="text-xs text-[var(--stone-500)]">
-                    {f}
-                  </p>
-                ))}
-              </a>
-            ))}
+          <div className="glass-card rounded-xl p-8 text-center">
+            <p className="text-lg font-semibold text-[var(--copper-light)] mb-2">
+              Hardened signed build pending
+            </p>
+            <p className="text-sm text-[var(--stone-400)]">
+              Your license record is preserved above. The older public release is not offered here while the release gate is open.
+            </p>
           </div>
-          <p className="text-center text-xs text-[var(--stone-500)] mt-4">
-            All platforms available on the releases page.
-          </p>
         </div>
 
         {/* Next Steps */}
@@ -261,9 +247,9 @@ export default function SuccessPage() {
                 1
               </div>
               <div>
-                <p className="font-medium">Download the installer</p>
+                <p className="font-medium">Wait for the hardened signed build</p>
                 <p className="text-sm text-[var(--stone-400)]">
-                  Choose your platform above and download the latest release.
+                  We will publish the approved build and verification instructions when the release gate passes.
                 </p>
               </div>
             </div>
@@ -272,9 +258,9 @@ export default function SuccessPage() {
                 2
               </div>
               <div>
-                <p className="font-medium">Install and launch</p>
+                <p className="font-medium">Install after publication</p>
                 <p className="text-sm text-[var(--stone-400)]">
-                  Run the installer. ProveCalc will open automatically.
+                  Do not install an older public build; use only the approved signed delivery.
                 </p>
               </div>
             </div>

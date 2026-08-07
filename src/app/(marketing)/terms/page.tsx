@@ -63,8 +63,10 @@ export default function TermsPage() {
               4. Licensing
             </h2>
             <p className="mb-3">
-              ProveCalc is sold as a one-time purchase at $200 per license key.
-              The key is verified locally after activation. Features include:
+              Paid checkout is currently closed while the signed desktop build
+              and entitlement controls complete release review. Existing
+              license records remain available to account holders; final
+              commercial terms will accompany the approved build:
             </p>
             <ul className="list-disc pl-6 space-y-1 text-[var(--stone-400)]">
               <li>Unlimited worksheets and nodes</li>
@@ -72,12 +74,12 @@ export default function TermsPage() {
               <li>AI assistant (bring your own API key)</li>
               <li>PDF, DOCX, and HTML export</li>
               <li>Core desktop calculation work remains local after activation</li>
-              <li>Signed updates under the published license terms</li>
+              <li>Signed updates under the terms published with the approved release</li>
             </ul>
             <p className="mt-3">
-              Licenses are perpetual (non-subscription). You may continue using
-              the version you have indefinitely, and product updates are
-              included at no additional charge.
+              Do not treat this preview or an older public build as a new
+              commercial download. Existing customers should use the signed
+              build and activation instructions published after release approval.
             </p>
           </section>
 
@@ -131,9 +133,9 @@ export default function TermsPage() {
               7. Refund Policy
             </h2>
             <p>
-              Desktop licenses come with a 30-day money-back guarantee. If you
-              are not satisfied with ProveCalc, contact us within 30 days of
-              purchase for a full refund. After 30 days, all sales are final.
+              Refund terms for new purchases will be published when paid
+              checkout reopens. Existing purchase support remains available
+              through the account and support channels.
             </p>
           </section>
 

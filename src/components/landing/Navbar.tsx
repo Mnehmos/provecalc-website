@@ -7,7 +7,7 @@ import NavAuth from "../NavAuth";
 const navLinks = [
   { href: "/#features", label: "Features" },
   { href: "/pricing", label: "Pricing" },
-  { href: "/download", label: "Buy" },
+  { href: "/download", label: "Release status" },
 ];
 
 export function Navbar() {
