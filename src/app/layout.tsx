@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     template: "%s | ProveCalc",
   },
   description:
-    "Professional engineering calculation software with full audit trails. SymPy-powered verification. Unit analysis. AI-assisted. $200 one-time.",
+    "ProveCalc is a read-only product preview while signed desktop delivery and paid checkout complete release review.",
   metadataBase: new URL("https://provecalc.com"),
   openGraph: {
     type: "website",
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "ProveCalc - Engineering Calculations You Can Trust",
     description:
-      "Professional engineering calculation software. $200 one-time. Not $2,700/year.",
+      "Engineering calculation software with local symbolic math, unit-aware workflows, and an auditable desktop release in preparation.",
     images: ["/og-image.png"],
   },
   robots: {
@@ -76,13 +76,8 @@ export default function RootLayout({
                 name: "ProveCalc",
                 applicationCategory: "EngineeringApplication",
                 operatingSystem: "Windows, macOS, Linux",
-                offers: {
-                  "@type": "Offer",
-                  price: "200.00",
-                  priceCurrency: "USD",
-                },
                 description:
-                  "Professional engineering calculation software with full audit trails, symbolic mathematics, and unit analysis.",
+                  "Read-only preview for engineering calculation software with symbolic mathematics and unit analysis; signed desktop delivery is pending release review.",
               }),
             }}
           />

@@ -5,8 +5,16 @@
  */
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9743";
+const PUBLIC_COMPUTE_ENABLED = process.env.NEXT_PUBLIC_ENABLE_PUBLIC_COMPUTE === "true";
+
+function assertPublicComputeEnabled(): void {
+  if (!PUBLIC_COMPUTE_ENABLED) {
+    throw new Error("Hosted computation is disabled while the release gate is closed.");
+  }
+}
 
 async function post<T>(path: string, body: unknown): Promise<T> {
+  assertPublicComputeEnabled();
   const res = await fetch(`${API_URL}${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -20,6 +28,7 @@ async function post<T>(path: string, body: unknown): Promise<T> {
 }
 
 async function get<T>(path: string): Promise<T> {
+  assertPublicComputeEnabled();
   const res = await fetch(`${API_URL}${path}`);
   if (!res.ok) {
     const text = await res.text();
@@ -72,6 +81,7 @@ export interface SolutionValue {
   numeric?: number | null;
   unit?: string | null;
   latex?: string | null;
+  residual?: number | null;
 }
 
 export interface SolveStep {
@@ -96,6 +106,9 @@ export interface SolveResponse {
   solutions?: SolutionValue[] | null;
   method_used?: string | null;
   residual?: number | null;
+  root_count?: number | null;
+  root_selection_required?: boolean | null;
+  selection_policy?: string | null;
   error?: string | null;
   steps?: SolveStep[] | null;
   system_analysis?: SystemAnalysis | null;

@@ -1,8 +1,5 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { CheckoutButton } from "../../../components/landing/CheckoutButton";
-
 const features = [
   "Unlimited worksheets",
   "Desktop app for Windows, macOS, and Linux",
@@ -11,15 +8,15 @@ const features = [
   "PDF, DOCX, and HTML export",
   "Solve goals and system analysis",
   "Templates library",
-  "3 machine activations",
-  "Free updates for life",
+  "Existing-customer license retrieval",
+  "Hardened signed-build release notifications",
 ];
 
 const assurances = [
   {
-    title: "Perpetual license",
+    title: "Design-partner access",
     description:
-      "You buy the desktop app once, keep it forever, and receive ongoing updates without a renewal fee.",
+      "Join the release list while desktop delivery and entitlement controls complete their final audit.",
   },
   {
     title: "Readable files",
@@ -27,14 +24,14 @@ const assurances = [
       "Worksheets are local JSON files, and you can export them to PDF, DOCX, or HTML whenever you need a handoff artifact.",
   },
   {
-    title: "Simple activation",
+    title: "Local desktop workflow",
     description:
-      "Each key activates on up to 3 machines, and you can move a seat by deactivating one device and activating another.",
+      "The read-only web preview does not compute. Approved desktop delivery will include its own activation instructions.",
   },
   {
-    title: "Low buyer risk",
+    title: "Honest release boundary",
     description:
-      "30-day money-back guarantee and direct support from the same team that builds the product.",
+      "No checkout or public desktop download is enabled during containment; existing license records remain retrievable.",
   },
 ];
 
@@ -43,7 +40,7 @@ const comparisonRows = [
     label: "Billing model",
     subscription: "Usually annual subscription or seat-based renewal.",
     spreadsheet: "Already owned, but labor-intensive and hard to review.",
-    provecalc: "$200 one-time desktop license.",
+    provecalc: "Read-only preview; signed desktop delivery pending.",
   },
   {
     label: "Traceability",
@@ -73,8 +70,8 @@ const comparisonRows = [
 
 const faq = [
   {
-    q: "Is this really a one-time payment?",
-    a: "Yes. You pay $200 once, own the desktop license forever, and updates are included for life.",
+    q: "Can I get the desktop build now?",
+    a: "Not during containment. Request release notifications while the hardened signed build and entitlement ledger complete audit.",
   },
   {
     q: "What does 'bring your own key' mean for AI?",
@@ -89,15 +86,12 @@ const faq = [
     a: "Your files stay on your machine as JSON and remain exportable. Updates do not change ownership of your worksheets, and there is no renewal gate on access to your existing work.",
   },
   {
-    q: "Do you offer refunds?",
-    a: "Yes. Every desktop license comes with a 30-day money-back guarantee.",
+    q: "Can existing customers retrieve license records?",
+    a: "Yes. Sign in to retrieve an existing license record; the older public release is not linked while the release gate is open.",
   },
 ];
 
 export default function PricingPage() {
-  const searchParams = useSearchParams();
-  const isTest = searchParams.get("test") === "1";
-
   return (
     <main className="pt-24 pb-20">
       <div className="max-w-6xl mx-auto px-6">
@@ -106,24 +100,24 @@ export default function PricingPage() {
             className="text-4xl md:text-5xl font-bold mb-4"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           >
-            Simple, honest pricing
+            Design-partner access
           </h1>
           <p className="text-xl text-[var(--stone-400)]">
-            One product. One price. No subscriptions to keep using the version
-            you already bought.
+            The web surface is a read-only preview while signed desktop delivery
+            and paid entitlement controls complete audit.
           </p>
         </div>
 
         <div className="max-w-lg mx-auto mb-20">
           <div className="bg-gradient-to-br from-[var(--copper)]/20 to-[var(--copper-light)]/10 border border-[var(--copper)]/30 rounded-xl p-8 text-center relative">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[var(--copper)] text-xs font-bold px-3 py-1 rounded-full">
-              LIFETIME LICENSE
-            </div>
-            <div className="text-5xl font-bold text-[var(--copper-light)] mb-2 mt-2">
-              $200
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[var(--copper)] text-xs font-bold px-3 py-1 rounded-full">
+              CONTAINMENT PREVIEW
+              </div>
+            <div className="text-4xl font-bold text-[var(--copper-light)] mb-2 mt-2">
+              Signed build pending
             </div>
             <p className="text-[var(--stone-400)] mb-8">
-              One-time payment. Yours forever.
+              No checkout is enabled. Request notification when the release gate passes.
             </p>
 
             <ul className="text-left space-y-3 mb-8">
@@ -140,18 +134,14 @@ export default function PricingPage() {
               ))}
             </ul>
 
-            <CheckoutButton
+            <a
+              href="mailto:contact@themnemosyneresearchinstitute.com?subject=ProveCalc%20design-partner%20release%20notification"
               className="block w-full bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-4 py-3 rounded-lg font-medium transition-colors text-center"
-              test={isTest}
-              label={isTest ? "Test Purchase - $1" : "Buy Now"}
-            />
-            {isTest && (
-              <p className="text-xs text-yellow-400 mt-3 font-semibold">
-                TEST MODE - $1 charge only
-              </p>
-            )}
+            >
+              Request release notification
+            </a>
             <p className="text-xs text-[var(--stone-500)] mt-3">
-              30-day money-back guarantee
+              Existing customers can retrieve license records while signed in.
             </p>
           </div>
         </div>

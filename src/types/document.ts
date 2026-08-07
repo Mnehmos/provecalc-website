@@ -329,7 +329,7 @@ export interface WorksheetDocument {
   history: HistoryEntry[];
   current_history_id: string;
 
-  /** Verification audit trail for PE compliance */
+  /** Verification audit trail for calculation review */
   audit_trail: VerificationAuditEntry[];
 
   /** Document-level metadata */
@@ -357,7 +357,7 @@ export interface VerificationResult {
   overall_status?: VerificationStatus;
 }
 
-/** Verification audit entry for PE compliance */
+/** Verification audit entry for calculation review */
 export interface VerificationAuditEntry {
   id: string;
   node_id: NodeId;

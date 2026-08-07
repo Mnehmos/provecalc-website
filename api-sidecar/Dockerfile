@@ -7,9 +7,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc g++ && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install the production dependency lock, including hashes.
+COPY requirements-runtime.txt .
+RUN pip install --no-cache-dir --require-hashes -r requirements-runtime.txt
 
 # Copy application code
 COPY src/ src/

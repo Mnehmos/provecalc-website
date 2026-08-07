@@ -3,14 +3,15 @@
 import { useAuth, useUser, SignUpButton } from "@clerk/nextjs";
 import { useState } from "react";
 
+const PAID_CHECKOUT_ENABLED =
+  process.env.NEXT_PUBLIC_PAID_CHECKOUT_ENABLED === "true";
+
 export function CheckoutButton({
   className = "",
   label = "Buy Now",
-  test = false,
 }: {
   className?: string;
   label?: string;
-  test?: boolean;
 }) {
   const { isSignedIn } = useAuth();
   const { user } = useUser();
@@ -26,6 +27,20 @@ export function CheckoutButton({
   }
 
   // Not signed in — sign up first
+  if (!PAID_CHECKOUT_ENABLED) {
+    return (
+      <button
+        type="button"
+        disabled
+        aria-disabled="true"
+        className={className}
+        title="Paid sales are closed during the design-partner beta"
+      >
+        Design-partner beta - sales closed
+      </button>
+    );
+  }
+
   if (!isSignedIn) {
     return (
       <SignUpButton mode="modal">
@@ -37,7 +52,7 @@ export function CheckoutButton({
   const handleCheckout = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/checkout${test ? "?test=1" : ""}`, { method: "POST" });
+      const res = await fetch("/api/checkout", { method: "POST" });
       const data = await res.json();
 
       if (data.redirect) {

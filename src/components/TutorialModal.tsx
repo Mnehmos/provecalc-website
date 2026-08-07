@@ -43,7 +43,7 @@ const TUTORIALS: Tutorial[] = [
       {
         title: "Export your report",
         content:
-          'Click "PDF Report" to generate a verified calculation report with full audit trail. Or use "Export" for a JSON backup.',
+          'Click "PDF Report" to generate a calculation report with the available audit trail. Or use "Export" for a JSON backup.',
       },
     ],
   },

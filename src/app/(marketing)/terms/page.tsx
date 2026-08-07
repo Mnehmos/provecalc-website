@@ -26,7 +26,8 @@ export default function TermsPage() {
             </h2>
             <p>
               By accessing or using ProveCalc (&quot;the Service&quot;), including the
-              website at provecalc.com, the web demo, and the desktop application,
+              website at provecalc.com, the read-only product preview, and the
+              desktop application,
               you agree to be bound by these Terms of Service. If you do not agree,
               do not use the Service.
             </p>
@@ -37,10 +38,11 @@ export default function TermsPage() {
               2. Service Description
             </h2>
             <p>
-              ProveCalc is an engineering calculation platform that provides
-              symbolic mathematics, unit analysis, verification, and AI-assisted
-              worksheet construction. It is available as a desktop application
-              for Windows, macOS, and Linux, purchased with a one-time license.
+              ProveCalc is an engineering calculation platform with a desktop
+              application for symbolic mathematics, unit analysis, verification,
+              and AI-assisted worksheet construction. The current web experience
+              is a read-only product preview; hosted browser computation is not
+              enabled.
             </p>
           </section>
 
@@ -61,21 +63,23 @@ export default function TermsPage() {
               4. Licensing
             </h2>
             <p className="mb-3">
-              ProveCalc is sold as a one-time purchase at $200 per license key.
-              Each key activates on up to 3 machines. Features include:
+              Paid checkout is currently closed while the signed desktop build
+              and entitlement controls complete release review. Existing
+              license records remain available to account holders; final
+              commercial terms will accompany the approved build:
             </p>
             <ul className="list-disc pl-6 space-y-1 text-[var(--stone-400)]">
               <li>Unlimited worksheets and nodes</li>
-              <li>Full SymPy compute engine with Pint unit analysis</li>
+              <li>Local SymPy compute engine with Pint unit analysis</li>
               <li>AI assistant (bring your own API key)</li>
               <li>PDF, DOCX, and HTML export</li>
-              <li>100% offline after activation</li>
-              <li>Free updates for life</li>
+              <li>Core desktop calculation work remains local after activation</li>
+              <li>Signed updates under the terms published with the approved release</li>
             </ul>
             <p className="mt-3">
-              Licenses are perpetual (non-subscription). You may continue using
-              the version you have indefinitely, and product updates are
-              included at no additional charge.
+              Do not treat this preview or an older public build as a new
+              commercial download. Existing customers should use the signed
+              build and activation instructions published after release approval.
             </p>
           </section>
 
@@ -129,9 +133,9 @@ export default function TermsPage() {
               7. Refund Policy
             </h2>
             <p>
-              Desktop licenses come with a 30-day money-back guarantee. If you
-              are not satisfied with ProveCalc, contact us within 30 days of
-              purchase for a full refund. After 30 days, all sales are final.
+              Refund terms for new purchases will be published when paid
+              checkout reopens. Existing purchase support remains available
+              through the account and support channels.
             </p>
           </section>
 
@@ -141,8 +145,8 @@ export default function TermsPage() {
             </h2>
             <p>
               We may suspend or terminate your access to the Service at any time
-              for violation of these terms, including abuse of the compute API,
-              redistribution of the software, or fraudulent activity. Upon
+              for violation of these terms, including redistribution of the
+              software or fraudulent activity. Upon
               termination, your right to use the Service ceases immediately, but
               your locally stored worksheet data remains yours.
             </p>

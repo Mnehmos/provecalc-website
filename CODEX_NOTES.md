@@ -4,6 +4,21 @@ Date: 2026-02-18/19
 Reviewer: Codex
 Scope: Audit of sprint brief realism, dependency mapping, architecture choices, and delivery risk
 
+## Current release handoff (2026-08-06)
+
+The sprint notes below are historical. Website PR #1 is being maintained as a
+containment deployment only: the browser compute surface is disabled, paid
+checkout is closed, the older public desktop release is not linked, and
+existing signed-in customers may retrieve license records. The landing,
+pricing, download, success, terms, metadata, and footer surfaces must describe
+the signed build as pending until the desktop release gate and entitlement
+ledger pass independent review.
+
+Current containment implementation commit: `dcc32de5a5e5951c9d724be60d24f902b1bbed23`;
+handoff metadata commit: `d095df7`. Hosted CI for the implementation commit ran at
+https://github.com/Mnehmos/provecalc-website/actions/runs/31144604466; query PR #1
+for the final exact head after the metadata note is pushed.
+
 ---
 
 ## Executive verdict

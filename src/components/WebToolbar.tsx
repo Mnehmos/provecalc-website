@@ -5,6 +5,9 @@ import { useDocumentStore, getNextNodePosition } from "../stores/documentStore";
 import type { WorksheetExportData } from "../services/foxitTemplateBuilder";
 import type { GivenNode, EquationNode, SolveGoalNode, ResultNode } from "../types/document";
 
+const REPORT_GENERATION_ENABLED =
+  process.env.NEXT_PUBLIC_REPORT_GENERATION_ENABLED === "true";
+
 interface WebToolbarProps {
   onToggleDependencyGraph?: () => void;
   showDependencyGraph?: boolean;
@@ -291,10 +294,16 @@ export function WebToolbar({
         <button
           className="toolbar-button foxit-btn"
           onClick={exportFoxitPdf}
-          title="Generate Verified PDF Report"
-          disabled={isLoading || !document || foxitExporting}
+          title="Generate Calculation PDF Report"
+          disabled={
+            !REPORT_GENERATION_ENABLED || isLoading || !document || foxitExporting
+          }
         >
-          {foxitExporting ? "Generating..." : "PDF Report"}
+          {foxitExporting
+            ? "Generating..."
+            : REPORT_GENERATION_ENABLED
+              ? "PDF Report"
+              : "PDF beta closed"}
         </button>
       </div>
 

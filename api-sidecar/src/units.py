@@ -3,17 +3,179 @@ Unit Registry - Dimensional analysis using Pint
 """
 
 import logging
-from typing import Optional, Dict, Any, Tuple
+from dataclasses import dataclass
+from typing import Optional, Dict, Any, List, Tuple
 import re
 import pint
+from pint import UnitRegistry as PintRegistry, DimensionalityError
 
 try:
     from .parsing import parse_equation
 except ImportError:
-    from parsing import parse_equation
+    from parsing import parse_equation  # type: ignore[no-redef]
 
 logger = logging.getLogger(__name__)
-from pint import UnitRegistry as PintRegistry, DimensionalityError
+
+
+@dataclass(frozen=True)
+class _QuantityToken:
+    kind: str
+    value: str
+
+
+class _SafeQuantityParser:
+    """Parse numeric/unit arithmetic without Pint's expression evaluator."""
+
+    _NUMBER = re.compile(r"(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?")
+    _IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+
+    def __init__(self, registry: "UnitRegistry", expression: str) -> None:
+        if not isinstance(expression, str) or not expression.strip():
+            raise ValueError("Unit expression must be non-empty text")
+        if len(expression) > 2048:
+            raise ValueError("Unit expression exceeds the 2048-character limit")
+        self.registry = registry
+        self.tokens = self._tokenize(expression)
+        self.index = 0
+        self.depth = 0
+
+    @classmethod
+    def _tokenize(cls, expression: str) -> List[_QuantityToken]:
+        tokens: List[_QuantityToken] = []
+        index = 0
+        while index < len(expression):
+            char = expression[index]
+            if char.isspace():
+                index += 1
+                continue
+            number = cls._NUMBER.match(expression, index)
+            if number:
+                tokens.append(_QuantityToken("number", number.group(0)))
+                index = number.end()
+            else:
+                identifier = cls._IDENTIFIER.match(expression, index)
+                if identifier:
+                    value = identifier.group(0)
+                    if "__" in value or len(value) > 64:
+                        raise ValueError("Unit identifier is not allowed")
+                    tokens.append(_QuantityToken("identifier", value))
+                    index = identifier.end()
+                elif expression.startswith("**", index):
+                    tokens.append(_QuantityToken("operator", "**"))
+                    index += 2
+                elif char in "+-*/^(),":
+                    tokens.append(_QuantityToken("operator", char))
+                    index += 1
+                else:
+                    raise ValueError(f"Unsupported unit-expression character {char!r}")
+            if len(tokens) > 256:
+                raise ValueError("Unit expression exceeds the token limit")
+        tokens.append(_QuantityToken("eof", ""))
+        return tokens
+
+    def _current(self) -> _QuantityToken:
+        return self.tokens[self.index]
+
+    def _accept(self, value: str) -> bool:
+        if self._current().value != value:
+            return False
+        self.index += 1
+        return True
+
+    def _enter(self) -> None:
+        self.depth += 1
+        if self.depth > 32:
+            raise ValueError("Unit expression nesting exceeds the safety limit")
+
+    def _leave(self) -> None:
+        self.depth -= 1
+
+    def parse(self):
+        result = self._parse_add_sub()
+        if self._current().kind != "eof":
+            raise ValueError(f"Unexpected unit token {self._current().value!r}")
+        return result
+
+    def _parse_add_sub(self):
+        result = self._parse_mul_div()
+        while self._current().value in ("+", "-"):
+            operator = self._current().value
+            self.index += 1
+            right = self._parse_mul_div()
+            result = result + right if operator == "+" else result - right
+        return result
+
+    def _starts_factor(self) -> bool:
+        return self._current().kind in ("number", "identifier") or self._current().value == "("
+
+    def _parse_mul_div(self):
+        result = self._parse_unary()
+        while True:
+            if self._current().value in ("*", "/"):
+                operator = self._current().value
+                self.index += 1
+                right = self._parse_unary()
+                result = result * right if operator == "*" else result / right
+            elif self._starts_factor():
+                result = result * self._parse_unary()
+            else:
+                return result
+
+    def _parse_unary(self):
+        if self._accept("+"):
+            return self._parse_unary()
+        if self._accept("-"):
+            return -self._parse_unary()
+        return self._parse_power()
+
+    def _parse_power(self):
+        result = self._parse_primary()
+        if self._current().value in ("^", "**"):
+            self.index += 1
+            if self._accept("("):
+                token = self._current()
+                if token.kind != "number":
+                    raise ValueError("Unit powers must use numeric exponents")
+                self.index += 1
+                if not self._accept(")"):
+                    raise ValueError("Unclosed unit exponent")
+            else:
+                token = self._current()
+                if token.value in ("+", "-"):
+                    sign = token.value
+                    self.index += 1
+                    token = self._current()
+                else:
+                    sign = ""
+                if token.kind != "number":
+                    raise ValueError("Unit powers must use numeric exponents")
+                self.index += 1
+                token = _QuantityToken("number", sign + token.value)
+            exponent = float(token.value)
+            if abs(exponent) > 1000:
+                raise ValueError("Unit exponent exceeds the safety limit")
+            result = result ** exponent
+        return result
+
+    def _parse_primary(self):
+        token = self._current()
+        if token.kind == "number":
+            self.index += 1
+            return self.registry.Q_(float(token.value))
+        if token.kind == "identifier":
+            self.index += 1
+            unit = self.registry._parse_units(token.value)
+            return self.registry.Q_(1, unit)
+        if self._accept("("):
+            self._enter()
+            try:
+                result = self._parse_add_sub()
+            finally:
+                self._leave()
+            if not self._accept(")"):
+                raise ValueError("Unclosed unit group")
+            return result
+        raise ValueError(f"Expected a number or unit at token {token.value!r}")
 
 
 # SI Derived Units mapped by dimensionality
@@ -59,6 +221,18 @@ class UnitRegistry:
         # Example custom definitions
         # self.ureg.define("ksi = 1000 * psi")
         pass
+
+    def _parse_units(self, unit: str):
+        """Parse one unit expression through Pint's unit-only grammar."""
+        if not isinstance(unit, str) or not unit.strip():
+            raise ValueError("Unit must be non-empty text")
+        if len(unit) > 512 or "__" in unit:
+            raise ValueError("Unit expression is not allowed")
+        return self.ureg.parse_units(unit)
+
+    def _parse_quantity_expression(self, expression: str):
+        """Parse bounded quantity arithmetic without ``parse_expression``."""
+        return _SafeQuantityParser(self, expression).parse()
 
     def _format_base_unit(self, unit_str: str) -> str:
         """
@@ -120,8 +294,15 @@ class UnitRegistry:
         """
         logger.debug("check_units called with: '%s'", expression)
         try:
+            if not expression.strip():
+                return {
+                    "consistent": True,
+                    "inferred_unit": "dimensionless",
+                    "si_base": "1 dimensionless",
+                    "dimensionality": "dimensionless",
+                }
             # Parse the expression
-            result = self.ureg.parse_expression(expression)
+            result = self._parse_quantity_expression(expression)
             logger.debug("Parsed result: %s, units: %s, dims: %s", result, result.units, result.dimensionality)
 
             # Get dimensionality
@@ -150,7 +331,7 @@ class UnitRegistry:
             # Check against expected
             if expected_unit:
                 try:
-                    expected = self.ureg.parse_units(expected_unit)
+                    expected = self._parse_units(expected_unit)
                     consistent = result.dimensionality == expected.dimensionality
 
                     if not consistent:
@@ -196,7 +377,7 @@ class UnitRegistry:
         Returns:
             Converted value
         """
-        quantity = self.Q_(value, from_unit)
+        quantity = self.Q_(value, self._parse_units(from_unit))
         converted = quantity.to(to_unit)
         return converted.magnitude
 
@@ -210,7 +391,7 @@ class UnitRegistry:
         Returns:
             Dict mapping dimension names to powers
         """
-        parsed = self.ureg.parse_units(unit)
+        parsed = self._parse_units(unit)
         dims = parsed.dimensionality
 
         # Convert to simple dict
@@ -219,8 +400,8 @@ class UnitRegistry:
     def are_compatible(self, unit1: str, unit2: str) -> bool:
         """Check if two units are dimensionally compatible."""
         try:
-            u1 = self.ureg.parse_units(unit1)
-            u2 = self.ureg.parse_units(unit2)
+            u1 = self._parse_units(unit1)
+            u2 = self._parse_units(unit2)
             return u1.dimensionality == u2.dimensionality
         except (pint.UndefinedUnitError, ValueError, TypeError) as e:
             logger.debug("are_compatible failed for '%s' vs '%s': %s", unit1, unit2, e)
@@ -228,13 +409,13 @@ class UnitRegistry:
 
     def to_si(self, value: float, unit: str) -> tuple:
         """Convert a value to SI base units."""
-        quantity = self.Q_(value, unit)
+        quantity = self.Q_(value, self._parse_units(unit))
         si = quantity.to_base_units()
         return (si.magnitude, str(si.units))
 
     def simplify_unit(self, unit: str) -> str:
         """Simplify a compound unit expression."""
-        parsed = self.ureg.parse_units(unit)
+        parsed = self._parse_units(unit)
         # Try to reduce to a simpler form
         try:
             reduced = parsed.to_reduced_units()
@@ -243,7 +424,9 @@ class UnitRegistry:
             logger.debug("simplify_unit reduction failed for '%s': %s", unit, e)
             return str(parsed)
 
-    def _get_dimensionality_tuple(self, dims: dict) -> Optional[Tuple[int, ...]]:
+    def _get_dimensionality_tuple(
+        self, dims: dict
+    ) -> Optional[Tuple[int, int, int, int, int, int, int]]:
         """Convert Pint dimensionality dict to a tuple for lookup.
 
         Returns None if any dimension has a fractional exponent (e.g., m^0.5),
@@ -263,7 +446,15 @@ class UnitRegistry:
         for val in raw:
             if float(val) != int(val):
                 return None
-        return tuple(int(v) for v in raw)
+        return (
+            int(raw[0]),
+            int(raw[1]),
+            int(raw[2]),
+            int(raw[3]),
+            int(raw[4]),
+            int(raw[5]),
+            int(raw[6]),
+        )
 
     def simplify_to_derived(self, value: float, unit: str) -> Dict[str, Any]:
         """
@@ -282,7 +473,7 @@ class UnitRegistry:
                 - display: formatted display string
         """
         try:
-            quantity = self.Q_(value, unit)
+            quantity = self.Q_(value, self._parse_units(unit))
 
             # Convert to base SI units first
             base = quantity.to_base_units()
@@ -460,7 +651,7 @@ class PhysicalDomainClassifier:
                 - dimensions: Raw dimension dict
         """
         try:
-            parsed = self.ureg.parse_units(unit)
+            parsed = self.registry._parse_units(unit)
             dims = dict(parsed.dimensionality)
             dim_tuple = self.registry._get_dimensionality_tuple(dims)
 
@@ -597,6 +788,12 @@ class EquationUnitValidator:
         self.ureg = registry.ureg
         self.Q_ = registry.Q_
 
+    def _parse_units(self, unit: str):
+        return self.registry._parse_units(unit)
+
+    def _parse_quantity_expression(self, expression: str):
+        return self.registry._parse_quantity_expression(expression)
+
     def _dims_to_dict(self, dimensionality) -> Dict[str, int]:
         """Convert Pint dimensionality to a clean dict."""
         return {str(k): int(v) for k, v in dict(dimensionality).items() if v != 0}
@@ -673,7 +870,7 @@ class EquationUnitValidator:
 
         errors = []
         warnings = []
-        variable_analysis = {}
+        variable_analysis: Dict[str, Dict[str, Any]] = {}
 
         # Parse equation sides
         _lhs_str, rhs_str = parse_equation(equation)
@@ -700,7 +897,7 @@ class EquationUnitValidator:
 
             try:
                 # Parse the unit
-                unit = self.ureg.parse_units(unit_str)
+                unit = self._parse_units(unit_str)
                 dims = self._dims_to_dict(unit.dimensionality)
                 quantity = self._get_common_quantity_name(dims)
 
@@ -809,7 +1006,7 @@ class EquationUnitValidator:
             unit_str = var_info.get("unit")
             if unit_str:
                 try:
-                    unit = self.ureg.parse_units(unit_str)
+                    unit = self._parse_units(unit_str)
                     known_dims[var_name] = dict(unit.dimensionality)
                 except (pint.UndefinedUnitError, ValueError, TypeError) as e:
                     logger.debug("Failed to parse unit '%s' for variable '%s': %s", unit_str, var_name, e)
@@ -834,9 +1031,9 @@ class EquationUnitValidator:
             # Also handle LHS if it's not the target
             if lhs != target and lhs in known_dims:
                 unit_str = self._dims_to_unit_str(known_dims[lhs])
-                lhs_qty = self.ureg.parse_expression(f"1 * {unit_str}") if unit_str else None
+                lhs_qty = self._parse_quantity_expression(f"1 * {unit_str}") if unit_str else None
             elif lhs != target and lhs in variables and variables[lhs].get("unit"):
-                lhs_qty = self.ureg.parse_expression(f"1 * {variables[lhs]['unit']}")
+                lhs_qty = self._parse_quantity_expression(f"1 * {variables[lhs]['unit']}")
             else:
                 lhs_qty = None
 
@@ -847,7 +1044,7 @@ class EquationUnitValidator:
                 return None
 
             # Evaluate RHS to get expected dimensions
-            rhs_qty = self.ureg.parse_expression(test_expr)
+            rhs_qty = self._parse_quantity_expression(test_expr)
 
             if lhs == target:
                 # Target is on LHS, so it should have RHS dimensions
@@ -909,7 +1106,9 @@ class EquationUnitValidator:
         # Count how many variables we can substitute
         substituted = 0
         for var_name, var_info in variables.items():
-            value = var_info.get("value", 1)
+            if "value" not in var_info:
+                return {"balanced": False, "error": f"Variable '{var_name}' is missing its value"}
+            value = var_info["value"]
             unit = var_info.get("unit")
 
             if unit:
@@ -955,8 +1154,8 @@ class EquationUnitValidator:
 
         try:
             # Try to evaluate both sides
-            lhs_qty = self.ureg.parse_expression(lhs_expr)
-            rhs_qty = self.ureg.parse_expression(rhs_expr)
+            lhs_qty = self._parse_quantity_expression(lhs_expr)
+            rhs_qty = self._parse_quantity_expression(rhs_expr)
 
             def _get_dims(qty):
                 """Extract dimensionality dict, treating plain numbers as dimensionless."""

@@ -89,7 +89,7 @@ class Unit(BaseModel):
     def validate_unit_expression(cls, v: str) -> str:
         """Validate that the unit expression is parseable by Pint."""
         try:
-            _ureg.parse_expression(v)
+            _registry._parse_units(v)
         except (pint.UndefinedUnitError, pint.errors.UndefinedUnitError) as e:
             raise ValueError(f"Invalid unit expression '{v}': {e}") from e
         return v
@@ -105,10 +105,10 @@ class ValueWithUnit(BaseModel):
         """Ensure any provided Unit has a valid, Pint-parsed expression."""
         if v is not None and v.expression:
             try:
-                parsed = _ureg.parse_expression(v.expression)
+                parsed = _registry._parse_units(v.expression)
                 # Normalize si_base if not already set
                 if v.si_base is None:
-                    v.si_base = str(parsed.to_base_units().units)
+                    v.si_base = str(_registry.Q_(1, parsed).to_base_units().units)
             except (pint.UndefinedUnitError, pint.errors.UndefinedUnitError):
                 # Already validated in Unit; this is a safety net
                 pass
