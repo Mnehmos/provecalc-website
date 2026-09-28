@@ -1,5 +1,9 @@
 # CODEX Audit Notes — ProveCalc Web Demo Sprint
 
+> **Historical (February 2026).** This reviews the hackathon sprint plan in
+> `CODEX_BRIEF.md` and is kept for context. See `CLAUDE.md` for the current
+> site.
+
 Date: 2026-02-18/19
 Reviewer: Codex
 Scope: Audit of sprint brief realism, dependency mapping, architecture choices, and delivery risk
