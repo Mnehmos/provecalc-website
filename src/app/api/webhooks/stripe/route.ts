@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import crypto from "crypto";
 import { Resend } from "resend";
+import { isStripeTestMode, licenseIssueProblem } from "../../../../utils/licenseCheckout";
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -134,9 +135,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (event.type === "checkout.session.completed") {
+    // Delayed payment methods complete checkout before the money arrives;
+    // their license is issued on async_payment_succeeded instead.
+    if (
+      event.type === "checkout.session.completed" ||
+      event.type === "checkout.session.async_payment_succeeded"
+    ) {
       const session = event.data.object as Stripe.Checkout.Session;
       const clerkUserId = session.metadata?.clerkUserId;
+
+      const problem = licenseIssueProblem(session, isStripeTestMode());
+      if (problem) {
+        console.warn(`Not issuing a license for checkout ${session.id}: ${problem}`);
+        return NextResponse.json({ received: true });
+      }
 
       if (!clerkUserId) {
         console.error("No clerkUserId in session metadata");
@@ -185,7 +197,8 @@ export async function POST(req: NextRequest) {
         console.error("Failed to send license email:", emailErr);
       }
 
-      console.log(`License issued to user ${clerkUserId}: ${licenseKey}`);
+      // Never log the key itself: it is a bearer credential for the app.
+      console.log(`License issued to user ${clerkUserId}`);
     }
 
     return NextResponse.json({ received: true });

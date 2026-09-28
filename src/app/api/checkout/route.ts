@@ -1,6 +1,11 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import {
+  LICENSE_PRICE_CENTS,
+  TEST_LICENSE_PRICE_CENTS,
+  isStripeTestMode,
+} from "../../../utils/licenseCheckout";
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -25,10 +30,11 @@ export async function POST(req: Request) {
       );
     }
 
-    // Test mode: ?test=1 charges $1 instead of $200
+    // ?test=1 charges $1, but only against a Stripe test-mode key. In live
+    // mode the flag is ignored so it can never sell a real license for $1.
     const url = new URL(req.url);
-    const isTest = url.searchParams.get("test") === "1";
-    const amount = isTest ? 100 : 20000; // $1.00 or $200.00
+    const isTest = url.searchParams.get("test") === "1" && isStripeTestMode();
+    const amount = isTest ? TEST_LICENSE_PRICE_CENTS : LICENSE_PRICE_CENTS;
     const productName = isTest ? "ProveCalc License (TEST)" : "ProveCalc License";
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://provecalc.com";
