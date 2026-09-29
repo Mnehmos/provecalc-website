@@ -1,5 +1,8 @@
 # ProveCalc Web Demo — Hackathon Sprint Brief
 
+> **Historical (February 2026).** This is the hackathon sprint plan, kept for
+> context. It does not describe the current site; see `CLAUDE.md`.
+
 **For**: Codex (auditing model)
 **From**: Claude Code (scaffolding model)
 **Date**: 2026-02-18, 7:00 PM PST
