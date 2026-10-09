@@ -71,35 +71,35 @@ export const TEMPLATES: WorksheetTemplate[] = [
         type: 'text',
         content: '## Step 2 — Given Values\n\n**Given nodes** store the known quantities for your problem. Each one has:\n- **Symbol** — the variable name used in equations (plain text, no LaTeX)\n- **Value** — the numeric value\n- **Unit** — in Pint format: `m`, `N`, `Pa`, `m**4`, `m/s**2`, etc.\n\n**Try this:** Click any Given node below and change the value. For example, try doubling P to 2000 N. Changing a given marks downstream nodes as *stale* — you\'ll recalculate them in Step 4.',
         format: 'markdown',
-        position: { x: 100, y: 980 },
+        position: { x: 100, y: 1120 },
       },
       {
         type: 'given',
         symbol: 'P',
         value: { value: 1000, unit: { expression: 'N' } },
         description: 'Point load at free end',
-        position: { x: 100, y: 1220 },
+        position: { x: 100, y: 1360 },
       },
       {
         type: 'given',
         symbol: 'L',
         value: { value: 2, unit: { expression: 'm' } },
         description: 'Beam length',
-        position: { x: 100, y: 1300 },
+        position: { x: 100, y: 1440 },
       },
       {
         type: 'given',
         symbol: 'E',
         value: { value: 200e9, unit: { expression: 'Pa' } },
         description: "Young's modulus (structural steel)",
-        position: { x: 100, y: 1380 },
+        position: { x: 100, y: 1520 },
       },
       {
         type: 'given',
         symbol: 'I',
         value: { value: 8e-6, unit: { expression: 'm**4' } },
         description: 'Second moment of area',
-        position: { x: 100, y: 1460 },
+        position: { x: 100, y: 1600 },
       },
 
       // ── STEP 4: Equation ─────────────────────────────────────────────
@@ -107,36 +107,36 @@ export const TEMPLATES: WorksheetTemplate[] = [
         type: 'text',
         content: '## Step 3 — The Equation Node\n\nEquation nodes have **three separate fields** — this is important:\n\n| Field | Purpose | Format |\n|-------|---------|--------|\n| `latex` | Display only — rendered beautifully | LaTeX: `\\frac{P L^3}{3 E I}` |\n| `lhs` | Left-hand side for the compute engine | Plain text: `delta_max` |\n| `rhs` | Right-hand side expression | SymPy/Python: `(P*L**3)/(3*E*I)` |\n\n⚠️ Never put LaTeX in `lhs` or `rhs` — the Python compute engine will reject it. Use `*` for multiplication, `/` for division, `**` for powers.\n\nThe equation below is already filled in correctly. Read it and notice how the `rhs` uses Python syntax.',
         format: 'markdown',
-        position: { x: 100, y: 1600 },
+        position: { x: 100, y: 1740 },
       },
       {
         type: 'equation',
         latex: '\\delta_{max} = \\frac{P L^3}{3 E I}',
         lhs: 'delta_max',
         rhs: '(P*L**3)/(3*E*I)',
-        position: { x: 100, y: 1900 },
+        position: { x: 100, y: 2040 },
       },
 
       // ── STEP 5: Solve Goal ───────────────────────────────────────────
       {
         type: 'text',
-        content: '## Step 4 — Solve Goal\n\nA **Solve Goal** tells the engine which variable to compute. It substitutes all your Given values into the equations and returns a numeric result with units.\n\n- `target_symbol` — must exactly match the `lhs` of an equation\n- `method: symbolic` — uses SymPy for exact algebraic substitution\n\nThe Solve Goal below targets `delta_max`. After you run Verify, it will show the computed deflection in meters.',
+        content: '## Step 4 — Solve Goal\n\nA **Solve Goal** tells the engine which variable to compute. It substitutes all your Given values into the equations and returns a numeric result with units.\n\n- `target_symbol` — must exactly match the `lhs` of an equation\n- `method: symbolic` — uses SymPy for exact algebraic substitution\n\nThe Solve Goal below targets `delta_max`. Double-click it and press **Solve Now** to compute it.',
         format: 'markdown',
-        position: { x: 100, y: 2040 },
+        position: { x: 100, y: 2240 },
       },
       {
         type: 'solve_goal',
         target_symbol: 'delta_max',
         method: 'symbolic',
-        position: { x: 100, y: 2220 },
+        position: { x: 100, y: 2500 },
       },
 
       // ── STEP 6: Verify ───────────────────────────────────────────────
       {
         type: 'text',
-        content: '## Step 5 — Run Verify\n\nNow click **"Verify"** in the toolbar at the top.\n\nThe engine will:\n1. Substitute P, L, E, I into the equation\n2. Check that all units are dimensionally consistent\n3. Compute the numeric value of `delta_max`\n4. Mark each node green (verified) or red (error)\n\nWith the default values (P=1000 N, L=2 m, E=200 GPa, I=8×10⁻⁶ m⁴) you should get:\n$$\\delta_{max} \\approx 1.67 \\times 10^{-3} \\text{ m}$$\n\nIf you changed any Given values earlier, you\'ll see different results — that\'s the point!',
+        content: '## Step 5 — Run Verify\n\nNow click **"Verify"** in the toolbar at the top.\n\nThe engine will:\n1. Check each Given value and its unit\n2. Check that every equation is dimensionally consistent\n3. Re-solve the result from the current inputs and confirm it matches\n4. Mark each node green (verified) or red (error)\n\nWith the default values (P=1000 N, L=2 m, E=200 GPa, I=8×10⁻⁶ m⁴) you should get:\n$$\\delta_{max} \\approx 1.67 \\times 10^{-3} \\text{ m}$$\n\nIf you changed any Given values earlier, you\'ll see different results — that\'s the point!',
         format: 'markdown',
-        position: { x: 100, y: 2360 },
+        position: { x: 100, y: 2640 },
       },
 
       // ── STEP 7: Export ───────────────────────────────────────────────
@@ -144,7 +144,7 @@ export const TEMPLATES: WorksheetTemplate[] = [
         type: 'text',
         content: '## Step 6 — Export Your Work\n\nProveCalc lets you export verified calculations in multiple formats:\n\n- **PDF Report** — formal engineering document with audit trail, all equations rendered, verification status per node\n- **HTML** — shareable web page with KaTeX-rendered math\n- **Export (JSON)** — raw backup you can re-open later with "Open"\n\nClick **"PDF Report"** in the toolbar to generate a report for this worksheet.\n\n---\n\n✅ **Tutorial complete!** You now know how to:\n- Add and edit Given values\n- Read equation nodes (LaTeX display vs SymPy compute)\n- Set up Solve Goals\n- Run Verify\n- Export results\n\nDelete these instruction nodes and replace the values with your own problem to start your first real calculation.',
         format: 'markdown',
-        position: { x: 100, y: 2680 },
+        position: { x: 100, y: 2960 },
       },
     ],
   },
@@ -352,7 +352,7 @@ export const TEMPLATES: WorksheetTemplate[] = [
       {
         type: 'equation',
         latex: 'M_{max} = \\frac{w \\cdot L^2}{8}',
-        sympy: 'w * L**2 / 8',
+        sympy: 'M_max = w * L**2 / 8',
         lhs: 'M_max',
         rhs: 'w * L**2 / 8',
         position: { x: 40, y: 580 },
@@ -360,7 +360,7 @@ export const TEMPLATES: WorksheetTemplate[] = [
       {
         type: 'equation',
         latex: '\\delta_{max} = \\frac{5 \\cdot w \\cdot L^4}{384 \\cdot E \\cdot I}',
-        sympy: '5 * w * L**4 / (384 * E * I)',
+        sympy: 'delta_max = 5 * w * L**4 / (384 * E * I)',
         lhs: 'delta_max',
         rhs: '5 * w * L**4 / (384 * E * I)',
         position: { x: 40, y: 660 },
@@ -428,7 +428,7 @@ export const TEMPLATES: WorksheetTemplate[] = [
       {
         type: 'equation',
         latex: 'P_{cr} = \\frac{\\pi^2 \\cdot E \\cdot I}{(K \\cdot L)^2}',
-        sympy: 'pi**2 * E * I / (K * L)**2',
+        sympy: 'P_cr = pi**2 * E * I / (K * L)**2',
         lhs: 'P_cr',
         rhs: 'pi**2 * E * I / (K * L)**2',
         position: { x: 40, y: 560 },
@@ -499,7 +499,7 @@ export const TEMPLATES: WorksheetTemplate[] = [
       {
         type: 'equation',
         latex: 'Q = k \\cdot A \\cdot \\frac{T_1 - T_2}{\\Delta x}',
-        sympy: 'k * A * (T1 - T2) / dx',
+        sympy: 'Q = k * A * (T1 - T2) / dx',
         lhs: 'Q',
         rhs: 'k * A * (T1 - T2) / dx',
         position: { x: 40, y: 640 },
@@ -561,7 +561,7 @@ export const TEMPLATES: WorksheetTemplate[] = [
       {
         type: 'equation',
         latex: 'k = \\frac{G \\cdot d^4}{8 \\cdot D^3 \\cdot N_a}',
-        sympy: 'G * d**4 / (8 * D**3 * N_a)',
+        sympy: 'k_spring = G * d**4 / (8 * D**3 * N_a)',
         lhs: 'k_spring',
         rhs: 'G * d**4 / (8 * D**3 * N_a)',
         position: { x: 40, y: 560 },
@@ -657,40 +657,40 @@ export const TEMPLATES: WorksheetTemplate[] = [
         symbol: 'F',
         value: { value: 25000, unit: { expression: 'N' } },
         description: 'Applied tensile load',
-        position: { x: 100, y: 640 },
+        position: { x: 100, y: 780 },
       },
       {
         type: 'given',
         symbol: 'd',
         value: { value: 12, unit: { expression: 'mm' } },
         description: 'Bolt nominal diameter (M12)',
-        position: { x: 100, y: 720 },
+        position: { x: 100, y: 860 },
       },
       {
         type: 'equation',
         latex: 'A_t = \\frac{\\pi}{4} d^2',
         lhs: 'A_t',
         rhs: 'pi/4 * d**2',
-        position: { x: 100, y: 820 },
+        position: { x: 100, y: 960 },
       },
       {
         type: 'equation',
         latex: '\\sigma = \\frac{F}{A_t}',
         lhs: 'sigma',
         rhs: 'F / A_t',
-        position: { x: 100, y: 920 },
+        position: { x: 100, y: 1060 },
       },
       {
         type: 'solve_goal',
         target_symbol: 'A_t',
         method: 'symbolic',
-        position: { x: 100, y: 1020 },
+        position: { x: 100, y: 1160 },
       },
       {
         type: 'solve_goal',
         target_symbol: 'sigma',
         method: 'symbolic',
-        position: { x: 100, y: 1100 },
+        position: { x: 100, y: 1240 },
       },
     ],
   },
@@ -926,7 +926,7 @@ export const TEMPLATES: WorksheetTemplate[] = [
       {
         type: 'equation',
         latex: '\\tau = R \\cdot C',
-        sympy: 'R * C',
+        sympy: 'tau = R * C',
         lhs: 'tau',
         rhs: 'R * C',
         position: { x: 40, y: 400 },
@@ -934,7 +934,7 @@ export const TEMPLATES: WorksheetTemplate[] = [
       {
         type: 'equation',
         latex: 'f_c = \\frac{1}{2\\pi \\cdot R \\cdot C}',
-        sympy: '1 / (2 * pi * R * C)',
+        sympy: 'f_c = 1 / (2 * pi * R * C)',
         lhs: 'f_c',
         rhs: '1 / (2 * pi * R * C)',
         position: { x: 40, y: 480 },
@@ -995,7 +995,7 @@ export const TEMPLATES: WorksheetTemplate[] = [
       {
         type: 'equation',
         latex: 'D = b^2 - 4ac',
-        sympy: 'b**2 - 4*a*c',
+        sympy: 'D = b**2 - 4*a*c',
         lhs: 'D',
         rhs: 'b**2 - 4*a*c',
         position: { x: 40, y: 480 },
@@ -1003,7 +1003,7 @@ export const TEMPLATES: WorksheetTemplate[] = [
       {
         type: 'equation',
         latex: 'x_1 = \\frac{-b + \\sqrt{D}}{2a}',
-        sympy: '(-b + sqrt(D)) / (2*a)',
+        sympy: 'x_1 = (-b + sqrt(D)) / (2*a)',
         lhs: 'x_1',
         rhs: '(-b + sqrt(D)) / (2*a)',
         position: { x: 40, y: 560 },
@@ -1011,7 +1011,7 @@ export const TEMPLATES: WorksheetTemplate[] = [
       {
         type: 'equation',
         latex: 'x_2 = \\frac{-b - \\sqrt{D}}{2a}',
-        sympy: '(-b - sqrt(D)) / (2*a)',
+        sympy: 'x_2 = (-b - sqrt(D)) / (2*a)',
         lhs: 'x_2',
         rhs: '(-b - sqrt(D)) / (2*a)',
         position: { x: 40, y: 640 },
@@ -1069,7 +1069,7 @@ export const TEMPLATES: WorksheetTemplate[] = [
       {
         type: 'equation',
         latex: 'I = \\frac{V}{R}',
-        sympy: 'V / R',
+        sympy: 'I = V / R',
         lhs: 'I',
         rhs: 'V / R',
         position: { x: 40, y: 400 },
@@ -1077,7 +1077,7 @@ export const TEMPLATES: WorksheetTemplate[] = [
       {
         type: 'equation',
         latex: 'P = V \\cdot I',
-        sympy: 'V * I',
+        sympy: 'P = V * I',
         lhs: 'P',
         rhs: 'V * I',
         position: { x: 40, y: 480 },

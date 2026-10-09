@@ -1,5 +1,5 @@
 import type { EquationNode, WorksheetDocument } from '../types/document';
-import { extractVariables, getEquationExtractionExpression } from './mathParsing';
+import { extractEngineVariables, extractVariables, getCanonicalEquationFields, getEquationExtractionExpression } from './mathParsing';
 
 export interface KnownSymbol {
   symbol: string;
@@ -83,7 +83,13 @@ export function getInputSymbolNodeIds(
 }
 
 export function getEquationVariables(equation: EquationNode): string[] {
-  return extractVariables(getEquationExtractionExpression(equation));
+  const expression = getEquationExtractionExpression(equation);
+  const { lhs, rhs } = getCanonicalEquationFields(equation);
+  // Plain engine-syntax fields: read names exactly as the engine will.
+  if (rhs && expression === (lhs ? `${lhs} ${rhs}` : rhs)) {
+    return extractEngineVariables(expression);
+  }
+  return extractVariables(expression);
 }
 
 export function buildContributingNodeIds(

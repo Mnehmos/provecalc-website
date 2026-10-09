@@ -398,6 +398,18 @@ export function addImplicitMultiplication(expr: string): string {
  * @param expr - The expression string
  * @returns Array of unique variable names
  */
+/**
+ * Identifiers in an expression already written in engine (SymPy) syntax,
+ * where multiplication is explicit. Unlike extractVariables, this does not
+ * split multi-letter names, so a symbol like `dx` stays one variable, as the
+ * engine reads it.
+ */
+export function extractEngineVariables(expr: string): string[] {
+  if (!expr) return [];
+  const matches = expr.match(/\b([a-zA-Z_][a-zA-Z0-9_]*)\b/g) || [];
+  return [...new Set(matches.filter((v) => !MATH_FUNCTIONS.has(v) && !MATH_CONSTANTS.has(v)))];
+}
+
 export function extractVariables(expr: string): string[] {
   if (!expr) return [];
 
