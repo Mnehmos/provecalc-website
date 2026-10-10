@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     template: "%s | ProveCalc",
   },
   description:
-    "A Mathcad-style engineering worksheet where every assumption, unit, and result is checked, not just calculated. $200 once, works offline, no activation server.",
+    "Engineering calculations in a Mathcad-style worksheet: every assumption, unit and result is checked. Desktop app runs offline after activation. $200 once.",
   metadataBase: new URL("https://provecalc.com"),
   openGraph: {
     type: "website",
@@ -85,6 +85,27 @@ export default function RootLayout({
                 image: "https://provecalc.com/og-image.png",
                 description:
                   "A Mathcad-style engineering worksheet where every assumption, unit, and result is checked, not just calculated.",
+                publisher: { "@id": "https://provecalc.com/#publisher" },
+              }),
+            }}
+          />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                "@id": "https://provecalc.com/#publisher",
+                name: "The Mnemosyne Research Institute",
+                url: "https://themnemosyneresearchinstitute.com",
+                email: "contact@themnemosyneresearchinstitute.com",
+                address: {
+                  "@type": "PostalAddress",
+                  addressLocality: "Safford",
+                  addressRegion: "AZ",
+                  addressCountry: "US",
+                },
+                owns: { "@type": "Product", name: "ProveCalc", url: "https://provecalc.com" },
               }),
             }}
           />

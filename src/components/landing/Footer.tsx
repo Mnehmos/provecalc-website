@@ -6,7 +6,7 @@ export function Footer() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <a href="/" className="flex items-center gap-2 mb-3">
-              <img src="/logo.svg" alt="" className="w-6 h-6" />
+              <img src="/logo.svg" alt="ProveCalc logo" className="w-6 h-6" />
               <span
                 style={{ fontFamily: "'Space Grotesk', sans-serif" }}
                 className="font-semibold"
@@ -21,9 +21,9 @@ export function Footer() {
 
           {/* Product */}
           <div>
-            <h4 className="text-sm font-semibold text-[var(--stone-300)] mb-3">
+            <h2 className="text-sm font-semibold text-[var(--stone-300)] mb-3">
               Product
-            </h4>
+            </h2>
             <ul className="space-y-2">
               <li>
                 <a
@@ -54,9 +54,9 @@ export function Footer() {
 
           {/* Resources */}
           <div>
-            <h4 className="text-sm font-semibold text-[var(--stone-300)] mb-3">
+            <h2 className="text-sm font-semibold text-[var(--stone-300)] mb-3">
               Resources
-            </h4>
+            </h2>
             <ul className="space-y-2">
               <li>
                 <a
@@ -91,9 +91,9 @@ export function Footer() {
 
           {/* Legal */}
           <div>
-            <h4 className="text-sm font-semibold text-[var(--stone-300)] mb-3">
+            <h2 className="text-sm font-semibold text-[var(--stone-300)] mb-3">
               Legal
-            </h4>
+            </h2>
             <ul className="space-y-2">
               <li>
                 <a
