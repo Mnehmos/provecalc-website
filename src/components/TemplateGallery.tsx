@@ -41,6 +41,7 @@ export function TemplateGallery({ isOpen, onClose }: TemplateGalleryProps) {
   const [search, setSearch] = useState('');
   const { insertNode } = useDocumentStore();
   const createDocument = useDocumentStore((s) => s.createDocument);
+  const clearDirty = useDocumentStore((s) => s.clearDirty);
   const [isCreating, setIsCreating] = useState(false);
   const creatingRef = useRef(false);
 
@@ -75,6 +76,8 @@ export function TemplateGallery({ isOpen, onClose }: TemplateGalleryProps) {
         const node = hydrateNode(partial);
         await insertNode(node);
       }
+      // A freshly loaded template has no edits to lose.
+      clearDirty();
 
       onClose();
     } finally {

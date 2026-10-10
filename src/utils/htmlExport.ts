@@ -410,6 +410,8 @@ function getVerificationBadge(node: WorksheetNode): string {
       return '<span class="verification-badge badge-verified">&#10003; Verified</span>';
     case 'failed':
       return '<span class="verification-badge badge-failed">&#10007; Failed</span>';
+    case 'unchecked':
+      return '<span class="verification-badge badge-unverified">? Not fully checked</span>';
     case 'pending':
       return '<span class="verification-badge badge-unverified">&#9203; Pending</span>';
     default:

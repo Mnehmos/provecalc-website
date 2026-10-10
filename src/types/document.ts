@@ -20,6 +20,7 @@ export type VerificationStatus =
   | { status: 'unverified' }
   | { status: 'verified'; timestamp: string; engine_version: string }
   | { status: 'failed'; reason: string; timestamp: string }
+  | { status: 'unchecked'; reason: string; timestamp: string }
   | { status: 'pending' };
 
 /** Physical domain classification */

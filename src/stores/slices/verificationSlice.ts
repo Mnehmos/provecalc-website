@@ -13,10 +13,18 @@ import {
   createAuditEntry,
   generateVerificationReport,
 } from './helpers';
-import { checkUnits, validateEquation } from '../../services/computeService';
+import { checkUnits, solveFor, validateEquation, type ValidateEquationResponse } from '../../services/computeService';
 import { extractKnownSymbolTable } from '../../utils/solveContext';
-import { getEquationSolveExpression } from '../../utils/mathParsing';
-import type { EquationNode } from '../../types/document';
+import { getCanonicalEquationFields, getEquationSolveExpression } from '../../utils/mathParsing';
+import type { EquationNode, ResultNode } from '../../types/document';
+
+/** Relative tolerance when re-solving a stored result. */
+const RESULT_TOLERANCE = 1e-6;
+
+/** Validation that found no error but could not finish (a symbol has no unit information). */
+function isIncomplete(validation: ValidateEquationResponse): boolean {
+  return validation.validation_status === 'incomplete' && validation.errors.length === 0;
+}
 
 export interface VerificationSlice {
   isVerifying: boolean;
@@ -50,6 +58,7 @@ export const createVerificationSlice: SliceCreator<VerificationSlice> = (set, ge
       // Build a verification result by checking units on the node
       let unitPassed = true;
       let unitDetails = '';
+      let unchecked = false;
 
       if (node.type === 'equation') {
         const eq = node as EquationNode;
@@ -61,6 +70,39 @@ export const createVerificationSlice: SliceCreator<VerificationSlice> = (set, ge
           ...validation.errors,
           ...validation.warnings,
         ].join(' | ');
+        // Missing unit information is not a failed check: the equation could not be checked.
+        if (!unitPassed && isIncomplete(validation)) unchecked = true;
+      } else if (node.type === 'result') {
+        // Re-solve the result's defining equation from the current inputs and
+        // check that the stored value matches and the units are consistent.
+        const resultNode = node as ResultNode;
+        const symbolTable = extractKnownSymbolTable(state.document);
+        const inputs = { ...symbolTable };
+        delete inputs[resultNode.symbol];
+        const defining = state.document.nodes.find(
+          (n): n is EquationNode => n.type === 'equation' && getCanonicalEquationFields(n as EquationNode).lhs === resultNode.symbol,
+        );
+        if (!defining) {
+          unitPassed = false;
+          unitDetails = `No equation defines ${resultNode.symbol}.`;
+        } else {
+          const equation = getEquationSolveExpression(defining);
+          const [solved, validation] = await Promise.all([
+            solveFor([equation], resultNode.symbol, inputs, 'auto'),
+            validateEquation(equation, symbolTable, resultNode.symbol),
+          ]);
+          const recomputed = solved.solutions?.[0]?.numeric;
+          const stored = resultNode.value.value;
+          const matches = typeof recomputed === 'number' && Number.isFinite(recomputed) &&
+            Math.abs(recomputed - stored) <= RESULT_TOLERANCE * Math.abs(recomputed);
+          unitPassed = matches && validation.valid;
+          unitDetails = [
+            ...(matches ? [] : [`Re-solving ${resultNode.symbol} gave ${recomputed ?? 'no value'}, not ${stored}.`]),
+            ...validation.errors,
+            ...validation.warnings,
+          ].join(' | ');
+          if (matches && !validation.valid && isIncomplete(validation)) unchecked = true;
+        }
       } else if (node.type === 'given') {
         const given = node as { symbol: string; value: { value: number; unit?: { expression: string } } };
         if (given.value.unit?.expression) {
@@ -74,6 +116,9 @@ export const createVerificationSlice: SliceCreator<VerificationSlice> = (set, ge
         node_id: nodeId,
         passed: unitPassed,
         error: unitPassed ? undefined : unitDetails,
+        ...(unchecked
+          ? { overall_status: { status: 'unchecked' as const, reason: unitDetails, timestamp: new Date().toISOString() } }
+          : {}),
         gates: {
           unit_consistency: { passed: unitPassed, details: unitDetails },
           constraint_satisfaction: { passed: true, details: '' },
@@ -114,7 +159,7 @@ export const createVerificationSlice: SliceCreator<VerificationSlice> = (set, ge
 
     const results: VerificationResult[] = [];
     for (const node of state.document.nodes) {
-      if (['equation', 'given'].includes(node.type)) {
+      if (['equation', 'given', 'result'].includes(node.type)) {
         const result = await get().verifyNode(node.id);
         if (result) results.push(result);
       }

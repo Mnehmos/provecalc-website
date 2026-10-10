@@ -51,6 +51,79 @@ function normalizeSolveEquation(rawEquation: string): string {
   return trimmed;
 }
 
+const NON_SYMBOLS = new Set([
+  'pi', 'oo', 'sqrt', 'exp', 'log', 'ln', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'atan2',
+  'sinh', 'cosh', 'tanh', 'Abs', 'abs', 'Eq', 'min', 'max', 'Min', 'Max',
+]);
+
+function identifiers(expression: string): Set<string> {
+  return new Set(expression.match(/[A-Za-z_][A-Za-z0-9_]*/g) ?? []);
+}
+
+function lhsSymbol(equation: string): string | null {
+  const match = equation.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=(?!=)/);
+  return match ? match[1] : null;
+}
+
+/**
+ * Keep only the equations the target depends on: its defining equation (or,
+ * for an implicit target, every equation that mentions it) plus the defining
+ * equations of any unknown intermediates. Sending unrelated equations makes
+ * the engine check unknowns it was not asked about, so solving for A_t in
+ * {A_t = pi/4*d**2, sigma = F/A_t} would otherwise fail on sigma.
+ */
+function relevantEquations(equations: string[], target: string, known: Set<string>): string[] {
+  const defining = equations.filter((eq) => lhsSymbol(eq) === target);
+  const chosen = new Set(defining.length ? defining : equations.filter((eq) => identifiers(eq).has(target)));
+  if (chosen.size === 0) return equations;
+  const resolved = new Set([target]);
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const eq of [...chosen]) {
+      for (const name of identifiers(eq)) {
+        if (resolved.has(name) || known.has(name) || NON_SYMBOLS.has(name)) continue;
+        resolved.add(name);
+        for (const candidate of equations) {
+          if (!chosen.has(candidate) && lhsSymbol(candidate) === name) {
+            chosen.add(candidate);
+            grew = true;
+          }
+        }
+      }
+    }
+  }
+  return equations.filter((eq) => chosen.has(eq));
+}
+
+/**
+ * The engine reports results in SI base units ("kg * m**-1 * s**-2"). Show the
+ * usual named unit for common dimensions instead; the value is unchanged
+ * because each named unit here equals its base-unit product exactly.
+ */
+const NAMED_SI_UNITS: Record<string, string> = {
+  'kg:1,m:1,s:-2': 'N',
+  'kg:1,m:-1,s:-2': 'Pa',
+  'kg:1,m:2,s:-2': 'N*m',
+  'kg:1,m:2,s:-3': 'W',
+  'A:-1,kg:1,m:2,s:-3': 'V',
+  'A:-2,kg:1,m:2,s:-3': 'ohm',
+  'kg:1,s:-2': 'N/m',
+  's:-1': 'Hz',
+};
+
+export function namedSiUnit(unit: string | undefined): string | undefined {
+  if (!unit) return unit;
+  const powers = new Map<string, number>();
+  for (const factor of unit.replace(/\*\*/g, '^').split('*').map((f) => f.trim())) {
+    const match = factor.match(/^([A-Za-z]+)(?:\^\(?(-?\d+)\)?)?$/);
+    if (!match) return unit;
+    powers.set(match[1], (powers.get(match[1]) ?? 0) + Number(match[2] ?? 1));
+  }
+  const key = [...powers].filter(([, p]) => p !== 0).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)).map(([u, p]) => `${u}:${p}`).join(',');
+  return NAMED_SI_UNITS[key] ?? unit;
+}
+
 export function useCompute() {
   const { document } = useDocumentStore();
   const [isComputing, setIsComputing] = useState(false);
@@ -84,7 +157,10 @@ export function useCompute() {
   // instead of every equation in the document (prevents unrelated equations
   // from causing SymPy system-solve failures).
   const solve = useCallback(async (targetSymbol: string, method?: 'symbolic' | 'numeric' | 'auto', overrideEquations?: string[]): Promise<SolveResult> => {
-    const eqs = (overrideEquations || equations).map(normalizeSolveEquation);
+    const normalized = (overrideEquations || equations).map(normalizeSolveEquation);
+    const eqs = overrideEquations
+      ? normalized
+      : relevantEquations(normalized, targetSymbol, new Set(Object.keys(symbolTable)));
     if (eqs.length === 0) {
       return { targetSymbol, error: 'No equations defined' };
     }
@@ -147,6 +223,7 @@ export function useCompute() {
           }
         }
       }
+      unit = namedSiUnit(unit ?? undefined) ?? unit;
       logger.info('hook', 'Compute final unit', { unit });
 
       return {

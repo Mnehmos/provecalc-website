@@ -1,10 +1,44 @@
 /**
- * Web compute service — replaces Tauri invoke() calls with HTTP fetch to Railway API.
- *
- * Every function matches a desktop Tauri command but talks to the Python sidecar directly.
+ * Web compute service: replaces the desktop's Tauri invoke() calls with HTTP
+ * calls to the site's /api/compute relay, which adds the sidecar credential on
+ * the server. The browser never talks to the sidecar directly.
  */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9743";
+const API_URL = "/api/compute";
+
+/** A failed compute call, carrying the sidecar's stable error code. */
+export class ComputeApiError extends Error {
+  constructor(message: string, readonly status: number, readonly code: string, readonly retryable: boolean) {
+    super(message);
+    this.name = "ComputeApiError";
+  }
+
+  /** Callers show String(error); keep that to the readable message. */
+  override toString(): string {
+    return this.message;
+  }
+}
+
+async function failure(path: string, res: Response): Promise<ComputeApiError> {
+  let code = "HTTP_ERROR";
+  let message = "";
+  let retryable = res.status === 429 || res.status >= 502;
+  try {
+    const body = await res.json();
+    const err = body?.error;
+    if (err && typeof err === "object") {
+      if (typeof err.code === "string") code = err.code;
+      if (typeof err.message === "string") message = err.message;
+      if (typeof err.retryable === "boolean") retryable = err.retryable;
+    } else if (typeof body?.detail === "string") {
+      message = body.detail;
+    }
+  } catch {
+    // Not JSON: keep the generic message below rather than a raw body.
+  }
+  if (!message) message = `The compute engine could not handle ${path} (HTTP ${res.status}).`;
+  return new ComputeApiError(message, res.status, code, retryable);
+}
 
 async function post<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {
@@ -12,23 +46,36 @@ async function post<T>(path: string, body: unknown): Promise<T> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`API ${path} failed (${res.status}): ${text}`);
-  }
+  if (!res.ok) throw await failure(path, res);
   return res.json();
 }
 
 async function get<T>(path: string): Promise<T> {
   const res = await fetch(`${API_URL}${path}`);
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`API ${path} failed (${res.status}): ${text}`);
-  }
+  if (!res.ok) throw await failure(path, res);
   return res.json();
 }
 
 // --- Compute endpoints ---
+
+/**
+ * Give unitless knowns an explicit "dimensionless" unit. Without one, the
+ * engine reads a bare symbol as a unit name, so an effective-length factor K
+ * becomes kelvin and a dimensionally correct equation fails its check.
+ */
+function withExplicitUnits<T>(variables: T): T {
+  if (!variables || typeof variables !== "object") return variables;
+  const out: Record<string, unknown> = {};
+  for (const [name, entry] of Object.entries(variables as Record<string, unknown>)) {
+    if (entry && typeof entry === "object" && "value" in entry) {
+      const unit = (entry as { unit?: unknown }).unit;
+      out[name] = typeof unit === "string" && unit.trim() ? entry : { ...entry, unit: "dimensionless" };
+    } else {
+      out[name] = entry;
+    }
+  }
+  return out as T;
+}
 
 export interface ComputeResponse {
   success: boolean;
@@ -44,7 +91,7 @@ export async function evaluate(
   expression: string,
   variables?: Record<string, unknown>
 ): Promise<ComputeResponse> {
-  return post("/compute/evaluate", { expression, variables });
+  return post("/compute/evaluate", { expression, variables: withExplicitUnits(variables) });
 }
 
 export interface UnitCheckResponse {
@@ -107,7 +154,7 @@ export async function solveFor(
   variables?: Record<string, unknown>,
   method?: "symbolic" | "numeric" | "auto"
 ): Promise<SolveResponse> {
-  return post("/compute/solve", { equations, target, variables, method });
+  return post("/compute/solve", { equations, target, variables: withExplicitUnits(variables), method });
 }
 
 export async function solveNumeric(
@@ -123,7 +170,7 @@ export async function solveNumeric(
   return post("/compute/solve_numeric", {
     equations,
     target,
-    variables,
+    variables: withExplicitUnits(variables),
     ...options,
   });
 }
@@ -155,6 +202,8 @@ export async function analyzeSystem(
 
 export interface ValidateEquationResponse {
   valid: boolean;
+  /** complete_and_valid, complete_and_invalid or incomplete (units are missing for some symbol). */
+  validation_status?: string;
   errors: string[];
   warnings: string[];
   variable_analysis: Record<string, { status?: string; unit?: string; dimensions?: Record<string, number>; dimensions_str?: string; quantity?: string; error?: string }>;
@@ -166,7 +215,7 @@ export async function validateEquation(
   variables: Record<string, { value: number; unit?: string }>,
   target?: string
 ): Promise<ValidateEquationResponse> {
-  return post("/compute/validate_equation", { equation, variables, target });
+  return post("/compute/validate_equation", { equation, variables: withExplicitUnits(variables), target });
 }
 
 export async function simplify(expression: string): Promise<ComputeResponse> {
@@ -240,10 +289,7 @@ export async function convertUnits(
   fromUnit: string,
   toUnit: string
 ): Promise<UnitConvertResponse> {
-  return post(
-    `/units/convert?value=${value}&from_unit=${encodeURIComponent(fromUnit)}&to_unit=${encodeURIComponent(toUnit)}`,
-    {}
-  );
+  return post("/units/convert", { value, from_unit: fromUnit, to_unit: toUnit });
 }
 
 export async function getUnitDimensions(unit: string) {
@@ -408,7 +454,7 @@ export async function validateEquationWithSymbols(
   try {
     const result = await post<ValidateEquationResponse>("/compute/validate_equation", {
       equation,
-      variables: symbolTable,
+      variables: withExplicitUnits(symbolTable),
       target,
     });
     timer.complete({ valid: result.valid });

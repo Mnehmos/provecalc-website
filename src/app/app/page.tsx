@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useUser } from "@clerk/nextjs";
 import { useDocumentStore } from "../../stores/documentStore";
 import { useLibraryStore } from "../../stores/libraryStore";
 import { WorksheetCanvas } from "../../components/WorksheetCanvas";
@@ -22,7 +21,6 @@ const SIDEBAR_MAX = 600;
 const PANEL_MIN_HEIGHT = 80;
 
 export default function AppPage() {
-  const { isLoaded } = useUser();
   const { document, loadDocument } = useDocumentStore();
   const { isOpen: showLibrary, toggleOpen: toggleLibrary } = useLibraryStore();
   const didInitRef = useRef(false);
@@ -96,14 +94,6 @@ export default function AppPage() {
     didInitRef.current = true;
     if (!document) loadDocument();
   }, [document, loadDocument]);
-
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div style={{ color: "var(--text-secondary)" }}>Loading...</div>
-      </div>
-    );
-  }
 
   return (
     <div className="app">

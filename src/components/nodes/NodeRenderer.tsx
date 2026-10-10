@@ -107,6 +107,8 @@ export function NodeRenderer({ node, index, isSelected, onClick, onUpdate }: Nod
         return <span className="badge badge-verified" data-tooltip="Verified" />;
       case 'pending':
         return <span className="badge badge-pending" data-tooltip="Pending" />;
+      case 'unchecked':
+        return <span className="badge badge-unchecked" title={verification.reason || 'Could not be fully checked'} data-tooltip="Not fully checked" />;
       case 'failed':
         return (
           <button
@@ -613,8 +615,12 @@ function GivenNodeContent({ node }: { node: GivenNode }) {
     return formatNumber(v, 'decimal', 6);
   })();
   const unitPart = unit ? ` \\; \\mathrm{${formatUnitLatex(unit)}}` : '';
-  const displayLatex = node.latex ||
-    `${formatSymbolLatex(node.symbol)} := ${formattedValue}${unitPart}`;
+  // Templates set `latex` to the symbol alone (e.g. "\\Delta x"); keep the value
+  // and unit visible unless the stored latex is already a full statement.
+  const symbolLatex = node.latex && !node.latex.includes('=') ? node.latex : formatSymbolLatex(node.symbol);
+  const displayLatex = node.latex && node.latex.includes('=')
+    ? node.latex
+    : `${symbolLatex} := ${formattedValue}${unitPart}`;
 
   // Get domain from unit if available
   const domain = node.value.unit?.domain;

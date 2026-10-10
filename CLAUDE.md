@@ -66,11 +66,13 @@ with the hosting provider; never commit them or paste them into chat.
 From the 2026-09-28 stability audit
 (`docs/STABILITY_AUDIT_2026-09-28.md` in the desktop repository):
 
-- The `/app` demo calls `NEXT_PUBLIC_API_URL` from the browser without a
-  credential, but the public sidecar requires a bearer key on every compute
-  route, so compute should fail with 401. The fix is a server route that
-  adds the key behind a Clerk session and a rate limit. After that, delete
-  `api-sidecar/`, an outdated, unhardened copy of the desktop sidecar.
+- The `/app` demo sends compute through `src/app/api/compute/[...path]`,
+  which adds the sidecar key (`PROVECALC_API_KEY`) on the server, allowlists
+  routes, caps bodies at 1 MiB, and rate-limits each visitor IP in memory.
+  The sidecar limits per credential, so every demo visitor shares its
+  `PROVECALC_RATE_LIMIT_PER_MINUTE`; one template run takes about 20 to 40
+  calls. `api-sidecar/` is an outdated, unhardened copy of the desktop
+  sidecar; delete it once no hosting service builds from it.
 - `/api/chat` and `/api/test-key` are unauthenticated OpenRouter proxies.
   `src/middleware.ts` runs `clerkMiddleware()` without protecting any
   route, so every API route must check `auth()` itself.

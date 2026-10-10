@@ -1,6 +1,5 @@
 "use client";
 
-import { SignUpButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import { CheckoutButton } from "../../components/landing/CheckoutButton";
 
 const proofItems = [
@@ -147,21 +146,9 @@ export default function LandingPage() {
               reviewer with confidence.
             </p>
             <div className="flex flex-wrap gap-4 mb-8">
-              <SignedOut>
-                <SignUpButton mode="modal">
-                  <button className="bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-6 py-3 rounded-lg font-medium transition-colors">
-                    Try Free Demo
-                  </button>
-                </SignUpButton>
-              </SignedOut>
-              <SignedIn>
-                <a
-                  href="/app"
-                  className="bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-6 py-3 rounded-lg font-medium transition-colors"
-                >
-                  Open App
-                </a>
-              </SignedIn>
+              <a href="/app" className="inline-block bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-6 py-3 rounded-lg font-medium transition-colors">
+                Try Free Demo
+              </a>
               <a
                 href="#demo"
                 className="bg-[var(--stone-800)] hover:bg-[var(--stone-700)] px-6 py-3 rounded-lg font-medium transition-colors"
@@ -245,10 +232,12 @@ export default function LandingPage() {
             <div className="relative rounded-2xl overflow-hidden border border-[var(--stone-800)] shadow-2xl">
               <video
                 controls
+                playsInline
                 preload="metadata"
+                poster="/provecalc-overview-poster.jpg"
                 className="w-full aspect-video bg-[var(--stone-900)]"
               >
-                <source src="/demo2.mp4" type="video/mp4" />
+                <source src="/provecalc-overview.mp4" type="video/mp4" />
               </video>
             </div>
           </div>
@@ -492,21 +481,9 @@ export default function LandingPage() {
             No credit card. No install. Open the browser demo and see how the
             worksheet model feels before you buy the desktop app.
           </p>
-          <SignedOut>
-            <SignUpButton mode="modal">
-              <button className="bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-8 py-4 rounded-lg font-medium text-lg transition-colors">
+          <a href="/app" className="inline-block bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-8 py-4 rounded-lg font-medium text-lg transition-colors">
                 Start Free Demo
-              </button>
-            </SignUpButton>
-          </SignedOut>
-          <SignedIn>
-            <a
-              href="/app"
-              className="inline-block bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-8 py-4 rounded-lg font-medium text-lg transition-colors"
-            >
-              Open App
-            </a>
-          </SignedIn>
+              </a>
         </div>
       </section>
     </main>
