@@ -202,6 +202,8 @@ export async function analyzeSystem(
 
 export interface ValidateEquationResponse {
   valid: boolean;
+  /** complete_and_valid, complete_and_invalid or incomplete (units are missing for some symbol). */
+  validation_status?: string;
   errors: string[];
   warnings: string[];
   variable_analysis: Record<string, { status?: string; unit?: string; dimensions?: Record<string, number>; dimensions_str?: string; quantity?: string; error?: string }>;

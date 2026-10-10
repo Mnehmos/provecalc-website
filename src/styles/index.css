@@ -1517,6 +1517,11 @@ body {
   background: var(--error);
 }
 
+/* Could not be fully checked (a symbol has no unit): neither verified nor failed. */
+.badge-unchecked {
+  background: #f59e0b;
+}
+
 .badge-warning {
   background: #f59e0b;  /* Amber/orange for warning */
 }

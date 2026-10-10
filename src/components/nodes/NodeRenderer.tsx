@@ -107,6 +107,8 @@ export function NodeRenderer({ node, index, isSelected, onClick, onUpdate }: Nod
         return <span className="badge badge-verified" data-tooltip="Verified" />;
       case 'pending':
         return <span className="badge badge-pending" data-tooltip="Pending" />;
+      case 'unchecked':
+        return <span className="badge badge-unchecked" title={verification.reason || 'Could not be fully checked'} data-tooltip="Not fully checked" />;
       case 'failed':
         return (
           <button

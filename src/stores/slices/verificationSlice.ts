@@ -13,13 +13,18 @@ import {
   createAuditEntry,
   generateVerificationReport,
 } from './helpers';
-import { checkUnits, solveFor, validateEquation } from '../../services/computeService';
+import { checkUnits, solveFor, validateEquation, type ValidateEquationResponse } from '../../services/computeService';
 import { extractKnownSymbolTable } from '../../utils/solveContext';
 import { getCanonicalEquationFields, getEquationSolveExpression } from '../../utils/mathParsing';
 import type { EquationNode, ResultNode } from '../../types/document';
 
 /** Relative tolerance when re-solving a stored result. */
 const RESULT_TOLERANCE = 1e-6;
+
+/** Validation that found no error but could not finish (a symbol has no unit information). */
+function isIncomplete(validation: ValidateEquationResponse): boolean {
+  return validation.validation_status === 'incomplete' && validation.errors.length === 0;
+}
 
 export interface VerificationSlice {
   isVerifying: boolean;
@@ -53,6 +58,7 @@ export const createVerificationSlice: SliceCreator<VerificationSlice> = (set, ge
       // Build a verification result by checking units on the node
       let unitPassed = true;
       let unitDetails = '';
+      let unchecked = false;
 
       if (node.type === 'equation') {
         const eq = node as EquationNode;
@@ -64,6 +70,8 @@ export const createVerificationSlice: SliceCreator<VerificationSlice> = (set, ge
           ...validation.errors,
           ...validation.warnings,
         ].join(' | ');
+        // Missing unit information is not a failed check: the equation could not be checked.
+        if (!unitPassed && isIncomplete(validation)) unchecked = true;
       } else if (node.type === 'result') {
         // Re-solve the result's defining equation from the current inputs and
         // check that the stored value matches and the units are consistent.
@@ -93,6 +101,7 @@ export const createVerificationSlice: SliceCreator<VerificationSlice> = (set, ge
             ...validation.errors,
             ...validation.warnings,
           ].join(' | ');
+          if (matches && !validation.valid && isIncomplete(validation)) unchecked = true;
         }
       } else if (node.type === 'given') {
         const given = node as { symbol: string; value: { value: number; unit?: { expression: string } } };
@@ -107,6 +116,9 @@ export const createVerificationSlice: SliceCreator<VerificationSlice> = (set, ge
         node_id: nodeId,
         passed: unitPassed,
         error: unitPassed ? undefined : unitDetails,
+        ...(unchecked
+          ? { overall_status: { status: 'unchecked' as const, reason: unitDetails, timestamp: new Date().toISOString() } }
+          : {}),
         gates: {
           unit_consistency: { passed: unitPassed, details: unitDetails },
           constraint_satisfaction: { passed: true, details: '' },
