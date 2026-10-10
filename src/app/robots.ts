@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: "/app/",
+      disallow: ["/api/", "/success"],
     },
     sitemap: "https://provecalc.com/sitemap.xml",
   };

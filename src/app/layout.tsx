@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     template: "%s | ProveCalc",
   },
   description:
-    "Professional engineering calculation software with full audit trails. SymPy-powered verification. Unit analysis. AI-assisted. $200 one-time.",
+    "A Mathcad-style engineering worksheet where every assumption, unit, and result is checked, not just calculated. $200 once, works offline, no activation server.",
   metadataBase: new URL("https://provecalc.com"),
   openGraph: {
     type: "website",
@@ -17,13 +17,13 @@ export const metadata: Metadata = {
     siteName: "ProveCalc",
     title: "ProveCalc - Engineering Calculations You Can Trust",
     description:
-      "Professional engineering calculation software with full audit trails. Show your work, prove your results.",
+      "A Mathcad-style engineering worksheet where every assumption, unit, and result is checked, not just calculated. Buy once, own it, works offline.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "ProveCalc - Engineering Calculations You Can Trust",
+        alt: "ProveCalc worksheet: a simply supported beam with verified inputs and results",
       },
     ],
   },
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "ProveCalc - Engineering Calculations You Can Trust",
     description:
-      "Professional engineering calculation software. $200 one-time. Not $2,700/year.",
+      "A Mathcad-style engineering worksheet where every assumption, unit, and result is checked. $200 once, no subscription, no activation server.",
     images: ["/og-image.png"],
   },
   robots: {
@@ -81,8 +81,10 @@ export default function RootLayout({
                   price: "200.00",
                   priceCurrency: "USD",
                 },
+                url: "https://provecalc.com",
+                image: "https://provecalc.com/og-image.png",
                 description:
-                  "Professional engineering calculation software with full audit trails, symbolic mathematics, and unit analysis.",
+                  "A Mathcad-style engineering worksheet where every assumption, unit, and result is checked, not just calculated.",
               }),
             }}
           />

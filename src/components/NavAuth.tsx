@@ -22,11 +22,12 @@ export default function NavAuth() {
             Sign In
           </button>
         </SignInButton>
-        <SignUpButton mode="modal">
-          <button className="bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-            Try Free
-          </button>
-        </SignUpButton>
+        <a
+          href="/app"
+          className="bg-[var(--copper)] hover:bg-[var(--copper-dark)] px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+        >
+          Try Free Demo
+        </a>
       </SignedOut>
       <SignedIn>
         <a
