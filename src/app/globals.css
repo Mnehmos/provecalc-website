@@ -15,7 +15,7 @@
 }
 
 body {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
   background-color: var(--stone-950);
   color: white;
   -webkit-font-smoothing: antialiased;

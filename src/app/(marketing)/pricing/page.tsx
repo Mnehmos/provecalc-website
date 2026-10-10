@@ -104,7 +104,7 @@ export default function PricingPage() {
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h1
             className="text-4xl md:text-5xl font-bold mb-4"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
           >
             Simple, honest pricing
           </h1>
@@ -161,7 +161,7 @@ export default function PricingPage() {
             <div key={item.title} className="glass-card rounded-xl p-6">
               <h2
                 className="text-xl font-semibold mb-2"
-                style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
               >
                 {item.title}
               </h2>
@@ -175,7 +175,7 @@ export default function PricingPage() {
         <div className="max-w-5xl mx-auto mb-20">
           <h2
             className="text-2xl font-bold text-center mb-4"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
           >
             Compare the tradeoff, not a shaky price scrape
           </h2>
@@ -211,7 +211,7 @@ export default function PricingPage() {
         <div className="max-w-3xl mx-auto">
           <h2
             className="text-2xl font-bold text-center mb-8"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
           >
             Frequently asked questions
           </h2>

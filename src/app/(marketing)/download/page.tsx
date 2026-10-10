@@ -78,7 +78,7 @@ export default function DownloadPage() {
         <div className="text-center mb-16">
           <h1
             className="text-4xl md:text-5xl font-bold mb-4"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
           >
             Get ProveCalc
           </h1>
@@ -125,7 +125,7 @@ export default function DownloadPage() {
           <div className="bg-gradient-to-br from-[var(--copper)]/20 to-[var(--copper-light)]/10 border border-[var(--copper)]/30 rounded-xl p-8 text-center mb-16">
             <h2
               className="text-2xl font-bold mb-2"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
             >
               <span className="gradient-text">$200</span>{" "}
               <span className="text-[var(--stone-400)] text-lg font-normal">one-time</span>
@@ -154,7 +154,7 @@ export default function DownloadPage() {
         <div className="mb-16">
           <h2
             className="text-2xl font-bold text-center mb-8"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
           >
             Available on every platform
           </h2>
@@ -222,7 +222,7 @@ export default function DownloadPage() {
         <div className="glass-card rounded-xl p-8 mb-16">
           <h2
             className="text-2xl font-bold mb-6 text-center"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
           >
             What you get
           </h2>
@@ -270,7 +270,7 @@ export default function DownloadPage() {
         <div className="max-w-2xl mx-auto">
           <h2
             className="text-2xl font-bold mb-6 text-center"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
           >
             How it works
           </h2>

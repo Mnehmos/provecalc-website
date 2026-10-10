@@ -8,7 +8,7 @@ export function Footer() {
             <a href="/" className="flex items-center gap-2 mb-3">
               <img src="/logo.svg" alt="ProveCalc logo" className="w-6 h-6" />
               <span
-                style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
                 className="font-semibold"
               >
                 ProveCalc

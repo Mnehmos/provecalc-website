@@ -11,7 +11,7 @@ export default function TermsPage() {
       <div className="max-w-3xl mx-auto px-6">
         <h1
           className="text-4xl font-bold mb-2"
-          style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+          style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
         >
           Terms of Service
         </h1>

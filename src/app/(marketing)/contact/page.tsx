@@ -54,7 +54,7 @@ export default function ContactPage() {
           <div className="mb-10">
             <h1
               className="text-3xl font-semibold mb-3"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
             >
               Get in touch
             </h1>

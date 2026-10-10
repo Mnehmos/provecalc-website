@@ -134,7 +134,7 @@ export default function HomeContent() {
             </div>
             <h1
               className="text-5xl md:text-6xl font-bold leading-tight mb-6"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
             >
               Engineering calculations
               <br />
@@ -182,7 +182,7 @@ export default function HomeContent() {
           <div className="max-w-3xl mx-auto text-center mb-12">
             <h2
               className="text-3xl font-bold mb-4"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
             >
               Proof first
             </h2>
@@ -209,7 +209,7 @@ export default function HomeContent() {
             <div>
               <h2
                 className="text-3xl font-bold mb-4"
-                style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
               >
                 Watch ProveCalc catch the kinds of errors that usually hide in a sheet
               </h2>
@@ -249,7 +249,7 @@ export default function HomeContent() {
           <div className="max-w-3xl mx-auto text-center mb-16">
             <h2
               className="text-3xl font-bold mb-4"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
             >
               The problem is not just math
             </h2>
@@ -284,7 +284,7 @@ export default function HomeContent() {
           <div className="max-w-3xl mx-auto text-center mb-16">
             <h2
               className="text-3xl font-bold mb-4"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
             >
               Built to be reviewed
             </h2>
@@ -309,7 +309,7 @@ export default function HomeContent() {
           <div className="max-w-3xl mx-auto text-center mb-16">
             <h2
               className="text-3xl font-bold mb-4"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
             >
               Where it fits
             </h2>
@@ -336,7 +336,7 @@ export default function HomeContent() {
           <div className="max-w-3xl mx-auto text-center mb-16">
             <h2
               className="text-3xl font-bold mb-4"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
             >
               Why trust it
             </h2>
@@ -358,7 +358,7 @@ export default function HomeContent() {
             <div>
               <h3
                 className="text-2xl font-bold mb-2"
-                style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
               >
                 Built by The Mnemosyne Research Institute
               </h3>
@@ -393,7 +393,7 @@ export default function HomeContent() {
           <div className="max-w-3xl mx-auto text-center mb-16">
             <h2
               className="text-3xl font-bold mb-4"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
             >
               Web demo, desktop app, and AI each do different jobs
             </h2>
@@ -433,7 +433,7 @@ export default function HomeContent() {
           <div className="max-w-3xl mx-auto text-center mb-16">
             <h2
               className="text-3xl font-bold mb-4"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
             >
               Predictable pricing
             </h2>
@@ -473,7 +473,7 @@ export default function HomeContent() {
         <div className="max-w-2xl mx-auto px-6 text-center">
           <h2
             className="text-3xl font-bold mb-4"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
           >
             Try ProveCalc free
           </h2>
@@ -498,9 +498,9 @@ function ProblemCard({
   description: string;
 }) {
   return (
-    <div className="glass-card rounded-xl p-6">
+    <div className="glass-card rounded-xl p-6 min-w-0">
       <h3 className="text-xl font-semibold mb-2">{title}</h3>
-      <p className="text-[var(--stone-400)]">{description}</p>
+      <p className="text-[var(--stone-400)] [overflow-wrap:anywhere]">{description}</p>
     </div>
   );
 }
@@ -513,9 +513,9 @@ function FeatureCard({
   description: string;
 }) {
   return (
-    <div className="glass-card rounded-xl p-8">
+    <div className="glass-card rounded-xl p-8 min-w-0">
       <h3 className="text-xl font-semibold mb-3">{title}</h3>
-      <p className="text-[var(--stone-400)]">{description}</p>
+      <p className="text-[var(--stone-400)] [overflow-wrap:anywhere]">{description}</p>
     </div>
   );
 }
