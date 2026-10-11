@@ -4,6 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { modelSupportsTemperature } from '@/lib/models';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
         model,
         messages,
         max_tokens: max_tokens || 4096,
-        temperature: 0.7,
+        ...(modelSupportsTemperature(model) ? { temperature: 0.7 } : {}),
       }),
     });
 
