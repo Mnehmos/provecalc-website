@@ -4,14 +4,14 @@
  * Checked against https://openrouter.ai/api/v1/models on 2026-10-11: every id below is listed
  * there. `supportsTemperature` follows that listing's `supported_parameters`; the chat route
  * leaves `temperature` out for models that do not take it. The desktop app keeps its own audited
- * catalog (contracts/openrouter-models.json); the default here matches it.
+ * catalog (contracts/openrouter-models.json); the default here matches it (Claude Haiku 5.5).
  */
 export const AVAILABLE_MODELS = [
-  // Anthropic
-  { id: 'anthropic/claude-sonnet-5.5', name: 'Claude Sonnet 5.5', description: 'Anthropic fast + capable (recommended)', supportsVision: true, supportsTemperature: false },
+  // Anthropic (the first entry is the default)
+  { id: 'anthropic/claude-haiku-5.5', name: 'Claude Haiku 5.5', description: 'Anthropic fast + affordable (default)', supportsVision: true, supportsTemperature: false },
+  { id: 'anthropic/claude-sonnet-5.5', name: 'Claude Sonnet 5.5', description: 'Anthropic fast + capable', supportsVision: true, supportsTemperature: false },
   { id: 'anthropic/claude-opus-5.5', name: 'Claude Opus 5.5', description: 'Anthropic, highest capability', supportsVision: true, supportsTemperature: false },
   { id: 'anthropic/claude-fable-5.1', name: 'Claude Fable 5.1', description: 'Anthropic, long and careful work', supportsVision: true, supportsTemperature: false },
-  { id: 'anthropic/claude-haiku-5.5', name: 'Claude Haiku 5.5', description: 'Anthropic fast + affordable', supportsVision: true, supportsTemperature: false },
   // OpenAI
   { id: 'openai/gpt-6.1-sol', name: 'GPT-6.1 Sol', description: 'OpenAI flagship', supportsVision: true, supportsTemperature: false },
   { id: 'openai/gpt-6-luna', name: 'GPT-6 Luna', description: 'OpenAI fast + affordable', supportsVision: true, supportsTemperature: false },
