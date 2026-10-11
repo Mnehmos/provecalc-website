@@ -58,7 +58,7 @@ export default function SuccessPage() {
         <div className="max-w-3xl mx-auto px-6 text-center">
           <h1
             className="text-4xl font-bold mb-4"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
           >
             Sign in to view your license
           </h1>
@@ -92,7 +92,7 @@ export default function SuccessPage() {
         <div className="max-w-3xl mx-auto px-6 text-center">
           <h1
             className="text-4xl font-bold mb-4"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
           >
             No license found
           </h1>
@@ -149,7 +149,7 @@ export default function SuccessPage() {
           </div>
           <h1
             className="text-4xl font-bold mb-2"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
           >
             Purchase complete
           </h1>
@@ -193,7 +193,7 @@ export default function SuccessPage() {
         <div className="mb-12">
           <h2
             className="text-2xl font-bold text-center mb-6"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
           >
             Download ProveCalc
           </h2>
@@ -227,7 +227,7 @@ export default function SuccessPage() {
         <div className="glass-card rounded-xl p-8">
           <h2
             className="text-xl font-bold mb-4"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
           >
             Getting started
           </h2>

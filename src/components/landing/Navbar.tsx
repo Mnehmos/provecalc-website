@@ -19,7 +19,7 @@ export function Navbar() {
           <img src="/logo.svg" alt="ProveCalc" className="w-8 h-8" />
           <span
             className="text-xl font-semibold"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
           >
             ProveCalc
           </span>
