@@ -31,6 +31,8 @@ export interface NodeSlice {
   duplicateNode: (nodeId: NodeId) => Promise<void>;
   selectNode: (nodeId: NodeId | null) => void;
   updateNodePosition: (nodeId: NodeId, position: NodePosition) => void;
+  /** Move many nodes at once (auto layout); clears the document's pending-layout flag. */
+  applyNodePositions: (positions: Record<NodeId, NodePosition>, options?: { markDirty?: boolean }) => void;
   updateDocumentName: (name: string) => void;
 }
 
@@ -247,6 +249,18 @@ export const createNodeSlice: SliceCreator<NodeSlice> = (set, get) => ({
           draft.isDirty = true;
         }
       }
+    });
+  },
+
+  applyNodePositions: (positions: Record<NodeId, NodePosition>, options?: { markDirty?: boolean }) => {
+    set((draft) => {
+      if (!draft.document) return;
+      for (const node of draft.document.nodes) {
+        const position = positions[node.id];
+        if (position) node.position = position;
+      }
+      delete draft.document.metadata.layout;
+      if (options?.markDirty) draft.isDirty = true;
     });
   },
 

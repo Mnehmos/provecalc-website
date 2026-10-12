@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 import { useDocumentStore } from '../stores/documentStore';
 import { useAIAssistStore } from '../stores/aiAssistStore';
 import { MathDisplay } from './MathDisplay';
-import { formatSymbolLatex } from './nodes/nodeShared';
+import { formatQuantityLatex, formatSymbolLatex } from './nodes/nodeShared';
 
 export function VariableInspector() {
   const { document, selectNode } = useDocumentStore();
@@ -118,7 +118,6 @@ interface VariableRowProps {
 
 function VariableRow({ variable, onClick }: VariableRowProps) {
   const askAI = useAIAssistStore((s) => s.askAI);
-  const formattedValue = formatNumber(variable.value);
 
   return (
     <div
@@ -129,10 +128,11 @@ function VariableRow({ variable, onClick }: VariableRowProps) {
         <MathDisplay latex={formatSymbolLatex(variable.symbol)} displayMode={false} />
       </span>
       <span className="equals">=</span>
-      <span className="value">{formattedValue}</span>
-      {variable.unit && <span className="unit">{variable.unit}</span>}
+      <span className="value">
+        <MathDisplay latex={formatQuantityLatex(variable.value, variable.unit)} displayMode={false} />
+      </span>
       {variable.verified && (
-        <span className="verified-badge" title="Verified">V</span>
+        <span className="verified-badge" title="Verified" aria-label="Verified">✓</span>
       )}
       <button
         className="ai-assist-btn-small"
@@ -149,11 +149,4 @@ function VariableRow({ variable, onClick }: VariableRowProps) {
       </button>
     </div>
   );
-}
-
-function formatNumber(value: number): string {
-  if (Math.abs(value) < 0.001 || Math.abs(value) >= 10000) {
-    return value.toExponential(4);
-  }
-  return value.toPrecision(6).replace(/\.?0+$/, '');
 }

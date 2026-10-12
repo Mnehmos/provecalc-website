@@ -15,6 +15,7 @@ import type {
   PhysicalDomainType,
 } from '../../types/document';
 import type { NodeType } from './helpers';
+import type { WorksheetTemplate } from '../../data/templates';
 
 /** Full store state — all slices contribute actions to this shape */
 export interface DocumentState {
@@ -46,6 +47,7 @@ export interface DocumentState {
   // Actions
   loadDocument: () => Promise<void>;
   createDocument: (name: string) => Promise<boolean>;
+  loadTemplate: (template: WorksheetTemplate) => Promise<boolean>;
   addNode: (type: NodeType, position?: NodePosition) => Promise<void>;
   insertNode: (node: WorksheetNode, index?: number) => Promise<void>;
   updateNode: (nodeId: NodeId, updates: Partial<WorksheetNode>) => Promise<void>;
@@ -53,6 +55,7 @@ export interface DocumentState {
   duplicateNode: (nodeId: NodeId) => Promise<void>;
   selectNode: (nodeId: NodeId | null) => void;
   updateNodePosition: (nodeId: NodeId, position: NodePosition) => void;
+  applyNodePositions: (positions: Record<NodeId, NodePosition>, options?: { markDirty?: boolean }) => void;
   updateDocumentName: (name: string) => void;
 
   // Assumptions

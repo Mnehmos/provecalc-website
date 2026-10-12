@@ -15,6 +15,7 @@ import { useDocumentStore, getNextNodePosition } from '../stores/documentStore';
 import { useAIAssistStore } from '../stores/aiAssistStore';
 import type { LibraryCategory, LibraryItem } from '../types/document';
 import { MathDisplay } from './MathDisplay';
+import { formatQuantityLatex, formatSymbolLatex } from './nodes/nodeShared';
 
 const CATEGORY_LABELS: Record<LibraryCategory | 'all', string> = {
   all: 'All',
@@ -430,6 +431,16 @@ interface LibraryItemCardProps {
   searchQuery?: string;
 }
 
+/** Plain-word kind shown on a full library card. */
+const NODE_TYPE_LABELS: Record<string, string> = {
+  equation: 'Equation',
+  given: 'Value',
+  constraint: 'Check',
+  text: 'Note',
+  solve_goal: 'Solve',
+  plot: 'Plot',
+};
+
 const NODE_TYPE_ICONS: Record<string, string> = {
   equation: '∑',
   given: 'x',
@@ -446,8 +457,14 @@ function LibraryItemCard({ item, onInsert, onDelete, onLearnMore, compact = fals
     switch (item.nodeType) {
       case 'equation':
         return (data.latex as string) || `${data.lhs} = ${data.rhs}`;
-      case 'given':
-        return (data.latex as string) || `${data.symbol} = ${(data.value as { value: number })?.value || 0}`;
+      case 'given': {
+        const symbol = (data.latex as string) || formatSymbolLatex(String(data.symbol ?? ''));
+        if (symbol.includes('=')) return symbol;
+        const quantity = data.value as { value?: number; unit?: { expression?: string } } | undefined;
+        return typeof quantity?.value === 'number'
+          ? `${symbol} = ${formatQuantityLatex(quantity.value, quantity.unit?.expression)}`
+          : symbol;
+      }
       case 'constraint':
         return (data.latex as string) || (data.sympy as string);
       default:
@@ -484,14 +501,12 @@ function LibraryItemCard({ item, onInsert, onDelete, onLearnMore, compact = fals
   return (
     <div className="library-item-card">
       <div className="item-header">
-        <span className="item-type-badge" title={item.nodeType}>
-          {NODE_TYPE_ICONS[item.nodeType] || '•'}
-        </span>
         <span className="item-name"><HighlightMatch text={item.name} query={searchQuery} /></span>
+        <span className="item-kind">{NODE_TYPE_LABELS[item.nodeType] || item.nodeType}</span>
       </div>
 
       <div className="item-preview">
-        <MathDisplay latex={previewLatex} />
+        <MathDisplay latex={previewLatex} displayMode={false} />
       </div>
 
       {item.description && (

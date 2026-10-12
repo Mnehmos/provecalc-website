@@ -341,6 +341,8 @@ export interface WorksheetDocument {
     unit_system?: 'SI' | 'Imperial' | 'Custom';
     custom_units?: Record<string, string>;
     active_domain?: PhysicalDomainType;
+    /** Set on a document created from a template until the canvas has packed its nodes. */
+    layout?: 'auto';
   };
 }
 

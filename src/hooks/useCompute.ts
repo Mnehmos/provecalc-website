@@ -56,6 +56,38 @@ const NON_SYMBOLS = new Set([
   'sinh', 'cosh', 'tanh', 'Abs', 'abs', 'Eq', 'min', 'max', 'Min', 'Max',
 ]);
 
+/**
+ * The unit of a solved expression from the engine's own unit check, run with every known value
+ * and unit substituted. Real values (not placeholder ones) are used because the solve produced a
+ * finite number at exactly these values, so terms such as `C - 1` cannot collapse to zero.
+ * Undefined when a symbol is unknown or the check gives no unit.
+ */
+async function unitFromValues(symbolic: string, symbols: SymbolTable): Promise<string | undefined> {
+  let missing = false;
+  const quantity = symbolic.replace(/(?<![\w.])[A-Za-z_][A-Za-z0-9_]*/g, (name) => {
+    if (NON_SYMBOLS.has(name)) return name;
+    const known = symbols[name];
+    if (!known || !Number.isFinite(known.value)) {
+      missing = true;
+      return name;
+    }
+    const unit = known.unit && known.unit !== 'dimensionless' ? ` ${known.unit.replace(/\*\*/g, '^')}` : '';
+    return `(${known.value}${unit})`;
+  });
+  if (missing) return undefined;
+  try {
+    const check = await checkUnits(quantity);
+    return check.consistent && check.inferred_unit ? check.inferred_unit : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** A unit string built by substitution is only kept when it is a plain product of units. */
+function isPlainUnitExpression(unit: string): boolean {
+  return !/\+|\s-\s|dimensionless/.test(unit);
+}
+
 function identifiers(expression: string): Set<string> {
   return new Set(expression.match(/[A-Za-z_][A-Za-z0-9_]*/g) ?? []);
 }
@@ -184,6 +216,10 @@ export function useCompute() {
       logger.debug('hook', 'Initial unit from solution', { unit, symbolic: solution.symbolic });
 
       if (!unit && solution.symbolic) {
+        unit = await unitFromValues(solution.symbolic, symbolTable);
+      }
+
+      if (!unit && solution.symbolic) {
         // Use the symbolic solution for unit inference (e.g., "F/P" when solving for A from P = F/A)
         // This properly handles rearranged equations
         const unitExpression = inferResultUnit(solution.symbolic, symbolTable);
@@ -214,11 +250,11 @@ export function useCompute() {
               const unitCheck = await checkUnits(quantityExpression);
               if (unitCheck.consistent && unitCheck.inferred_unit) {
                 unit = unitCheck.inferred_unit;
-              } else {
+              } else if (isPlainUnitExpression(unitExpression)) {
                 unit = unitExpression;
               }
             } catch {
-              unit = unitExpression;
+              if (isPlainUnitExpression(unitExpression)) unit = unitExpression;
             }
           }
         }

@@ -20,6 +20,7 @@ import { formatSymbolLatex } from './nodes/nodeShared';
 import { getEquationSolveExpression } from '../utils/mathParsing';
 import { buildContributingNodeIds, getEquationVariables, getKnownSymbolSet, normalizeSolveUnit } from '../utils/solveContext';
 import { parseText } from '../utils/textToNodeParser';
+import { DEFAULT_LAYOUT, packLayout, startsSection, type LayoutItem } from '../utils/autoLayout';
 import type { WorksheetNode, NodePosition, EquationNode, GivenNode, ResultNode } from '../types/document';
 
 interface Point {
@@ -39,7 +40,13 @@ function snapToGrid(value: number, gridSize: number = GRID_SIZE): number {
   return Math.round(value / gridSize) * gridSize;
 }
 
-export function WorksheetCanvas() {
+interface WorksheetCanvasProps {
+  /** Dark grid paper instead of light. */
+  darkPaper?: boolean;
+  onToggleDarkPaper?: () => void;
+}
+
+export function WorksheetCanvas({ darkPaper = false, onToggleDarkPaper }: WorksheetCanvasProps = {}) {
   const { document, selectedNodeId, selectNode, updateNodePosition, addNode, insertNode, updateNode, deleteNode, duplicateNode, undo, redo, verifyNode, isVerifying, updateDocumentName } = useDocumentStore();
   const canvasRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -60,7 +67,6 @@ export function WorksheetCanvas() {
   const [inlineInputActive, setInlineInputActive] = useState(false);
 
   // Dark mode toggle
-  const [darkPaper, setDarkPaper] = useState(false);
 
   // Node context menu state (when right-clicking on a node)
   const [nodeContextMenu, setNodeContextMenu] = useState<{
@@ -658,6 +664,43 @@ export function WorksheetCanvas() {
     [draggingNode, dragOffset]
   );
 
+  const applyNodePositions = useDocumentStore((s) => s.applyNodePositions);
+
+  /** Pack the nodes from their measured sizes, so tall text never overlaps and gaps stay even. */
+  const tidyLayout = useCallback((markDirty: boolean) => {
+    const viewport = viewportRef.current;
+    if (!viewport || !document) return;
+    const header = viewport.querySelector<HTMLElement>('.worksheet-header');
+    const top = header ? header.offsetTop + header.offsetHeight + 24 : DEFAULT_LAYOUT.top;
+    const items: LayoutItem[] = [];
+    for (const node of document.nodes) {
+      const element = viewport.querySelector<HTMLElement>(`.node-wrapper[data-node-id="${node.id}"]`);
+      if (!element || !node.position) continue;
+      items.push({
+        id: node.id,
+        x: node.position.x,
+        y: node.position.y,
+        width: element.offsetWidth,
+        height: element.offsetHeight,
+        section: node.type === 'text' && startsSection(node.content),
+      });
+    }
+    applyNodePositions(packLayout(items, { ...DEFAULT_LAYOUT, top }), { markDirty });
+  }, [document, applyNodePositions]);
+
+  // A document created from a template is packed once its nodes (fonts and math included) render.
+  const pendingLayout = document?.metadata.layout === 'auto';
+  useEffect(() => {
+    if (!pendingLayout) return;
+    let cancelled = false;
+    (async () => {
+      try { await window.document.fonts?.ready; } catch { /* layout still runs */ }
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      if (!cancelled) tidyLayout(false);
+    })();
+    return () => { cancelled = true; };
+  }, [pendingLayout, tidyLayout]);
+
   // Handle adding nodes from context menu
   const handleAddNode = useCallback(
     (type: NodeType) => {
@@ -745,6 +788,7 @@ export function WorksheetCanvas() {
             <div
               key={node.id}
               className={`node-wrapper ${draggingNode === node.id ? 'dragging' : ''}`}
+              data-node-id={node.id}
               style={getNodeStyle(node)}
               onMouseDown={(e) => handleNodeDragStart(node.id, e)}
               onClick={(e) => handleNodeClick(node.id, e)}
@@ -813,10 +857,19 @@ export function WorksheetCanvas() {
             <span>Solve For...</span>
           </div>
           <div className="context-menu-divider" />
-          <div className="context-menu-item" onClick={() => setDarkPaper(!darkPaper)}>
-            <span className="icon">{darkPaper ? '☀️' : '🌙'}</span>
-            <span>{darkPaper ? 'Light Paper' : 'Dark Paper'}</span>
+          <div
+            className="context-menu-item"
+            onClick={() => { tidyLayout(true); setContextMenu({ ...contextMenu, visible: false }); }}
+          >
+            <span className="icon">▤</span>
+            <span>Tidy Layout</span>
           </div>
+          {onToggleDarkPaper && (
+            <div className="context-menu-item" onClick={() => { onToggleDarkPaper(); setContextMenu({ ...contextMenu, visible: false }); }}>
+              <span className="icon">{darkPaper ? '☀️' : '🌙'}</span>
+              <span>{darkPaper ? 'Light Paper' : 'Dark Paper'}</span>
+            </div>
+          )}
         </div>
       )}
 
@@ -927,27 +980,6 @@ export function WorksheetCanvas() {
         </div>
       )}
 
-      {/* Theme Toggle Button (floating) */}
-      <button
-        className="theme-toggle"
-        onClick={() => setDarkPaper(!darkPaper)}
-        title={darkPaper ? 'Switch to light paper' : 'Switch to dark paper'}
-        style={{
-          position: 'absolute',
-          bottom: 16,
-          right: 16,
-          padding: '8px 12px',
-          background: 'var(--bg-secondary)',
-          border: '1px solid var(--border-color)',
-          borderRadius: 6,
-          cursor: 'pointer',
-          color: 'var(--text-primary)',
-          fontSize: 12,
-          zIndex: 100,
-        }}
-      >
-        {darkPaper ? '☀️ Light' : '🌙 Dark'}
-      </button>
     </div>
   );
 }

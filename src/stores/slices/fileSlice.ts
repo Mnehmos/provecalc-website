@@ -7,9 +7,9 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { logger, startTimer } from '../../utils/logger';
-import type { WorksheetDocument, WorksheetNode, NodeId, Provenance, VerificationStatus } from '../../types/document';
+import type { WorksheetDocument, NodeId } from '../../types/document';
 import type { SliceCreator } from './types';
-import { TEMPLATES, type TemplateNodeData } from '../../data/templates';
+import { TEMPLATES, createDocumentFromTemplate, type WorksheetTemplate } from '../../data/templates';
 
 const STORAGE_PREFIX = 'provecalc:doc:';
 const STORAGE_INDEX = 'provecalc:docs:index';
@@ -37,38 +37,11 @@ function createEmptyDocument(name: string): WorksheetDocument {
   };
 }
 
-/** Hydrate a template node into a full WorksheetNode */
-function hydrateTemplateNode(partial: TemplateNodeData): WorksheetNode {
-  const now = new Date().toISOString();
-  return {
-    id: uuidv4(),
-    provenance: { type: 'library', source: 'template', timestamp: now } as Provenance,
-    verification: { status: 'unverified' } as VerificationStatus,
-    dependencies: [] as NodeId[],
-    dependents: [] as NodeId[],
-    assumptions: [] as string[],
-    ...partial,
-  } as WorksheetNode;
-}
-
-/** Create the default demo document from the cantilever beam template */
+/** Create the default demo document from the cantilever beam tutorial */
 function createDefaultDocument(): WorksheetDocument {
   const template = TEMPLATES.find(t => t.id === 'cantilever-beam-tutorial');
   if (!template) return createEmptyDocument('Untitled');
-
-  return {
-    id: uuidv4(),
-    name: template.name,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    version: '1.0.0',
-    nodes: template.nodes.map(hydrateTemplateNode),
-    assumptions: [],
-    history: [],
-    current_history_id: '',
-    audit_trail: [],
-    metadata: { description: `From template: ${template.id}` },
-  };
+  return createDocumentFromTemplate(template);
 }
 
 function downloadBlob(content: string, filename: string, mimeType: string) {
@@ -97,6 +70,8 @@ export interface FileSlice {
   checkUnsavedChanges: () => Promise<boolean>;
   loadDocument: () => Promise<void>;
   createDocument: (name: string) => Promise<boolean>;
+  /** Replace the worksheet with a fresh copy of a template (asks first if there are unsaved edits). */
+  loadTemplate: (template: WorksheetTemplate) => Promise<boolean>;
 }
 
 export const createFileSlice: SliceCreator<FileSlice> = (set, get) => {
@@ -391,6 +366,20 @@ export const createFileSlice: SliceCreator<FileSlice> = (set, get) => {
         draft.isDirty = false;
       });
       timer.complete({ name });
+      return true;
+    },
+
+    loadTemplate: async (template: WorksheetTemplate) => {
+      const canProceed = await get().checkUnsavedChanges();
+      if (!canProceed) return false;
+      const doc = createDocumentFromTemplate(template);
+      set((draft) => {
+        draft.document = doc;
+        draft.selectedNodeId = null;
+        draft.filePath = null;
+        draft.isDirty = false;
+      });
+      logger.store.action('documentStore', 'loadTemplate', { template: template.id, nodes: doc.nodes.length });
       return true;
     },
   };

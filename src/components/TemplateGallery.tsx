@@ -8,40 +8,18 @@ import {
   TEMPLATE_CATEGORIES,
   type TemplateCategory,
   type WorksheetTemplate,
-  type TemplateNodeData,
 } from '../data/templates';
 import { useDocumentStore } from '../stores/documentStore';
-import { v4 as uuidv4 } from 'uuid';
-import type { WorksheetNode, Provenance, VerificationStatus, NodeId } from '../types/document';
 
 interface TemplateGalleryProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-/** Hydrate a partial template node into a full WorksheetNode */
-function hydrateNode(
-  partial: TemplateNodeData
-): WorksheetNode {
-  const now = new Date().toISOString();
-  const base = {
-    id: uuidv4(),
-    provenance: { type: 'library', source: 'template', timestamp: now } as Provenance,
-    verification: { status: 'unverified' } as VerificationStatus,
-    dependencies: [] as NodeId[],
-    dependents: [] as NodeId[],
-    assumptions: [] as string[],
-  };
-
-  return { ...base, ...partial } as WorksheetNode;
-}
-
 export function TemplateGallery({ isOpen, onClose }: TemplateGalleryProps) {
   const [selectedCategory, setSelectedCategory] = useState<TemplateCategory | 'all'>('all');
   const [search, setSearch] = useState('');
-  const { insertNode } = useDocumentStore();
-  const createDocument = useDocumentStore((s) => s.createDocument);
-  const clearDirty = useDocumentStore((s) => s.clearDirty);
+  const loadTemplate = useDocumentStore((s) => s.loadTemplate);
   const [isCreating, setIsCreating] = useState(false);
   const creatingRef = useRef(false);
 
@@ -67,19 +45,7 @@ export function TemplateGallery({ isOpen, onClose }: TemplateGalleryProps) {
     creatingRef.current = true;
     setIsCreating(true);
     try {
-      // Create a blank document with the template name
-      const created = await createDocument(template.name);
-      if (!created) return;
-
-      // Insert each template node
-      for (const partial of template.nodes) {
-        const node = hydrateNode(partial);
-        await insertNode(node);
-      }
-      // A freshly loaded template has no edits to lose.
-      clearDirty();
-
-      onClose();
+      if (await loadTemplate(template)) onClose();
     } finally {
       creatingRef.current = false;
       setIsCreating(false);
@@ -148,6 +114,9 @@ export function TemplateGallery({ isOpen, onClose }: TemplateGalleryProps) {
                 <h3>{template.name}</h3>
                 <p>{template.description}</p>
                 <div className="template-card-meta">
+                  {template.tags.includes('tutorial') && (
+                    <span className="template-start-badge">Start here</span>
+                  )}
                   <span className="template-node-count">
                     {template.nodes.length} nodes
                   </span>

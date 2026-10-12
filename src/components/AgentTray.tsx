@@ -878,9 +878,12 @@ export function AgentTray() {
             >
               Settings
             </button>
-            <span className={`status ${isThinking ? 'thinking' : 'ready'}`}>
-              {isThinking ? 'Thinking...' : isConfigured ? 'Ready' : 'Not configured'}
-            </span>
+            {/* Without a key the panel body already explains what to do. */}
+            {(isConfigured || isThinking) && (
+              <span className={`status ${isThinking ? 'thinking' : 'ready'}`}>
+                {isThinking ? 'Thinking...' : 'Ready'}
+              </span>
+            )}
           </div>
         </div>
 
