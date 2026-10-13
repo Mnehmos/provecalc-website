@@ -220,7 +220,7 @@ export function WebToolbar({
     <header className="toolbar">
       <div className="toolbar-section brand">
         <img src="/logo.svg" alt="ProveCalc" className="toolbar-logo" />
-        <span className="app-name">
+        <span className="app-name" title={document ? `ProveCalc - ${document.name}` : "ProveCalc"}>
           ProveCalc
           {document && (
             <span className="document-name">
@@ -389,15 +389,6 @@ export function WebToolbar({
       </div>
 
       <div className="toolbar-spacer" />
-
-      <div className="toolbar-section node-count">
-        {document && (
-          <span className="status-text">
-            {document.nodes.length} node
-            {document.nodes.length !== 1 ? "s" : ""}
-          </span>
-        )}
-      </div>
     </header>
   );
 }

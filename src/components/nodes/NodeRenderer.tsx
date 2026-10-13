@@ -30,6 +30,7 @@ import {
   type NumberRepresentation,
   formatSymbolLatex,
   formatNumberLatex,
+  defaultRepresentation,
   formatUnitLatex,
   formatNumber,
   getCompatibleUnits,
@@ -101,6 +102,8 @@ export function NodeRenderer({ node, index, isSelected, onClick, onUpdate }: Nod
   const nodeNumber = index + 1;
 
   const verificationBadge = useMemo(() => {
+    // Instructions, diagrams and solve requests make no claim, so they carry no verification state.
+    if (node.type === 'text' || node.type === 'annotation' || node.type === 'solve_goal') return null;
     const verification = getVerification(node);
     switch (verification.status) {
       case 'verified':
@@ -468,7 +471,7 @@ function ConstraintNodeEditor({ node, onSave, onCancel }: { node: WorksheetNode 
 }
 
 function ResultNodeContent({ symbol, value, unit, symbolicForm, latex }: ResultNodeContentProps) {
-  const [representation, setRepresentation] = useState<NumberRepresentation>('decimal');
+  const [representation, setRepresentation] = useState<NumberRepresentation>(() => defaultRepresentation(value));
   const [showSymbolic, setShowSymbolic] = useState(false);
   const [showAltUnits, setShowAltUnits] = useState(false);
 
@@ -483,7 +486,7 @@ function ResultNodeContent({ symbol, value, unit, symbolicForm, latex }: ResultN
       return `${formatSymbolLatex(symbol)} = ${symbolicForm}`;
     }
     // Use pre-computed latex if in decimal mode, otherwise format dynamically
-    if (representation === 'decimal' && latex) {
+    if (representation === defaultRepresentation(value) && latex) {
       return latex;
     }
     return formatNumberLatex(symbol, value, unit, representation);
@@ -787,7 +790,8 @@ function renderNodeContent(node: WorksheetNode) {
     case 'equation':
       return (
         <div className="equation-content">
-          <MathDisplay latex={node.latex} displayMode={false} />
+          {/* Display style keeps fractions full size inside the compact node. */}
+          <MathDisplay latex={`\\displaystyle ${node.latex}`} displayMode={false} />
         </div>
       );
 

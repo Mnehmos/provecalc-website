@@ -43,6 +43,11 @@ const NODE_STYLES: Record<string, { color: string; icon: string; bg: string }> =
   plot: { color: '#06b6d4', icon: '📊', bg: '#06b6d420' },
 };
 
+/** Instructions and diagrams have no inputs or outputs, so the graph leaves them out. */
+function isCalculationNode(node: WorksheetNode): boolean {
+  return node.type !== 'text' && node.type !== 'annotation';
+}
+
 // Get short label for a node
 function getNodeLabel(node: WorksheetNode): string {
   switch (node.type) {
@@ -54,8 +59,13 @@ function getNodeLabel(node: WorksheetNode): string {
       return `Solve: ${node.target_symbol}`;
     case 'result':
       return `${node.symbol} = ${node.value.value.toFixed(2)}`;
-    case 'text':
-      return node.content.slice(0, 20) + (node.content.length > 20 ? '...' : '');
+    case 'text': {
+      const firstLine = node.content.split('\n').find((line) => line.trim()) ?? '';
+      const plain = firstLine.replace(/^#+\s*/, '').replace(/[*_`]/g, '').trim();
+      return plain.slice(0, 20) + (plain.length > 20 ? '...' : '');
+    }
+    case 'annotation':
+      return node.title || 'Note';
     case 'constraint':
       return 'Constraint';
     case 'plot':
@@ -166,7 +176,7 @@ export function DependencyGraph() {
   // Build graph layout
   const { graphNodes, edges } = useMemo(() => {
     if (!document) return { graphNodes: [], edges: [] };
-    return buildGraphLayout(document.nodes);
+    return buildGraphLayout(document.nodes.filter(isCalculationNode));
   }, [document]);
 
   // Calculate SVG dimensions
@@ -300,7 +310,7 @@ export function DependencyGraph() {
   const renderTimeline = useCallback(() => {
     if (!document) return null;
 
-    const timelineNodes = document.nodes.map((node, index) => ({
+    const timelineNodes = document.nodes.filter(isCalculationNode).map((node, index) => ({
       ...node,
       x: PADDING + index * (NODE_WIDTH + 20),
       y: PADDING,
@@ -382,7 +392,7 @@ export function DependencyGraph() {
     );
   }, [document, selectedNodeId, handleNodeClick]);
 
-  if (!document || document.nodes.length === 0) {
+  if (!document || !document.nodes.some(isCalculationNode)) {
     return (
       <div className="dependency-graph empty">
         <div className="empty-state">
@@ -461,7 +471,7 @@ export function DependencyGraph() {
 
       {/* Stats */}
       <div className="graph-stats">
-        <span>{document.nodes.length} nodes</span>
+        <span>{graphNodes.length} nodes</span>
         <span>•</span>
         <span>{edges.length} connections</span>
       </div>

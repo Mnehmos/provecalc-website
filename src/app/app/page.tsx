@@ -28,6 +28,18 @@ export default function AppPage() {
   const [showTemplates, setShowTemplates] = useState(false);
   const [showAgent, setShowAgent] = useState(true);
   const [showTutorial, setShowTutorial] = useState(false);
+  // Grid paper theme, remembered per browser (storage can be unavailable).
+  const [darkPaper, setDarkPaper] = useState(false);
+  useEffect(() => {
+    try { setDarkPaper(window.localStorage.getItem("provecalc-paper") === "dark"); } catch { /* default light */ }
+  }, []);
+  const toggleDarkPaper = useCallback(() => {
+    setDarkPaper((current) => {
+      const next = !current;
+      try { window.localStorage.setItem("provecalc-paper", next ? "dark" : "light"); } catch { /* not remembered */ }
+      return next;
+    });
+  }, []);
 
   // --- Resizable state ---
   const [leftWidth, setLeftWidth] = useState(280);
@@ -115,7 +127,7 @@ export default function AppPage() {
         <div className="resize-handle vertical" onMouseDown={onLeftResize} />
 
         <main className="worksheet-area">
-          <WorksheetCanvas />
+          <WorksheetCanvas darkPaper={darkPaper} onToggleDarkPaper={toggleDarkPaper} />
         </main>
 
         <div className="resize-handle vertical" onMouseDown={onRightResize} />
@@ -192,6 +204,14 @@ export default function AppPage() {
         <span className="status-item verification-status">
           Engine: Ready
         </span>
+        <button
+          type="button"
+          className="status-item status-toggle"
+          onClick={toggleDarkPaper}
+          title={darkPaper ? "Switch to light grid paper" : "Switch to dark grid paper"}
+        >
+          {darkPaper ? "☀ Light paper" : "☾ Dark paper"}
+        </button>
       </footer>
     </div>
   );

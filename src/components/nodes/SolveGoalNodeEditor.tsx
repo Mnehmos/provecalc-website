@@ -410,6 +410,12 @@ export function SolveGoalNodeEditor({ node, onSave, onCancel }: { node: Workshee
           className="btn-save"
           onClick={async () => {
             logger.debug('verification', 'Solve clicked', { canSolve, targetSymbol, method });
+            // "Done": the target already has a result, so close without solving again (which
+            // would add a duplicate Result node).
+            if (lastComputedResult || existingComputedNode) {
+              onSave({ target_symbol: targetSymbol, method, dependencies: targetDependencies });
+              return;
+            }
             if (canSolve && targetSymbol) {
               // Actually perform the solve computation
               setSolveError(null);

@@ -140,8 +140,25 @@ export function formatNumberLatex(
   precision: number = 6
 ): string {
   const formattedValue = formatNumber(value, representation, precision);
-  const unitPart = unit ? ` \\; \\mathrm{${formatUnitLatex(unit)}}` : '';
-  return `${formatSymbolLatex(symbol)} = ${formattedValue}${unitPart}`;
+  return `${formatSymbolLatex(symbol)} = ${formattedValue}${formatUnitPart(unit)}`;
+}
+
+/** The representation a value is first shown in: decimal in the everyday range, engineering outside it. */
+export function defaultRepresentation(value: number): NumberRepresentation {
+  const abs = Math.abs(value);
+  return abs !== 0 && (abs >= 1e6 || abs < 1e-3) ? 'engineering' : 'decimal';
+}
+
+/** Value and unit for display, e.g. `200 \times 10^{9} \; \mathrm{Pa}` or `0.12 \; \mathrm{A}`. */
+export function formatQuantityLatex(value: number, unit?: string): string {
+  const number = defaultRepresentation(value) === 'engineering' ? formatEngineering(value, 4) : formatDecimal(value, 6);
+  return `${number}${formatUnitPart(unit)}`;
+}
+
+/** The unit after a value; nothing for a dimensionless quantity. */
+function formatUnitPart(unit: string | undefined): string {
+  if (!unit || unit === 'dimensionless' || unit === '1') return '';
+  return ` \\; \\mathrm{${formatUnitLatex(unit)}}`;
 }
 
 export interface UnitConversion {

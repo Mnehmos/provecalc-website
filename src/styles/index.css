@@ -8072,3 +8072,323 @@ input.computed-readonly,
 .settings-hint a {
   color: var(--accent-primary);
 }
+
+/* ===================================================================
+   Worksheet polish: toolbar, panels, canvas typography
+   =================================================================== */
+
+/* Toolbar stays on one line; the document name truncates instead of wrapping. */
+.toolbar {
+  overflow: hidden;
+}
+
+.toolbar-section {
+  flex-shrink: 0;
+}
+
+.toolbar-section.brand {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 300px;
+}
+
+.toolbar .app-name {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toolbar-button {
+  white-space: nowrap;
+}
+
+/* Status bar: grid paper switch on the right. */
+.status-bar .status-toggle {
+  margin-left: auto;
+  padding: 2px 8px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.status-bar .status-toggle:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* AI panel header stays on one line. */
+.agent-tray .panel-header h3,
+.agent-tray .panel-header .status {
+  white-space: nowrap;
+}
+
+
+/* Variables panel: one quantity per row. */
+.variable-section .variable-list {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 2px;
+}
+
+.variable-row .value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.variable-row .verified-badge {
+  margin-left: auto;
+  color: var(--success);
+  font-size: 12px;
+}
+
+/* Canvas: no forced sideways scrolling; the header is a readable card. */
+.canvas-viewport {
+  min-width: 100%;
+}
+
+.worksheet-header {
+  max-width: 600px;
+}
+
+.worksheet-description {
+  margin-bottom: 0;
+  line-height: 1.45;
+}
+
+/* Instruction and diagram nodes share one reading column, top-aligned. */
+.node.node-text,
+.node.node-annotation {
+  width: 600px;
+  max-width: 600px;
+  align-items: flex-start;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.node.node-text .node-gutter,
+.node.node-annotation .node-gutter {
+  padding-top: 3px;
+}
+
+.node.node-text .node-badges,
+.node.node-annotation .node-badges {
+  top: 14px;
+  transform: none;
+}
+
+/* Paper-aware colours for markdown inside nodes. */
+:root {
+  --md-code-bg: rgba(15, 23, 42, 0.06);
+  --md-code-border: rgba(15, 23, 42, 0.12);
+  --md-table-head: rgba(15, 23, 42, 0.05);
+  --md-rule: rgba(15, 23, 42, 0.14);
+}
+
+.worksheet-canvas.dark-paper,
+.node.selected,
+.node.editing {
+  --md-code-bg: rgba(255, 255, 255, 0.08);
+  --md-code-border: rgba(255, 255, 255, 0.14);
+  --md-table-head: rgba(255, 255, 255, 0.06);
+  --md-rule: rgba(255, 255, 255, 0.16);
+}
+
+.text-content {
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.text-content > :first-child,
+.annotation-body > :first-child {
+  margin-top: 0;
+}
+
+.text-content > :last-child,
+.annotation-body > :last-child {
+  margin-bottom: 0;
+}
+
+.text-content h1,
+.text-content h2,
+.text-content h3,
+.annotation-body h1,
+.annotation-body h2,
+.annotation-body h3 {
+  margin: 14px 0 6px;
+  font-weight: 650;
+  line-height: 1.3;
+  color: var(--paper-text);
+}
+
+.text-content h1 { font-size: 20px; }
+.text-content h2 { font-size: 17px; }
+.text-content h3 { font-size: 15px; }
+
+.text-content p {
+  margin: 0 0 8px;
+}
+
+.text-content ul,
+.text-content ol {
+  margin: 4px 0 10px;
+  padding-left: 22px;
+}
+
+.text-content ul,
+.annotation-body ul {
+  list-style: disc;
+}
+
+.text-content ol,
+.annotation-body ol {
+  list-style: decimal;
+}
+
+.text-content li {
+  margin: 2px 0;
+}
+
+.text-content li > p {
+  margin: 0;
+}
+
+.text-content strong {
+  font-weight: 650;
+}
+
+.text-content em {
+  font-style: italic;
+}
+
+.text-content hr {
+  border: 0;
+  border-top: 1px solid var(--md-rule);
+  margin: 14px 0;
+}
+
+.text-content blockquote {
+  margin: 8px 0;
+  padding: 4px 0 4px 12px;
+  border-left: 3px solid var(--accent-primary);
+}
+
+.text-content :not(pre) > code,
+.annotation-body :not(pre) > code {
+  padding: 1px 5px;
+  border: 1px solid var(--md-code-border);
+  border-radius: 3px;
+  background: var(--md-code-bg);
+  color: inherit;
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+}
+
+.text-content pre {
+  margin: 8px 0;
+  padding: 8px;
+  border: 1px solid var(--annotation-code-border);
+  border-radius: 4px;
+  background: var(--annotation-code-bg);
+  color: var(--annotation-code-fg);
+  overflow-x: auto;
+}
+
+.text-content table,
+.annotation-body table {
+  width: 100%;
+  margin: 8px 0 10px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.text-content th,
+.text-content td,
+.annotation-body th,
+.annotation-body td {
+  padding: 5px 8px;
+  border: 1px solid var(--md-rule);
+  text-align: left;
+  vertical-align: top;
+}
+
+.text-content th,
+.annotation-body th {
+  background: var(--md-table-head);
+  font-weight: 600;
+}
+
+.text-content .katex-display {
+  margin: 10px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* Diagram nodes: the title reads on light and dark paper. */
+.annotation-title {
+  color: var(--paper-text);
+}
+
+.annotation-content .collapse-icon {
+  color: var(--paper-text);
+  opacity: 0.55;
+}
+
+.annotation-body pre {
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.template-start-badge {
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: var(--accent-primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Solve nodes read as one line: "Solve for δ_max (symbolic)". */
+.solve-goal-content {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.solve-goal-content .method-tag {
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+/* Library cards: name first, a plain kind label, and a compact preview. */
+.library-item-card .item-header {
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.library-item-card .item-kind {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  font-size: 10px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.library-item-card .item-preview {
+  display: flex;
+  justify-content: center;
+  padding: 10px 8px;
+}
+
+.library-item-card .item-preview .katex {
+  font-size: 15px;
+}
