@@ -105,6 +105,13 @@ export default function RootLayout({
                 name: "The Mnemosyne Research Institute",
                 url: "https://themnemosyneresearchinstitute.com",
                 email: "contact@themnemosyneresearchinstitute.com",
+                contactPoint: {
+                  "@type": "ContactPoint",
+                  contactType: "customer support",
+                  email: "admin@provecalc.com",
+                  url: "https://provecalc.com/contact",
+                  availableLanguage: "English",
+                },
                 address: {
                   "@type": "PostalAddress",
                   addressLocality: "Safford",
