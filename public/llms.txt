@@ -14,6 +14,7 @@
 - Worksheets are open JSON files that stay on your machine and export to PDF, DOCX and HTML.
 - Each node is checked for unit consistency, constraint satisfaction, numeric residuals and sanity.
 - Licenses verify offline: there is no activation server to keep reachable.
+- ProveCalc contact: admin@provecalc.com
 - Support: contact@themnemosyneresearchinstitute.com
 
 ## Optional
