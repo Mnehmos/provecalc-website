@@ -55,7 +55,7 @@ const TUTORIALS: Tutorial[] = [
       {
         title: "Configure your API key",
         content:
-          'Click "Settings" in the AI Assistant panel (bottom-right). Enter your OpenRouter API key from openrouter.ai/keys. Choose a model — Claude Sonnet 5.5 is recommended for engineering work.',
+          'Click "Settings" in the AI Assistant panel (bottom-right). Enter your OpenRouter API key from openrouter.ai/keys. Choose a model — Claude Haiku 5.5 is the default; switch to Sonnet 5.5 or Opus 5.5 for harder problems.',
       },
       {
         title: "Describe your problem",
