@@ -23,6 +23,9 @@ import { parseText } from '../utils/textToNodeParser';
 import { DEFAULT_LAYOUT, packLayout, startsSection, type LayoutItem } from '../utils/autoLayout';
 import type { WorksheetNode, NodePosition, EquationNode, GivenNode, ResultNode } from '../types/document';
 
+/** Where a node with no stored position is drawn. */
+const UNPLACED: NodePosition = { x: 20, y: 80 };
+
 interface Point {
   x: number;
   y: number;
@@ -596,7 +599,7 @@ export function WorksheetCanvas({ darkPaper = false, onToggleDarkPaper }: Worksh
       e.stopPropagation();
 
       const node = document?.nodes.find((n) => n.id === nodeId);
-      if (!node?.position) return;
+      if (!node) return;
 
       setDraggingNode(nodeId);
       setDragStart({ x: e.clientX, y: e.clientY });
@@ -626,10 +629,11 @@ export function WorksheetCanvas({ darkPaper = false, onToggleDarkPaper }: Worksh
   const handleMouseUp = useCallback(() => {
     if (draggingNode && (dragOffset.x !== 0 || dragOffset.y !== 0)) {
       const node = document?.nodes.find((n) => n.id === draggingNode);
-      if (node?.position) {
+      if (node) {
+        const from = node.position ?? UNPLACED;
         const newPosition: NodePosition = {
-          x: node.position.x + dragOffset.x,
-          y: node.position.y + dragOffset.y,
+          x: from.x + dragOffset.x,
+          y: from.y + dragOffset.y,
         };
         updateNodePosition(draggingNode, newPosition);
       }
@@ -653,7 +657,7 @@ export function WorksheetCanvas({ darkPaper = false, onToggleDarkPaper }: Worksh
   // Calculate node position for rendering (including drag offset)
   const getNodeStyle = useCallback(
     (node: WorksheetNode): React.CSSProperties => {
-      const pos = node.position || { x: 20, y: 80 };
+      const pos = node.position || UNPLACED;
       const isDragging = draggingNode === node.id;
 
       return {
@@ -675,11 +679,12 @@ export function WorksheetCanvas({ darkPaper = false, onToggleDarkPaper }: Worksh
     const items: LayoutItem[] = [];
     for (const node of document.nodes) {
       const element = viewport.querySelector<HTMLElement>(`.node-wrapper[data-node-id="${node.id}"]`);
-      if (!element || !node.position) continue;
+      if (!element) continue;
+      const position = node.position ?? UNPLACED;
       items.push({
         id: node.id,
-        x: node.position.x,
-        y: node.position.y,
+        x: position.x,
+        y: position.y,
         width: element.offsetWidth,
         height: element.offsetHeight,
         section: node.type === 'text' && startsSection(node.content),
@@ -700,6 +705,41 @@ export function WorksheetCanvas({ darkPaper = false, onToggleDarkPaper }: Worksh
     })();
     return () => { cancelled = true; };
   }, [pendingLayout, tidyLayout]);
+
+  // Nodes the assistant just inserted: once drawn, each goes below every other node by the real
+  // heights, in order, in the column it was given. Nodes already on the worksheet do not move.
+  const pendingPlacement = useDocumentStore((s) => s.pendingPlacement);
+  const clearPlacement = useDocumentStore((s) => s.clearPlacement);
+  useEffect(() => {
+    if (pendingPlacement.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      try { await window.document.fonts?.ready; } catch { /* placement still runs */ }
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const viewport = viewportRef.current;
+      const current = useDocumentStore.getState().document;
+      if (cancelled || !viewport || !current) return;
+      const fresh = new Set(pendingPlacement);
+      const heightOf = (id: string) => viewport.querySelector<HTMLElement>(`.node-wrapper[data-node-id="${id}"]`)?.offsetHeight ?? 0;
+      const header = viewport.querySelector<HTMLElement>('.worksheet-header');
+      let y = header ? header.offsetTop + header.offsetHeight + 24 : DEFAULT_LAYOUT.top;
+      for (const node of current.nodes) {
+        if (fresh.has(node.id)) continue;
+        const position = node.position ?? UNPLACED;
+        y = Math.max(y, position.y + heightOf(node.id) + DEFAULT_LAYOUT.gap);
+      }
+      const positions: Record<string, NodePosition> = {};
+      for (const id of pendingPlacement) {
+        const node = current.nodes.find((entry) => entry.id === id);
+        if (!node) continue;
+        positions[id] = { x: (node.position ?? UNPLACED).x, y: Math.round(y) };
+        y += heightOf(id) + DEFAULT_LAYOUT.gap;
+      }
+      applyNodePositions(positions, { markDirty: true });
+      clearPlacement();
+    })();
+    return () => { cancelled = true; };
+  }, [pendingPlacement, applyNodePositions, clearPlacement]);
 
   // Handle adding nodes from context menu
   const handleAddNode = useCallback(

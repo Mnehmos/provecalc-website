@@ -39,6 +39,12 @@ function validateCommand(obj: Record<string, unknown>): WorksheetCommand | null 
       if (typeof obj.latex !== 'string' || typeof obj.lhs !== 'string' || typeof obj.rhs !== 'string') return null;
       break;
     case 'add_constraint':
+      // Models write the checkable form under several names; take the first that is there.
+      if (typeof obj.sympy !== 'string') {
+        const alternative = [obj.expression, obj.condition, obj.inequality].find((value) => typeof value === 'string');
+        if (alternative) obj.sympy = alternative;
+      }
+      if (typeof obj.latex !== 'string' && typeof obj.sympy === 'string') obj.latex = obj.sympy;
       if (typeof obj.latex !== 'string' || typeof obj.sympy !== 'string') return null;
       break;
     case 'add_solve_goal':
@@ -115,7 +121,30 @@ export function hasCommands(responseText: string): boolean {
   return parseCommands(responseText).commands.length > 0;
 }
 
-/** Strip command blocks from response, leaving only explanation text */
+/**
+ * Strip the command blocks from a response, leaving the explanation. Only blocks that hold valid
+ * commands go (they are shown as command cards); any other block stays, so nothing the model wrote
+ * disappears without a trace.
+ */
 export function stripCommandBlocks(text: string): string {
-  return text.replace(/```(?:json)?\s*\n[\s\S]*?\n```/g, '').trim();
+  return text.replace(/```(?:json)?\s*\n([\s\S]*?)\n```/g, (block, body: string) => (allValidCommands(body) ? '' : block)).trim();
+}
+
+/** True when a block holds commands and every one of them is valid (none would be dropped). */
+function allValidCommands(body: string): boolean {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(body.trim());
+  } catch {
+    return false;
+  }
+  const record = parsed as Record<string, unknown> | null;
+  const candidates: unknown[] = Array.isArray(parsed)
+    ? parsed
+    : record && Array.isArray(record.commands)
+      ? (record.commands as unknown[])
+      : record && typeof record === 'object' && 'action' in record
+        ? [record]
+        : [];
+  return candidates.length > 0 && candidates.every((entry) => Boolean(entry) && typeof entry === 'object' && validateCommand({ ...(entry as Record<string, unknown>) }) !== null);
 }

@@ -51,10 +51,60 @@ export function parseAIResponse(response: string): ParsedAIResponse {
     }
   }
 
+  // Some models write the suggestion as bare JSON in the prose, without a code fence.
+  if (suggestions.length === 0) {
+    for (const raw of bareJsonObjects(text)) {
+      const parsed = tryParseSuggestion(raw);
+      if (parsed) {
+        suggestions.push(parsed);
+        text = text.replace(raw, '');
+      }
+    }
+  }
+
   // Clean up extra whitespace from removed blocks
   text = text.replace(/\n{3,}/g, '\n\n').trim();
 
   return { text, suggestions };
+}
+
+/**
+ * The JSON objects written straight into the text: each from an opening brace followed by a key to
+ * the matching closing brace, braces inside strings ignored. Whether one is a suggestion (its `type`,
+ * wherever it sits among the keys) is for the caller to decide.
+ */
+export function bareJsonObjects(text: string): string[] {
+  const found: string[] = [];
+  const start = /\{\s*"/g;
+  let match: RegExpExecArray | null;
+  while ((match = start.exec(text)) !== null) {
+    let depth = 0;
+    let inString = false;
+    let escaped = false;
+    for (let index = match.index; index < text.length; index += 1) {
+      const char = text[index];
+      if (inString) {
+        if (escaped) escaped = false;
+        else if (char === '\\') escaped = true;
+        else if (char === '"') inString = false;
+      } else if (char === '"') {
+        inString = true;
+      } else if (char === '{') {
+        depth += 1;
+      } else if (char === '}') {
+        depth -= 1;
+        if (depth === 0) {
+          const candidate = text.slice(match.index, index + 1);
+          if (tryParseSuggestion(candidate)) {
+            found.push(candidate);
+            start.lastIndex = index + 1;
+          }
+          break;
+        }
+      }
+    }
+  }
+  return found;
 }
 
 /**
@@ -79,11 +129,14 @@ function tryParseSuggestion(jsonStr: string): AISuggestion | null {
     // Type-specific validation
     switch (obj.type) {
       case 'node':
-        if (!obj.preview?.description || !obj.node) return null;
+        if (!obj.node || typeof obj.node !== 'object') return null;
+        // A missing description should not throw the node away: name it after what it is.
+        if (!obj.preview?.description) obj.preview = { ...(obj.preview ?? {}), description: `Add ${obj.node.type ?? 'a node'}` };
         break;
       case 'node_group':
-        if (!obj.preview?.title || !Array.isArray(obj.nodes)) return null;
-        if (!Array.isArray(obj.preview?.nodes)) return null;
+        if (!Array.isArray(obj.nodes) || obj.nodes.length === 0) return null;
+        if (!obj.preview?.title) obj.preview = { ...(obj.preview ?? {}), title: 'Insert these nodes' };
+        if (!Array.isArray(obj.preview.nodes)) obj.preview.nodes = obj.nodes.map((node: { type?: string }) => String(node?.type ?? 'node'));
         if (!obj.insertOrder) obj.insertOrder = 'sequential';
         break;
       case 'assumption':

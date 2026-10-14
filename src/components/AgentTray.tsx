@@ -839,11 +839,16 @@ export function AgentTray() {
       if (suggestion.type === 'node' && suggestion.node) {
         const node = normalizeNode(suggestion.node);
         await store.insertNode(node as Parameters<typeof store.insertNode>[0]);
+        // Once drawn, it goes below every other node by their real heights; nothing else moves.
+        useDocumentStore.getState().requestPlacement([node.id as string]);
       } else if (suggestion.type === 'node_group') {
+        const ids: string[] = [];
         for (const n of suggestion.nodes) {
           const node = normalizeNode(n);
           await store.insertNode(node as Parameters<typeof store.insertNode>[0]);
+          ids.push(node.id as string);
         }
+        useDocumentStore.getState().requestPlacement(ids);
       } else if (suggestion.type === 'assumption' && suggestion.assumption) {
         const { statement, scope } = suggestion.preview;
         await store.addAssumption(statement, undefined, scope);
@@ -940,7 +945,7 @@ export function AgentTray() {
                     {msg.role === 'assistant' ? (
                       <>
                         <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
-                          {preprocessLatex(msg.parsed?.text ? (hasCommands(msg.parsed.text) ? stripCommandBlocks(msg.parsed.text) : msg.parsed.text) : (hasCommands(msg.content) ? stripCommandBlocks(msg.content) : msg.content))}
+                          {preprocessLatex(msg.parsed !== undefined ? (hasCommands(msg.parsed.text) ? stripCommandBlocks(msg.parsed.text) : msg.parsed.text) : (hasCommands(msg.content) ? stripCommandBlocks(msg.content) : msg.content))}
                         </ReactMarkdown>
                         {msg.parsed?.suggestions.map((suggestion) => (
                           <SuggestionCard
