@@ -19,6 +19,7 @@ import {
   createPlotNode,
   handleDuplicateSymbol,
   requireLoadedDocument,
+  getNextNodePosition,
 } from './helpers';
 
 export interface NodeSlice {
@@ -33,6 +34,8 @@ export interface NodeSlice {
   updateNodePosition: (nodeId: NodeId, position: NodePosition) => void;
   /** Move many nodes at once (auto layout); clears the document's pending-layout flag. */
   applyNodePositions: (positions: Record<NodeId, NodePosition>, options?: { markDirty?: boolean }) => void;
+  /** Ask the canvas to pack the nodes from their measured sizes once they have rendered. */
+  requestAutoLayout: () => void;
   updateDocumentName: (name: string) => void;
 }
 
@@ -97,6 +100,9 @@ export const createNodeSlice: SliceCreator<NodeSlice> = (set, get) => ({
   insertNode: async (node: WorksheetNode, index?: number) => {
     const timer = startTimer('insertNode', 'store');
     logger.store.action('documentStore', 'insertNode', { nodeType: node.type, index });
+
+    // A node with no place (from the assistant, say) goes below the last one, never on top of another.
+    if (!node.position) node = { ...node, position: getNextNodePosition(get().document) };
 
     set((draft) => {
       if (!draft.document) return;
@@ -249,6 +255,12 @@ export const createNodeSlice: SliceCreator<NodeSlice> = (set, get) => ({
           draft.isDirty = true;
         }
       }
+    });
+  },
+
+  requestAutoLayout: () => {
+    set((draft) => {
+      if (draft.document) draft.document.metadata.layout = 'auto';
     });
   },
 

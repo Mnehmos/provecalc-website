@@ -844,6 +844,8 @@ export function AgentTray() {
           const node = normalizeNode(n);
           await store.insertNode(node as Parameters<typeof store.insertNode>[0]);
         }
+        // Each node went below the last; now space them by their real sizes.
+        useDocumentStore.getState().requestAutoLayout();
       } else if (suggestion.type === 'assumption' && suggestion.assumption) {
         const { statement, scope } = suggestion.preview;
         await store.addAssumption(statement, undefined, scope);

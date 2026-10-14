@@ -56,6 +56,8 @@ export interface DocumentState {
   selectNode: (nodeId: NodeId | null) => void;
   updateNodePosition: (nodeId: NodeId, position: NodePosition) => void;
   applyNodePositions: (positions: Record<NodeId, NodePosition>, options?: { markDirty?: boolean }) => void;
+  /** Ask the canvas to pack the nodes from their measured sizes once they have rendered. */
+  requestAutoLayout: () => void;
   updateDocumentName: (name: string) => void;
 
   // Assumptions

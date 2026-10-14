@@ -23,6 +23,9 @@ import { parseText } from '../utils/textToNodeParser';
 import { DEFAULT_LAYOUT, packLayout, startsSection, type LayoutItem } from '../utils/autoLayout';
 import type { WorksheetNode, NodePosition, EquationNode, GivenNode, ResultNode } from '../types/document';
 
+/** Where a node with no stored position is drawn. */
+const UNPLACED: NodePosition = { x: 20, y: 80 };
+
 interface Point {
   x: number;
   y: number;
@@ -596,7 +599,7 @@ export function WorksheetCanvas({ darkPaper = false, onToggleDarkPaper }: Worksh
       e.stopPropagation();
 
       const node = document?.nodes.find((n) => n.id === nodeId);
-      if (!node?.position) return;
+      if (!node) return;
 
       setDraggingNode(nodeId);
       setDragStart({ x: e.clientX, y: e.clientY });
@@ -626,10 +629,11 @@ export function WorksheetCanvas({ darkPaper = false, onToggleDarkPaper }: Worksh
   const handleMouseUp = useCallback(() => {
     if (draggingNode && (dragOffset.x !== 0 || dragOffset.y !== 0)) {
       const node = document?.nodes.find((n) => n.id === draggingNode);
-      if (node?.position) {
+      if (node) {
+        const from = node.position ?? UNPLACED;
         const newPosition: NodePosition = {
-          x: node.position.x + dragOffset.x,
-          y: node.position.y + dragOffset.y,
+          x: from.x + dragOffset.x,
+          y: from.y + dragOffset.y,
         };
         updateNodePosition(draggingNode, newPosition);
       }
@@ -653,7 +657,7 @@ export function WorksheetCanvas({ darkPaper = false, onToggleDarkPaper }: Worksh
   // Calculate node position for rendering (including drag offset)
   const getNodeStyle = useCallback(
     (node: WorksheetNode): React.CSSProperties => {
-      const pos = node.position || { x: 20, y: 80 };
+      const pos = node.position || UNPLACED;
       const isDragging = draggingNode === node.id;
 
       return {
@@ -675,11 +679,12 @@ export function WorksheetCanvas({ darkPaper = false, onToggleDarkPaper }: Worksh
     const items: LayoutItem[] = [];
     for (const node of document.nodes) {
       const element = viewport.querySelector<HTMLElement>(`.node-wrapper[data-node-id="${node.id}"]`);
-      if (!element || !node.position) continue;
+      if (!element) continue;
+      const position = node.position ?? UNPLACED;
       items.push({
         id: node.id,
-        x: node.position.x,
-        y: node.position.y,
+        x: position.x,
+        y: position.y,
         width: element.offsetWidth,
         height: element.offsetHeight,
         section: node.type === 'text' && startsSection(node.content),
