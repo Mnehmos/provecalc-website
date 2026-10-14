@@ -127,5 +127,24 @@ export function hasCommands(responseText: string): boolean {
  * disappears without a trace.
  */
 export function stripCommandBlocks(text: string): string {
-  return text.replace(/```(?:json)?\s*\n([\s\S]*?)\n```/g, (block, body: string) => (parseCommands(`\`\`\`json\n${body}\n\`\`\``).commands.length > 0 ? '' : block)).trim();
+  return text.replace(/```(?:json)?\s*\n([\s\S]*?)\n```/g, (block, body: string) => (allValidCommands(body) ? '' : block)).trim();
+}
+
+/** True when a block holds commands and every one of them is valid (none would be dropped). */
+function allValidCommands(body: string): boolean {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(body.trim());
+  } catch {
+    return false;
+  }
+  const record = parsed as Record<string, unknown> | null;
+  const candidates: unknown[] = Array.isArray(parsed)
+    ? parsed
+    : record && Array.isArray(record.commands)
+      ? (record.commands as unknown[])
+      : record && typeof record === 'object' && 'action' in record
+        ? [record]
+        : [];
+  return candidates.length > 0 && candidates.every((entry) => Boolean(entry) && typeof entry === 'object' && validateCommand({ ...(entry as Record<string, unknown>) }) !== null);
 }

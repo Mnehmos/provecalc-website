@@ -34,13 +34,15 @@ export interface NodeSlice {
   updateNodePosition: (nodeId: NodeId, position: NodePosition) => void;
   /** Move many nodes at once (auto layout); clears the document's pending-layout flag. */
   applyNodePositions: (positions: Record<NodeId, NodePosition>, options?: { markDirty?: boolean }) => void;
-  /** Ask the canvas to pack the nodes from their measured sizes once they have rendered. */
-  requestAutoLayout: () => void;
+  pendingPlacement: NodeId[];
+  requestPlacement: (nodeIds: NodeId[]) => void;
+  clearPlacement: () => void;
   updateDocumentName: (name: string) => void;
 }
 
 export const createNodeSlice: SliceCreator<NodeSlice> = (set, get) => ({
   selectedNodeId: null,
+  pendingPlacement: [],
 
   addNode: async (type: NodeType, position?: NodePosition) => {
     const timer = startTimer('addNode', 'store');
@@ -258,9 +260,15 @@ export const createNodeSlice: SliceCreator<NodeSlice> = (set, get) => ({
     });
   },
 
-  requestAutoLayout: () => {
+  requestPlacement: (nodeIds: NodeId[]) => {
     set((draft) => {
-      if (draft.document) draft.document.metadata.layout = 'auto';
+      draft.pendingPlacement = [...draft.pendingPlacement, ...nodeIds];
+    });
+  },
+
+  clearPlacement: () => {
+    set((draft) => {
+      draft.pendingPlacement = [];
     });
   },
 

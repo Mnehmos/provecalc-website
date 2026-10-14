@@ -56,8 +56,11 @@ export interface DocumentState {
   selectNode: (nodeId: NodeId | null) => void;
   updateNodePosition: (nodeId: NodeId, position: NodePosition) => void;
   applyNodePositions: (positions: Record<NodeId, NodePosition>, options?: { markDirty?: boolean }) => void;
-  /** Ask the canvas to pack the nodes from their measured sizes once they have rendered. */
-  requestAutoLayout: () => void;
+  /** Nodes just inserted that the canvas places below the others, from their measured sizes. */
+  pendingPlacement: NodeId[];
+  /** Ask the canvas to place these new nodes, in order, below every other node once they render. */
+  requestPlacement: (nodeIds: NodeId[]) => void;
+  clearPlacement: () => void;
   updateDocumentName: (name: string) => void;
 
   // Assumptions

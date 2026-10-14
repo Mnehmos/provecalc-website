@@ -706,6 +706,41 @@ export function WorksheetCanvas({ darkPaper = false, onToggleDarkPaper }: Worksh
     return () => { cancelled = true; };
   }, [pendingLayout, tidyLayout]);
 
+  // Nodes the assistant just inserted: once drawn, each goes below every other node by the real
+  // heights, in order, in the column it was given. Nodes already on the worksheet do not move.
+  const pendingPlacement = useDocumentStore((s) => s.pendingPlacement);
+  const clearPlacement = useDocumentStore((s) => s.clearPlacement);
+  useEffect(() => {
+    if (pendingPlacement.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      try { await window.document.fonts?.ready; } catch { /* placement still runs */ }
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const viewport = viewportRef.current;
+      const current = useDocumentStore.getState().document;
+      if (cancelled || !viewport || !current) return;
+      const fresh = new Set(pendingPlacement);
+      const heightOf = (id: string) => viewport.querySelector<HTMLElement>(`.node-wrapper[data-node-id="${id}"]`)?.offsetHeight ?? 0;
+      const header = viewport.querySelector<HTMLElement>('.worksheet-header');
+      let y = header ? header.offsetTop + header.offsetHeight + 24 : DEFAULT_LAYOUT.top;
+      for (const node of current.nodes) {
+        if (fresh.has(node.id)) continue;
+        const position = node.position ?? UNPLACED;
+        y = Math.max(y, position.y + heightOf(node.id) + DEFAULT_LAYOUT.gap);
+      }
+      const positions: Record<string, NodePosition> = {};
+      for (const id of pendingPlacement) {
+        const node = current.nodes.find((entry) => entry.id === id);
+        if (!node) continue;
+        positions[id] = { x: (node.position ?? UNPLACED).x, y: Math.round(y) };
+        y += heightOf(id) + DEFAULT_LAYOUT.gap;
+      }
+      applyNodePositions(positions, { markDirty: true });
+      clearPlacement();
+    })();
+    return () => { cancelled = true; };
+  }, [pendingPlacement, applyNodePositions, clearPlacement]);
+
   // Handle adding nodes from context menu
   const handleAddNode = useCallback(
     (type: NodeType) => {

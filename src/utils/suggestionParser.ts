@@ -69,12 +69,13 @@ export function parseAIResponse(response: string): ParsedAIResponse {
 }
 
 /**
- * The JSON objects written straight into the text that look like suggestions (`{"type": ...`): each
- * from its opening brace to the matching closing one, braces inside strings ignored.
+ * The JSON objects written straight into the text: each from an opening brace followed by a key to
+ * the matching closing brace, braces inside strings ignored. Whether one is a suggestion (its `type`,
+ * wherever it sits among the keys) is for the caller to decide.
  */
 export function bareJsonObjects(text: string): string[] {
   const found: string[] = [];
-  const start = /\{\s*"type"\s*:/g;
+  const start = /\{\s*"/g;
   let match: RegExpExecArray | null;
   while ((match = start.exec(text)) !== null) {
     let depth = 0;
@@ -93,8 +94,11 @@ export function bareJsonObjects(text: string): string[] {
       } else if (char === '}') {
         depth -= 1;
         if (depth === 0) {
-          found.push(text.slice(match.index, index + 1));
-          start.lastIndex = index + 1;
+          const candidate = text.slice(match.index, index + 1);
+          if (tryParseSuggestion(candidate)) {
+            found.push(candidate);
+            start.lastIndex = index + 1;
+          }
           break;
         }
       }
