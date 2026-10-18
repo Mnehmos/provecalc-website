@@ -1,7 +1,14 @@
 import type { MetadataRoute } from "next";
+import { disciplines, examples } from "../data/engineering";
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  const learning: MetadataRoute.Sitemap = [
+    { url: "https://provecalc.com/examples", lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
+    ...disciplines.map((d) => ({ url: `https://provecalc.com/engineering/${d.slug}`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.8 })),
+    ...examples.map((e) => ({ url: `https://provecalc.com/examples/${e.slug}`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.7 })),
+  ];
   return [
+    ...learning,
     {
       url: "https://provecalc.com",
       lastModified: new Date(),
