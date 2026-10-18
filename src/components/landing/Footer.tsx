@@ -2,7 +2,7 @@ export function Footer() {
   return (
     <footer className="py-16 border-t border-[var(--stone-800)]">
       <div className="max-w-6xl mx-auto px-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <a href="/" className="flex items-center gap-2 mb-3">
@@ -49,6 +49,31 @@ export function Footer() {
                   Web Demo
                 </a>
               </li>
+            </ul>
+          </div>
+
+          {/* Engineering */}
+          <div>
+            <h2 className="text-sm font-semibold text-[var(--stone-300)] mb-3">
+              Engineering
+            </h2>
+            <ul className="space-y-2">
+              {[
+                ["/engineering/structural", "Structural"],
+                ["/engineering/mechanical", "Mechanical"],
+                ["/engineering/aerospace", "Aerospace"],
+                ["/engineering/civil", "Civil"],
+                ["/examples", "Worked examples"],
+              ].map(([href, label]) => (
+                <li key={href}>
+                  <a
+                    href={href}
+                    className="text-sm text-[var(--stone-500)] hover:text-[var(--copper)] transition-colors"
+                  >
+                    {label}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
